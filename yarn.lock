@@ -14,6 +14,10 @@
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@jiubao/raf/-/raf-0.0.2.tgz#ec148af9faaaa9c571cdf002287a59a97e7ca261"
 
+"@nlib/afs@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@nlib/afs/-/afs-0.2.4.tgz#e3670db7d754fa785dacc61b0a7d82cd263ff4b3"
+
 "@types/estree@0.0.39":
   version "0.0.39"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
@@ -642,7 +646,7 @@ chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chalk@^2.3.1:
+chalk@^2.3.1, chalk@^2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.1.tgz#18c49ab16a037b6eb0152cc83e3471338215b66e"
   dependencies:
@@ -1667,6 +1671,14 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
 
+postcss@^7.0.5:
+  version "7.0.5"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.5.tgz#70e6443e36a6d520b0fd4e7593fcca3635ee9f55"
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.5.0"
+
 preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
@@ -1876,6 +1888,14 @@ rollup-plugin-buble@^0.19.4:
     buble "^0.19.4"
     rollup-pluginutils "^2.3.3"
 
+rollup-plugin-embed-css@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-embed-css/-/rollup-plugin-embed-css-0.3.2.tgz#1e13519bb4e5190850d26772fe138105b649467a"
+  dependencies:
+    "@nlib/afs" "^0.2.4"
+    postcss "^7.0.5"
+    rollup-pluginutils "^2.3.3"
+
 rollup-plugin-node-resolve@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/rollup-plugin-node-resolve/-/rollup-plugin-node-resolve-3.4.0.tgz#908585eda12e393caac7498715a01e08606abc89"
@@ -2050,7 +2070,7 @@ supports-color@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-2.0.0.tgz#535d045ce6b6363fa40117084629995e9df324c7"
 
-supports-color@^5.3.0:
+supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   dependencies:

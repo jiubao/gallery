@@ -5,13 +5,14 @@ import resolve from 'rollup-plugin-node-resolve'
 // import commonjs from 'rollup-plugin-commonjs'
 // import nodeResolve from 'rollup-plugin-node-resolve'
 import cfg from './package.json'
+import embedCSS from 'rollup-plugin-embed-css'
 
 export default {
   input: 'src/index.js',
   output: [{
     file: cfg.browser,
     format: 'umd',
-    name: 'raf'
+    name: 'gallery'
   }, {
     file: cfg.module,
     format: 'es'
@@ -19,8 +20,19 @@ export default {
     file: cfg.cjs,
     format: 'cjs'
   }],
+  external: [
+    'swipe-core'
+  ],
   plugins: [
-    buble(),
+    embedCSS(),
+    // sass({
+    //   insert: true
+    // }),
+    buble({
+      transforms: {
+        templateString: false
+      }
+    }),
     resolve({
       module: true
     })
