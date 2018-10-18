@@ -13,7 +13,8 @@ var classes = {
 	gallery: "_src_style_css_gallery",
 	bg: "_src_style_css_bg",
 	wrap: "_src_style_css_wrap",
-	full: "_src_style_css_full"
+	full: "_src_style_css_full",
+	center: "_src_style_css_center"
 };
 
 // function htmlEscape(str) {
@@ -29,7 +30,7 @@ var main = function (img) { return html`
 <div class="${classes.gallery}">
   <div class="${classes.bg}"></div>
   <div class="${classes.wrap}">
-    <img src="${img}" alt="" />
+    <img src="${img}" class="${classes.center}" />
   </div>
 </div>
 `; };
@@ -67,7 +68,7 @@ export default openGallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [6,0,4,0,3,0,5,0,18,15,9,6,0,4,0,3,0,5,0,19,15,9,6,0,4,0,3,0,5,0,11,15,9,6,0,4,0,3,0,5,0,33,8,25,2,21,1,28,2,21,1,17,2,14,16,1,32,2,14,16,1,7,10,6,0,4,0,3,0,5,0,18,8,35,2,13,1,12,2,34,1,26,2,31,1,24,22,37,2,13,1,23,22,29,2,38,1,27,2,13,1,7,10,6,0,4,0,3,0,5,0,19,8,12,2,20,1,36,2,40,39,1,7,10,6,0,4,0,3,0,5,0,11,8,12,2,20,1,7,10,6,0,4,0,3,0,5,0,11,9,30,8,17,2,14,16,1,7],
-    ["_",";",":","style","src","css",".","}","{"," ","\n","wrap","position","none","100",",","%","width","gallery","bg","absolute","0","-","z","touch","top","overflow","outline","left","index","img","hidden","height","full","fixed","display","background","action","9999","000","#"],
+    [5,0,8,0,7,0,9,0,27,16,1,5,0,8,0,7,0,9,0,28,16,1,5,0,8,0,7,0,9,0,17,16,1,5,0,8,0,7,0,9,0,45,11,19,3,29,2,21,3,29,2,26,3,23,6,2,43,3,23,6,2,10,4,5,0,8,0,7,0,9,0,27,11,47,3,20,2,14,3,46,2,38,3,42,2,37,13,49,3,20,2,32,13,40,3,50,2,39,3,20,2,10,4,5,0,8,0,7,0,9,0,28,11,14,3,15,2,48,3,52,51,2,10,4,5,0,8,0,7,0,9,0,17,11,14,3,15,2,10,4,5,0,8,0,7,0,9,0,17,1,41,11,26,3,23,6,2,10,4,5,0,8,0,7,0,9,0,22,11,14,3,15,2,21,3,12,6,2,19,3,12,6,2,18,3,36,25,13,12,6,16,1,13,12,6,24,2,10,30,31,1,5,22,13,44,1,11,4,1,1,14,3,1,15,2,4,1,1,21,3,1,12,6,2,4,1,1,18,3,1,35,25,13,12,6,24,2,4,10,4,4,5,22,13,33,1,11,4,1,1,14,3,1,15,2,4,1,1,19,3,1,12,6,2,4,1,1,18,3,1,34,25,13,12,6,24,2,4,10,1,31,30],
+    ["_"," ",";",":","\n",".","%","style","src","css","}","{","50","-","position","absolute",",","wrap","transform","top","none","left","center","100",")","(","width","gallery","bg","0","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));

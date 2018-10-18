@@ -13,7 +13,7 @@ var main = img => html`
 <div class="${cls.gallery}">
   <div class="${cls.bg}"></div>
   <div class="${cls.wrap}">
-    <img src="${img}" alt="" />
+    <img src="${img}" class="${cls.center}" />
   </div>
 </div>
 `
