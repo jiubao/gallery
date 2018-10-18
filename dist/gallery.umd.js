@@ -23,6 +23,7 @@
   	center: "_src_style_css_center"
   };
 
+  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img src=\"", "\" class=\"", "\" />\n  </div>\n</div>\n"]);
   // function htmlEscape(str) {
   //     return str.replace(/&/g, '&amp;') // first!
   //               .replace(/>/g, '&gt;')
@@ -32,14 +33,7 @@
   //               .replace(/`/g, '&#96;');
   // }
 
-  var main = function (img) { return html`
-<div class="${classes.gallery}">
-  <div class="${classes.bg}"></div>
-  <div class="${classes.wrap}">
-    <img src="${img}" class="${classes.center}" />
-  </div>
-</div>
-`; };
+  var main = function (img) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, img, classes.center); };
 
   var tpls = {main: main};
 

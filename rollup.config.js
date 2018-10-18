@@ -29,7 +29,8 @@ export default {
     }),
     buble({
       transforms: {
-        templateString: false // TODO: not support prod build
+        dangerousTaggedTemplateString: true // https://buble.surge.sh/guide/#unsupported-features
+        // templateString: false // not parse tagged template string, and not support prod build
       }
     }),
     resolve({
