@@ -24,13 +24,12 @@ export default {
     'swipe-core'
   ],
   plugins: [
-    embedCSS(),
-    // sass({
-    //   insert: true
-    // }),
+    embedCSS({
+      mangle: false // true for prod build
+    }),
     buble({
       transforms: {
-        templateString: false
+        templateString: false // TODO: not support prod build
       }
     }),
     resolve({

@@ -9,3 +9,5 @@ export const off = (element, evt, handler) => {
 export const isFunction = value => {
   return typeof value === 'function'
 }
+
+export const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])

@@ -1,15 +1,23 @@
 import { on, off, isFunction } from './utils'
-import tpl from './html.js'
-import './style.css'
+import tpls from './html.js'
+import {classes} from './style.css';
 
-console.log('the best gallery is coming...')
+// console.log('the best gallery is coming...')
 
 function openGallery (items) {
-  items.forEach(item => on(item, 'touchend', () => {
-    console.log('clicking...')
+  var div = document.createElement('div')
+  document.body.appendChild(div)
+
+  items.forEach(item => on(item, 'click', evt => {
+    init(evt.target.src)
+    setTimeout(() => {
+      div.childNodes[1].style.display = 'block'
+    }, 10)
   }))
 
-  document.getElementById('test01').innerHTML = tpl
+  function init (src) {
+    div.innerHTML = tpls.main(src)
+  }
 
   /*
    * events (pan | pinch | press | rotate | swipe | tap)

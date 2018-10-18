@@ -1,4 +1,5 @@
-const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])
+import {html} from './utils'
+import {classes as cls} from './style.css'
 // function htmlEscape(str) {
 //     return str.replace(/&/g, '&amp;') // first!
 //               .replace(/>/g, '&gt;')
@@ -8,12 +9,13 @@ const html = (literalSections, ...subsets) => subsets.reduce((result, current, i
 //               .replace(/`/g, '&#96;');
 // }
 
-var tpl = html`
-<div id="gallery" class="">
-  <div class="cover"></div>
-  <div class="wrapper">
-    <img src="./imgs/2.jpg" alt="" />
+var main = img => html`
+<div class="${cls.gallery}">
+  <div class="${cls.bg}"></div>
+  <div class="${cls.wrap}">
+    <img src="${img}" alt="" />
   </div>
 </div>
 `
-export default tpl
+
+export default {main}

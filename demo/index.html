@@ -3,10 +3,18 @@
   <head>
     <meta charset="utf-8">
     <title>@jiubao/gallery demo</title>
+    <style>
+    .box img {
+      width: 30%;
+    }
+    </style>
   </head>
   <body>
-    <div id="test01"></div>
-    <img src="./imgs/1.jpg" alt="">
+    <div class="box">
+      <img src="./imgs/1.jpg" alt="">
+      <img src="./imgs/2.jpg" alt="">
+      <img src="./imgs/3.jpg" alt="">
+    </div>
     <script src="../dist/gallery.umd.js"></script>
     <script type="text/javascript">
     var items = document.querySelectorAll('img')
