@@ -23,21 +23,33 @@
   };
 
   var html = function (literalSections) {
-    var subsets = [], len = arguments.length - 1;
-    while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
+  	var subsets = [], len = arguments.length - 1;
+  	while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
 
-    return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
+  	return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
   };
 
   var translate_scale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
   var opacity = function (elm, opacity) { return elm.style.opacity = opacity; };
+
+  var hasClass = function (elm, className) { return elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className); };
+  var addClass = function (elm, className) {
+  	if (!hasClass(elm, className)) {
+  		elm.className += (elm.className ? ' ' : '') + className;
+  	}
+  };
+  var removeClass = function (elm, className) {
+  	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+  	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  };
 
   var classes = {
   	gallery: "_src_style_css_gallery",
   	bg: "_src_style_css_bg",
   	wrap: "_src_style_css_wrap",
   	full: "_src_style_css_full",
-  	center: "_src_style_css_center"
+  	center: "_src_style_css_center",
+  	noTransition: "_src_style_css_noTransition"
   };
 
   var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img src=\"", "\" style=\"width: ", "px; height: ", "px;\" />\n  </div>\n</div>\n"]);
@@ -70,7 +82,10 @@
 
     // click
     items.forEach(function (item) { return on(item, 'click', function (evt) {
-      var img = evt.target;
+      show(evt.target);
+    }); });
+
+    function show (img) {
       var n_w = img.naturalWidth, n_h = img.naturalHeight, d_w = doc_w(), d_h = doc_h(), w, h;
       var d_r = d_w / d_h, n_r = n_w / n_h;
       var w = d_r > n_r ? d_h * n_r : d_w;
@@ -87,25 +102,30 @@
       //   scale: rect.width / w
       // }
       div.innerHTML = tpls.main(img.src, w, h);
+
       raf(function () {
         var gallary = div.childNodes[1];
         var wrap = gallary.querySelector('.' + classes.wrap);
         var background = gallary.querySelector('.' + classes.bg);
         translate_scale(wrap, rect.left, rect.top, rect.width / w);
         on(wrap, 'click', function (evt) {
+          removeClass(wrap, classes.noTransition);
+          removeClass(background, classes.noTransition);
           translate_scale(wrap, rect.left, rect.top, rect.width / w);
           opacity(background, 0);
-          setTimeout(function () {
-            gallary.style.display = 'none';
-          }, showHideAnimationDuration + 20);
+          showHideComplete(function () { return gallary.style.display = 'none'; });
         });
         gallary.style.display = 'block';
         raf(function () {
           translate_scale(wrap, d_r > n_r ? (d_w - w) / 2 : 0, d_r > n_r ? 0 : (d_h - h) / 2, 1);
           opacity(background, 1);
+          showHideComplete(function () {
+            addClass(wrap, classes.noTransition);
+            addClass(background, classes.noTransition);
+          });
         });
       });
-    }); });
+    }
 
     /*
      * events (pan | pinch | press | rotate | swipe | tap)
@@ -127,6 +147,10 @@
     return gallery
   }
 
+  function showHideComplete(fn) {
+    setTimeout(fn, showHideAnimationDuration + 20);
+  }
+
   return openGallery;
 
 })));
@@ -142,7 +166,7 @@
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [5,1,10,1,9,1,11,1,31,8,0,5,1,10,1,9,1,11,1,33,8,0,5,1,10,1,9,1,11,1,23,8,0,5,1,10,1,9,1,11,1,55,13,21,3,18,2,22,3,18,2,27,3,26,7,2,53,3,26,7,2,47,3,52,2,12,4,5,1,10,1,9,1,11,1,31,13,57,3,24,2,15,3,56,2,46,6,59,3,24,2,41,6,50,3,60,2,48,3,24,2,12,4,5,1,10,1,9,1,11,1,33,13,15,3,17,2,58,3,62,61,2,28,3,29,0,35,30,0,32,6,34,20,37,8,0,18,8,0,38,8,0,36,19,2,29,3,18,2,12,4,5,1,10,1,9,1,11,1,23,13,15,3,17,2,16,6,49,3,22,0,21,2,28,3,16,0,35,30,0,32,6,34,20,37,8,0,18,8,0,38,8,0,36,19,2,12,4,5,1,10,1,9,1,11,1,23,0,51,13,27,3,26,7,2,12,4,5,1,10,1,9,1,11,1,25,13,15,3,17,2,22,3,14,7,2,21,3,14,7,2,16,3,45,20,6,14,7,8,0,6,14,7,19,2,12,39,40,0,5,25,6,54,0,13,4,0,0,15,3,0,17,2,4,0,0,22,3,0,14,7,2,4,0,0,16,3,0,44,20,6,14,7,19,2,4,12,4,4,5,25,6,42,0,13,4,0,0,15,3,0,17,2,4,0,0,21,3,0,14,7,2,4,0,0,16,3,0,43,20,6,14,7,19,2,4,12,0,40,39],
-    [" ","_",";",":","\n",".","-","%",",","style","src","css","}","{","50","position","transform","absolute","0",")","(","top","left","wrap","none","center","100","width","transition","opacity","ms","gallery","cubic","bg","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
+    [5,0,9,0,8,0,10,0,31,11,1,5,0,9,0,8,0,10,0,33,11,1,5,0,9,0,8,0,10,0,24,11,1,5,0,9,0,8,0,10,0,56,13,21,3,18,2,23,3,18,2,28,3,27,7,2,54,3,27,7,2,47,3,53,2,12,4,5,0,9,0,8,0,10,0,31,13,58,3,22,2,15,3,57,2,46,6,60,3,22,2,41,6,51,3,61,2,48,3,22,2,12,4,5,0,9,0,8,0,10,0,33,13,15,3,17,2,59,3,63,62,2,25,3,29,1,35,30,1,32,6,34,20,37,11,1,18,11,1,38,11,1,36,19,2,29,3,18,2,12,4,5,0,9,0,8,0,10,0,24,13,15,3,17,2,16,6,49,3,23,1,21,2,25,3,16,1,35,30,1,32,6,34,20,37,11,1,18,11,1,38,11,1,36,19,2,12,4,5,0,9,0,8,0,10,0,24,1,52,13,28,3,27,7,2,12,4,5,0,9,0,8,0,10,0,26,13,15,3,17,2,23,3,14,7,2,21,3,14,7,2,16,3,45,20,6,14,7,11,1,6,14,7,19,2,12,39,40,1,5,26,6,55,1,13,4,1,1,15,3,1,17,2,4,1,1,23,3,1,14,7,2,4,1,1,16,3,1,44,20,6,14,7,19,2,4,12,4,4,5,26,6,42,1,13,4,1,1,15,3,1,17,2,4,1,1,21,3,1,14,7,2,4,1,1,16,3,1,43,20,6,14,7,19,2,4,12,1,40,39,4,5,0,9,0,8,0,10,0,50,13,25,3,22,2,12],
+    ["_"," ",";",":","\n",".","-","%","style","src","css",",","}","{","50","position","transform","absolute","0",")","(","top","none","left","wrap","transition","center","100","width","opacity","ms","gallery","cubic","bg","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","noTransition","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));

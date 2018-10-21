@@ -14,3 +14,14 @@ export const html = (literalSections, ...subsets) => subsets.reduce((result, cur
 
 export const translate_scale = (elm, x, y, scale) => elm.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`
 export const opacity = (elm, opacity) => elm.style.opacity = opacity
+
+export const hasClass = (elm, className) => elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className)
+export const addClass = (elm, className) => {
+	if (!hasClass(elm, className)) {
+		elm.className += (elm.className ? ' ' : '') + className
+	}
+}
+export const removeClass = (elm, className) => {
+	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+}
