@@ -89,7 +89,7 @@ function gallery (options) {
   var div = document.createElement('div');
   document.body.appendChild(div);
 
-  var gallery, wrap, background;
+  var gallery, wrap, background, blocked = false;
   // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
   var offStach = [];
   var offs = function (fn) { return offStach.push(fn); };
@@ -177,20 +177,24 @@ function gallery (options) {
   }
 
   function show (img) {
+    if (blocked) { return }
+    blocked = true;
     enableTransition();
     var sizes = size(img);
 
     applyTranslateScale(wrap, sizes.x, sizes.y, 1);
     applyOpacity(background, 1);
-    showHideComplete(function () { return disableTransition(); });
+    showHideComplete(function () { return blocked = !!disableTransition(); });
   }
 
   function hide (img) {
+    if (blocked) { return }
+    blocked = true;
     enableTransition();
     var rect = getRect(getCacheItem(img).elm);
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width);
     applyOpacity(background, 0);
-    showHideComplete(function () { return gallery.style.display = 'none'; });
+    showHideComplete(function () { return blocked = !(gallery.style.display = 'none'); });
   }
 
   function onTouchStart () {}
