@@ -1,22 +1,66 @@
-import { on, off, isFunction } from './utils'
+import {raf, caf} from '@jiubao/raf'
+import { on, off, isFunction, translate_scale, opacity } from './utils'
 import tpls from './html.js'
-import {classes} from './style.css';
+import {classes as cls} from './style.css';
 
 // console.log('the best gallery is coming...')
 
+const html = document.documentElement
+
+const doc_h = () => html.clientHeight
+const doc_w = () => html.clientWidth
+// const doc_r = () => doc_w / doc_h
+const showHideAnimationDuration = 333
+
 function openGallery (items) {
+  // the container
   var div = document.createElement('div')
   document.body.appendChild(div)
 
+  // click
   items.forEach(item => on(item, 'click', evt => {
-    init(evt.target.src)
-    setTimeout(() => {
-      div.childNodes[1].style.display = 'block'
-    }, 10)
+    var img = evt.target
+    var n_w = img.naturalWidth, n_h = img.naturalHeight, d_w = doc_w(), d_h = doc_h(), w, h
+    var d_r = d_w / d_h, n_r = n_w / n_h
+    var w = d_r > n_r ? d_h * n_r : d_w
+    var h = d_r > n_r ? d_h : d_w / n_r
+
+    var rect = img.getBoundingClientRect()
+
+    // var opts = {
+    //   src: img.src,
+    //   width: w,
+    //   height: h,
+    //   x: rect.left,
+    //   y: rect.top,
+    //   scale: rect.width / w
+    // }
+    div.innerHTML = tpls.main(img.src, w, h)
+    raf(() => {
+      var gallary = div.childNodes[1]
+      var wrap = gallary.querySelector('.' + cls.wrap)
+      var background = gallary.querySelector('.' + cls.bg)
+      translate_scale(wrap, rect.left, rect.top, rect.width / w)
+      on(wrap, 'click', evt => {
+        translate_scale(wrap, rect.left, rect.top, rect.width / w)
+        opacity(background, 0)
+        setTimeout(() => {
+          gallary.style.display = 'none'
+        }, showHideAnimationDuration + 20)
+      })
+      gallary.style.display = 'block'
+      raf(() => {
+        translate_scale(wrap, d_r > n_r ? (d_w - w) / 2 : 0, d_r > n_r ? 0 : (d_h - h) / 2, 1)
+        opacity(background, 1)
+      })
+    })
   }))
 
-  function init (src) {
-    div.innerHTML = tpls.main(src)
+  function init () {
+  }
+
+  function show () {
+
   }
 
   /*
@@ -35,6 +79,8 @@ function openGallery (items) {
   var gallery = {
     // on, off
   }
+
+  return gallery
 }
 
 export default openGallery

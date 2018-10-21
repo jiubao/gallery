@@ -9,11 +9,11 @@ import {classes as cls} from './style.css'
 //               .replace(/`/g, '&#96;');
 // }
 
-var main = img => html`
+var main = (src, width, height) => html`
 <div class="${cls.gallery}">
   <div class="${cls.bg}"></div>
   <div class="${cls.wrap}">
-    <img src="${img}" class="${cls.center}" />
+    <img src="${src}" style="width: ${width}px; height: ${height}px;" />
   </div>
 </div>
 `

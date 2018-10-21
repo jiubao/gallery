@@ -4,6 +4,20 @@
   (global.gallery = factory());
 }(this, (function () { 'use strict';
 
+  // for a 60Hz monitor, requestAnimationFrame will trigger the callback every 16.67ms (1000 / 60 == 16.66...)
+  var vendorPrefixes = ['webkit','moz','ms','o'];
+  var raf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "RequestAnimationFrame")]; }, window.requestAnimationFrame).bind(window);
+  var caf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "CancelAnimationFrame")]; }, window.cancelAnimationFrame).bind(window);
+  if (!raf || !caf) {
+    var last = 0;
+    raf = function (fn) {
+      var now = +new Date();
+      last = Math.max(now, last + 16);
+      return setTimeout(fn, last - now)
+    };
+    caf = clearTimeout;
+  }
+
   var on = function (element, evt, handler) {
     element.addEventListener(evt, handler, false);
   };
@@ -15,6 +29,9 @@
     return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
   };
 
+  var translate_scale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
+  var opacity = function (elm, opacity) { return elm.style.opacity = opacity; };
+
   var classes = {
   	gallery: "_src_style_css_gallery",
   	bg: "_src_style_css_bg",
@@ -23,7 +40,7 @@
   	center: "_src_style_css_center"
   };
 
-  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img src=\"", "\" class=\"", "\" />\n  </div>\n</div>\n"]);
+  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img src=\"", "\" style=\"width: ", "px; height: ", "px;\" />\n  </div>\n</div>\n"]);
   // function htmlEscape(str) {
   //     return str.replace(/&/g, '&amp;') // first!
   //               .replace(/>/g, '&gt;')
@@ -33,26 +50,81 @@
   //               .replace(/`/g, '&#96;');
   // }
 
-  var main = function (img) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, img, classes.center); };
+  var main = function (src, width, height) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, src, width, height); };
 
   var tpls = {main: main};
 
   // console.log('the best gallery is coming...')
 
+  var html$1 = document.documentElement;
+
+  var doc_h = function () { return html$1.clientHeight; };
+  var doc_w = function () { return html$1.clientWidth; };
+  // const doc_r = () => doc_w / doc_h
+  var showHideAnimationDuration = 333;
+
   function openGallery (items) {
+    // the container
     var div = document.createElement('div');
     document.body.appendChild(div);
 
+    // click
     items.forEach(function (item) { return on(item, 'click', function (evt) {
-      init(evt.target.src);
-      setTimeout(function () {
-        div.childNodes[1].style.display = 'block';
-      }, 10);
+      var img = evt.target;
+      var n_w = img.naturalWidth, n_h = img.naturalHeight, d_w = doc_w(), d_h = doc_h(), w, h;
+      var d_r = d_w / d_h, n_r = n_w / n_h;
+      var w = d_r > n_r ? d_h * n_r : d_w;
+      var h = d_r > n_r ? d_h : d_w / n_r;
+
+      var rect = img.getBoundingClientRect();
+
+      // var opts = {
+      //   src: img.src,
+      //   width: w,
+      //   height: h,
+      //   x: rect.left,
+      //   y: rect.top,
+      //   scale: rect.width / w
+      // }
+      div.innerHTML = tpls.main(img.src, w, h);
+      raf(function () {
+        var gallary = div.childNodes[1];
+        var wrap = gallary.querySelector('.' + classes.wrap);
+        var background = gallary.querySelector('.' + classes.bg);
+        translate_scale(wrap, rect.left, rect.top, rect.width / w);
+        on(wrap, 'click', function (evt) {
+          translate_scale(wrap, rect.left, rect.top, rect.width / w);
+          opacity(background, 0);
+          setTimeout(function () {
+            gallary.style.display = 'none';
+          }, showHideAnimationDuration + 20);
+        });
+        gallary.style.display = 'block';
+        raf(function () {
+          translate_scale(wrap, d_r > n_r ? (d_w - w) / 2 : 0, d_r > n_r ? 0 : (d_h - h) / 2, 1);
+          opacity(background, 1);
+        });
+      });
     }); });
 
-    function init (src) {
-      div.innerHTML = tpls.main(src);
-    }
+    /*
+     * events (pan | pinch | press | rotate | swipe | tap)
+     * horizontal swipe: flick to next / previous
+     * vertical swipe: close gallery
+     * spread: zoom in
+     * pinch: zoom out and close gallery
+     * double tap: zoom in / zoom out based on tap point
+     * pan: drag to pan
+     * tap: toggle controls
+     */
+    // var on = () => {}
+    // var off = () => {}
+
+    var gallery = {
+      // on, off
+    };
+
+    return gallery
   }
 
   return openGallery;
@@ -70,7 +142,7 @@
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [5,0,8,0,7,0,9,0,27,16,1,5,0,8,0,7,0,9,0,28,16,1,5,0,8,0,7,0,9,0,17,16,1,5,0,8,0,7,0,9,0,45,11,19,3,29,2,21,3,29,2,26,3,23,6,2,43,3,23,6,2,10,4,5,0,8,0,7,0,9,0,27,11,47,3,20,2,14,3,46,2,38,3,42,2,37,13,49,3,20,2,32,13,40,3,50,2,39,3,20,2,10,4,5,0,8,0,7,0,9,0,28,11,14,3,15,2,48,3,52,51,2,10,4,5,0,8,0,7,0,9,0,17,11,14,3,15,2,10,4,5,0,8,0,7,0,9,0,17,1,41,11,26,3,23,6,2,10,4,5,0,8,0,7,0,9,0,22,11,14,3,15,2,21,3,12,6,2,19,3,12,6,2,18,3,36,25,13,12,6,16,1,13,12,6,24,2,10,30,31,1,5,22,13,44,1,11,4,1,1,14,3,1,15,2,4,1,1,21,3,1,12,6,2,4,1,1,18,3,1,35,25,13,12,6,24,2,4,10,4,4,5,22,13,33,1,11,4,1,1,14,3,1,15,2,4,1,1,19,3,1,12,6,2,4,1,1,18,3,1,34,25,13,12,6,24,2,4,10,1,31,30],
-    ["_"," ",";",":","\n",".","%","style","src","css","}","{","50","-","position","absolute",",","wrap","transform","top","none","left","center","100",")","(","width","gallery","bg","0","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
+    [5,1,10,1,9,1,11,1,31,8,0,5,1,10,1,9,1,11,1,33,8,0,5,1,10,1,9,1,11,1,23,8,0,5,1,10,1,9,1,11,1,55,13,21,3,18,2,22,3,18,2,27,3,26,7,2,53,3,26,7,2,47,3,52,2,12,4,5,1,10,1,9,1,11,1,31,13,57,3,24,2,15,3,56,2,46,6,59,3,24,2,41,6,50,3,60,2,48,3,24,2,12,4,5,1,10,1,9,1,11,1,33,13,15,3,17,2,58,3,62,61,2,28,3,29,0,35,30,0,32,6,34,20,37,8,0,18,8,0,38,8,0,36,19,2,29,3,18,2,12,4,5,1,10,1,9,1,11,1,23,13,15,3,17,2,16,6,49,3,22,0,21,2,28,3,16,0,35,30,0,32,6,34,20,37,8,0,18,8,0,38,8,0,36,19,2,12,4,5,1,10,1,9,1,11,1,23,0,51,13,27,3,26,7,2,12,4,5,1,10,1,9,1,11,1,25,13,15,3,17,2,22,3,14,7,2,21,3,14,7,2,16,3,45,20,6,14,7,8,0,6,14,7,19,2,12,39,40,0,5,25,6,54,0,13,4,0,0,15,3,0,17,2,4,0,0,22,3,0,14,7,2,4,0,0,16,3,0,44,20,6,14,7,19,2,4,12,4,4,5,25,6,42,0,13,4,0,0,15,3,0,17,2,4,0,0,21,3,0,14,7,2,4,0,0,16,3,0,43,20,6,14,7,19,2,4,12,0,40,39],
+    [" ","_",";",":","\n",".","-","%",",","style","src","css","}","{","50","position","transform","absolute","0",")","(","top","left","wrap","none","center","100","width","transition","opacity","ms","gallery","cubic","bg","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));
