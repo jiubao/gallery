@@ -1,68 +1,78 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, translate_scale, opacity, addClass, removeClass } from './utils'
+import { on, off, isFunction, addClass, removeClass } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css';
 
 // console.log('the best gallery is coming...')
 
-const html = document.documentElement
+const applyTranslateScale = (elm, x, y, scale) => elm.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`
+const applyOpacity = (elm, opacity) => elm.style.opacity = opacity
 
+const html = document.documentElement
 const doc_h = () => html.clientHeight
 const doc_w = () => html.clientWidth
-// const doc_r = () => doc_w / doc_h
-const showHideAnimationDuration = 333
 
-function openGallery (items) {
+const showHideAnimationDuration = 333
+const showHideComplete = fn => setTimeout(fn, showHideAnimationDuration + 20)
+const getRect = elm => elm.getBoundingClientRect()
+
+var defaultOptions = {
+  selector: 'data-gallery-item',
+  dataset: 'galleryItem'
+}
+
+function gallery (options) {
+  var opts = {
+    ...defaultOptions,
+    ...options
+  }
+
+  var {selector, dataset} = opts
+  var cache = []
   // the container
   var div = document.createElement('div')
   document.body.appendChild(div)
 
-  // click
-  items.forEach(item => on(item, 'click', evt => {
-    show(evt.target)
+  var gallery, wrap, background
+  // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
+  var offStach = []
+  var offs = fn => offStach.push(fn)
+
+  // click document
+  offs(on(document, 'click', evt => {
+    var target = evt.target
+    if (target.tagName === 'IMG' && dataset in target.dataset) {
+      document.querySelectorAll(`img[${selector}]`).forEach((item, index) => {
+        item.dataset.galleryIndex = index
+        var w = item.naturalWidth, h = item.naturalHeight
+        cache[index] = { elm: item, w, h, r: w / h }
+      })
+      var sizes = size(target)
+      div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex)
+      raf(() => init(target, sizes))
+    }
   }))
 
-  function show (img) {
-    var n_w = img.naturalWidth, n_h = img.naturalHeight, d_w = doc_w(), d_h = doc_h(), w, h
-    var d_r = d_w / d_h, n_r = n_w / n_h
-    var w = d_r > n_r ? d_h * n_r : d_w
-    var h = d_r > n_r ? d_h : d_w / n_r
+  // click
+  // items.forEach(item => on(item, 'click', evt => {
+  //   show(evt.target)
+  // }))
 
-    var rect = img.getBoundingClientRect()
+  const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
 
-    // var opts = {
-    //   src: img.src,
-    //   width: w,
-    //   height: h,
-    //   x: rect.left,
-    //   y: rect.top,
-    //   scale: rect.width / w
-    // }
-    div.innerHTML = tpls.main(img.src, w, h)
-
-    raf(() => {
-      var gallary = div.childNodes[1]
-      var wrap = gallary.querySelector('.' + cls.wrap)
-      var background = gallary.querySelector('.' + cls.bg)
-      translate_scale(wrap, rect.left, rect.top, rect.width / w)
-      on(wrap, 'click', evt => {
-        removeClass(wrap, cls.noTransition)
-        removeClass(background, cls.noTransition)
-        translate_scale(wrap, rect.left, rect.top, rect.width / w)
-        opacity(background, 0)
-        showHideComplete(() => gallary.style.display = 'none')
-      })
-      gallary.style.display = 'block'
-      raf(() => {
-        translate_scale(wrap, d_r > n_r ? (d_w - w) / 2 : 0, d_r > n_r ? 0 : (d_h - h) / 2, 1)
-        opacity(background, 1)
-        showHideComplete(() => {
-          addClass(wrap, cls.noTransition)
-          addClass(background, cls.noTransition)
-        })
-      })
-    })
+  const size = img => {
+    var item = getCacheItem(img)
+    var docWidth = doc_w(), docHeight = doc_h()
+    var thin = (docWidth / docHeight) > item.r
+    var w = thin ? docHeight * item.r : docWidth
+    var h = thin ? docHeight : docWidth / item.r
+    var x = thin ? (docWidth - w) / 2 : 0
+    var y = thin ? 0 : (docHeight - h) / 2
+    return {w, h, x, y}
   }
+
+  const enableTransition = () => removeClass(gallery, cls.disableTransition)
+  const disableTransition = () => addClass(gallery, cls.disableTransition)
 
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
@@ -79,13 +89,57 @@ function openGallery (items) {
 
   var gallery = {
     // on, off
+    destroy: () => {
+      // unbind document click
+      // offDocClick()
+      // offTouchStart()
+      // offTouchMove()
+      // offTouchEnd()
+      offStach.forEach(o => o())
+    }
   }
 
   return gallery
+
+  function init (img, sizes) {
+    var rect = getRect(img)
+    gallery = div.childNodes[1]
+    wrap = gallery.querySelector('.' + cls.wrap)
+    background = gallery.querySelector('.' + cls.bg)
+    disableTransition()
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w)
+
+    offs(on(wrap, 'click', evt => hide(evt.target)))
+    offs(on(wrap, 'touchstart', onTouchStart))
+    offs(on(wrap, 'touchmove', onTouchMove))
+    offs(on(wrap, 'touchend', onTouchEnd))
+
+    gallery.style.display = 'block'
+    raf(() => {
+      show(img)
+    })
+  }
+
+  function show (img) {
+    enableTransition()
+    var sizes = size(img)
+
+    applyTranslateScale(wrap, sizes.x, sizes.y, 1)
+    applyOpacity(background, 1)
+    showHideComplete(() => disableTransition())
+  }
+
+  function hide (img) {
+    enableTransition()
+    var rect = getRect(getCacheItem(img).elm)
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width)
+    applyOpacity(background, 0)
+    showHideComplete(() => gallery.style.display = 'none')
+  }
+
+  function onTouchStart () {}
+  function onTouchMove () {}
+  function onTouchEnd () {}
 }
 
-function showHideComplete(fn) {
-  setTimeout(fn, showHideAnimationDuration + 20)
-}
-
-export default openGallery
+export default gallery

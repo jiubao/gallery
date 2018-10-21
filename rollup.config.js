@@ -28,6 +28,7 @@ export default {
       mangle: false // true for prod build
     }),
     buble({
+      objectAssign: 'Object.assign',
       transforms: {
         dangerousTaggedTemplateString: true // https://buble.surge.sh/guide/#unsupported-features
         // templateString: false // not parse tagged template string, and not support prod build

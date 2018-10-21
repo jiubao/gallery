@@ -16,7 +16,10 @@ if (!raf || !caf) {
 
 var on = function (element, evt, handler) {
   element.addEventListener(evt, handler, false);
+  return function () { return off(element, evt, handler); }
 };
+
+var off = function (element, evt, handler) { return element.removeEventListener(evt, handler, false); };
 
 var html = function (literalSections) {
 	var subsets = [], len = arguments.length - 1;
@@ -24,9 +27,6 @@ var html = function (literalSections) {
 
 	return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
 };
-
-var translate_scale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
-var opacity = function (elm, opacity) { return elm.style.opacity = opacity; };
 
 var hasClass = function (elm, className) { return elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className); };
 var addClass = function (elm, className) {
@@ -45,10 +45,10 @@ var classes = {
 	wrap: "_src_style_css_wrap",
 	full: "_src_style_css_full",
 	center: "_src_style_css_center",
-	noTransition: "_src_style_css_noTransition"
+	disableTransition: "_src_style_css_disableTransition"
 };
 
-var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img src=\"", "\" style=\"width: ", "px; height: ", "px;\" />\n  </div>\n</div>\n"]);
+var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\" />\n  </div>\n</div>\n"]);
 // function htmlEscape(str) {
 //     return str.replace(/&/g, '&amp;') // first!
 //               .replace(/>/g, '&gt;')
@@ -58,70 +58,79 @@ var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "
 //               .replace(/`/g, '&#96;');
 // }
 
-var main = function (src, width, height) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, src, width, height); };
+var main = function (src, width, height, index) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, index, src, width, height); };
 
 var tpls = {main: main};
 
 // console.log('the best gallery is coming...')
 
-var html$1 = document.documentElement;
+var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
+var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
 
+var html$1 = document.documentElement;
 var doc_h = function () { return html$1.clientHeight; };
 var doc_w = function () { return html$1.clientWidth; };
-// const doc_r = () => doc_w / doc_h
-var showHideAnimationDuration = 333;
 
-function openGallery (items) {
+var showHideAnimationDuration = 333;
+var showHideComplete = function (fn) { return setTimeout(fn, showHideAnimationDuration + 20); };
+var getRect = function (elm) { return elm.getBoundingClientRect(); };
+
+var defaultOptions = {
+  selector: 'data-gallery-item',
+  dataset: 'galleryItem'
+};
+
+function gallery (options) {
+  var opts = Object.assign({}, defaultOptions,
+    options);
+
+  var selector = opts.selector;
+  var dataset = opts.dataset;
+  var cache = [];
   // the container
   var div = document.createElement('div');
   document.body.appendChild(div);
 
+  var gallery, wrap, background;
+  // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
+  var offStach = [];
+  var offs = function (fn) { return offStach.push(fn); };
+
+  // click document
+  offs(on(document, 'click', function (evt) {
+    var target = evt.target;
+    if (target.tagName === 'IMG' && dataset in target.dataset) {
+      document.querySelectorAll(("img[" + selector + "]")).forEach(function (item, index) {
+        item.dataset.galleryIndex = index;
+        var w = item.naturalWidth, h = item.naturalHeight;
+        cache[index] = { elm: item, w: w, h: h, r: w / h };
+      });
+      var sizes = size(target);
+      div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex);
+      raf(function () { return init(target, sizes); });
+    }
+  }));
+
   // click
-  items.forEach(function (item) { return on(item, 'click', function (evt) {
-    show(evt.target);
-  }); });
+  // items.forEach(item => on(item, 'click', evt => {
+  //   show(evt.target)
+  // }))
 
-  function show (img) {
-    var n_w = img.naturalWidth, n_h = img.naturalHeight, d_w = doc_w(), d_h = doc_h(), w, h;
-    var d_r = d_w / d_h, n_r = n_w / n_h;
-    var w = d_r > n_r ? d_h * n_r : d_w;
-    var h = d_r > n_r ? d_h : d_w / n_r;
+  var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
 
-    var rect = img.getBoundingClientRect();
+  var size = function (img) {
+    var item = getCacheItem(img);
+    var docWidth = doc_w(), docHeight = doc_h();
+    var thin = (docWidth / docHeight) > item.r;
+    var w = thin ? docHeight * item.r : docWidth;
+    var h = thin ? docHeight : docWidth / item.r;
+    var x = thin ? (docWidth - w) / 2 : 0;
+    var y = thin ? 0 : (docHeight - h) / 2;
+    return {w: w, h: h, x: x, y: y}
+  };
 
-    // var opts = {
-    //   src: img.src,
-    //   width: w,
-    //   height: h,
-    //   x: rect.left,
-    //   y: rect.top,
-    //   scale: rect.width / w
-    // }
-    div.innerHTML = tpls.main(img.src, w, h);
-
-    raf(function () {
-      var gallary = div.childNodes[1];
-      var wrap = gallary.querySelector('.' + classes.wrap);
-      var background = gallary.querySelector('.' + classes.bg);
-      translate_scale(wrap, rect.left, rect.top, rect.width / w);
-      on(wrap, 'click', function (evt) {
-        removeClass(wrap, classes.noTransition);
-        removeClass(background, classes.noTransition);
-        translate_scale(wrap, rect.left, rect.top, rect.width / w);
-        opacity(background, 0);
-        showHideComplete(function () { return gallary.style.display = 'none'; });
-      });
-      gallary.style.display = 'block';
-      raf(function () {
-        translate_scale(wrap, d_r > n_r ? (d_w - w) / 2 : 0, d_r > n_r ? 0 : (d_h - h) / 2, 1);
-        opacity(background, 1);
-        showHideComplete(function () {
-          addClass(wrap, classes.noTransition);
-          addClass(background, classes.noTransition);
-        });
-      });
-    });
-  }
+  var enableTransition = function () { return removeClass(gallery, classes.disableTransition); };
+  var disableTransition = function () { return addClass(gallery, classes.disableTransition); };
 
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
@@ -138,16 +147,60 @@ function openGallery (items) {
 
   var gallery = {
     // on, off
+    destroy: function () {
+      // unbind document click
+      // offDocClick()
+      // offTouchStart()
+      // offTouchMove()
+      // offTouchEnd()
+      offStach.forEach(function (o) { return o(); });
+    }
   };
 
   return gallery
+
+  function init (img, sizes) {
+    var rect = getRect(img);
+    gallery = div.childNodes[1];
+    wrap = gallery.querySelector('.' + classes.wrap);
+    background = gallery.querySelector('.' + classes.bg);
+    disableTransition();
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w);
+
+    offs(on(wrap, 'click', function (evt) { return hide(evt.target); }));
+    offs(on(wrap, 'touchstart', onTouchStart));
+    offs(on(wrap, 'touchmove', onTouchMove));
+    offs(on(wrap, 'touchend', onTouchEnd));
+
+    gallery.style.display = 'block';
+    raf(function () {
+      show(img);
+    });
+  }
+
+  function show (img) {
+    enableTransition();
+    var sizes = size(img);
+
+    applyTranslateScale(wrap, sizes.x, sizes.y, 1);
+    applyOpacity(background, 1);
+    showHideComplete(function () { return disableTransition(); });
+  }
+
+  function hide (img) {
+    enableTransition();
+    var rect = getRect(getCacheItem(img).elm);
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width);
+    applyOpacity(background, 0);
+    showHideComplete(function () { return gallery.style.display = 'none'; });
+  }
+
+  function onTouchStart () {}
+  function onTouchMove () {}
+  function onTouchEnd () {}
 }
 
-function showHideComplete(fn) {
-  setTimeout(fn, showHideAnimationDuration + 20);
-}
-
-module.exports = openGallery;
+module.exports = gallery;
 (function (encoded, words, link) {
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', URL.createObjectURL(
@@ -160,7 +213,7 @@ module.exports = openGallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [5,0,9,0,8,0,10,0,31,11,1,5,0,9,0,8,0,10,0,33,11,1,5,0,9,0,8,0,10,0,24,11,1,5,0,9,0,8,0,10,0,56,13,21,3,18,2,23,3,18,2,28,3,27,7,2,54,3,27,7,2,47,3,53,2,12,4,5,0,9,0,8,0,10,0,31,13,58,3,22,2,15,3,57,2,46,6,60,3,22,2,41,6,51,3,61,2,48,3,22,2,12,4,5,0,9,0,8,0,10,0,33,13,15,3,17,2,59,3,63,62,2,25,3,29,1,35,30,1,32,6,34,20,37,11,1,18,11,1,38,11,1,36,19,2,29,3,18,2,12,4,5,0,9,0,8,0,10,0,24,13,15,3,17,2,16,6,49,3,23,1,21,2,25,3,16,1,35,30,1,32,6,34,20,37,11,1,18,11,1,38,11,1,36,19,2,12,4,5,0,9,0,8,0,10,0,24,1,52,13,28,3,27,7,2,12,4,5,0,9,0,8,0,10,0,26,13,15,3,17,2,23,3,14,7,2,21,3,14,7,2,16,3,45,20,6,14,7,11,1,6,14,7,19,2,12,39,40,1,5,26,6,55,1,13,4,1,1,15,3,1,17,2,4,1,1,23,3,1,14,7,2,4,1,1,16,3,1,44,20,6,14,7,19,2,4,12,4,4,5,26,6,42,1,13,4,1,1,15,3,1,17,2,4,1,1,21,3,1,14,7,2,4,1,1,16,3,1,43,20,6,14,7,19,2,4,12,1,40,39,4,5,0,9,0,8,0,10,0,50,13,25,3,22,2,12],
-    ["_"," ",";",":","\n",".","-","%","style","src","css",",","}","{","50","position","transform","absolute","0",")","(","top","none","left","wrap","transition","center","100","width","opacity","ms","gallery","cubic","bg","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","noTransition","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
+    [5,0,7,0,6,0,8,0,32,10,1,5,0,7,0,6,0,8,0,27,10,1,5,0,7,0,6,0,8,0,21,10,1,5,0,7,0,6,0,8,0,56,13,22,3,18,2,24,3,18,2,29,3,28,11,2,54,3,28,11,2,48,3,53,2,12,4,5,0,7,0,6,0,8,0,32,13,58,3,23,2,15,3,57,2,47,9,60,3,23,2,42,9,51,3,61,2,49,3,23,2,12,4,5,0,7,0,6,0,8,0,27,13,15,3,17,2,59,3,63,62,2,25,3,30,1,36,31,1,34,9,35,20,38,10,1,18,10,1,39,10,1,37,19,2,30,3,18,2,12,4,5,0,7,0,6,0,8,0,21,13,15,3,17,2,16,9,50,3,24,1,22,2,25,3,16,1,36,31,1,34,9,35,20,38,10,1,18,10,1,39,10,1,37,19,2,12,4,5,0,7,0,6,0,8,0,21,1,52,13,29,3,28,11,2,12,4,5,0,7,0,6,0,8,0,26,13,15,3,17,2,24,3,14,11,2,22,3,14,11,2,16,3,46,20,9,14,11,10,1,9,14,11,19,2,12,40,41,1,5,26,9,55,1,13,4,1,1,15,3,1,17,2,4,1,1,24,3,1,14,11,2,4,1,1,16,3,1,45,20,9,14,11,19,2,4,12,4,4,5,26,9,43,1,13,4,1,1,15,3,1,17,2,4,1,1,22,3,1,14,11,2,4,1,1,16,3,1,44,20,9,14,11,19,2,4,12,1,41,40,4,5,0,7,0,6,0,8,0,33,1,5,0,7,0,6,0,8,0,27,10,1,5,0,7,0,6,0,8,0,33,1,5,0,7,0,6,0,8,0,21,13,25,3,23,2,12],
+    ["_"," ",";",":","\n",".","style","src","css","-",",","%","}","{","50","position","transform","absolute","0",")","(","wrap","top","none","left","transition","center","bg","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));
