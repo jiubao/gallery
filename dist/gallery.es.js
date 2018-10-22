@@ -60,14 +60,99 @@ var main = function (src, width, height, index) { return html(templateObject, cl
 
 var tpls = {main: main};
 
+var html$1 = document.documentElement;
+var touch2point = function (touch) { return ({x: touch.pageX, y: touch.pageY}); };
+
+function gesture (elm) {
+  /*
+   * 0000 0000: idle
+   * 0000 0001: start
+   * 0000 0010: swipe
+   * 0000 0100: vertical scrolling
+   */
+  var phase = 0;
+  var ismoving = false;
+
+  var handlers = {
+    'swipe': [],
+    'scroll': [],
+    'scrollend': [],
+    'zoom': [],
+    'double': [],
+    'pan': [],
+    'tap': []
+  };
+  var trigger = function (evt) {
+    var args = [], len = arguments.length - 1;
+    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+
+    return handlers[evt].forEach(function (fn) { return fn.apply(void 0, args); });
+  };
+
+  var startPoint = {}, lastPoint = {}, currentPoint = {}, target = {};
+
+  var loop = function () { if (ismoving) { raf(loop); render(); }};
+
+  var onstart = function (evt) {
+    // if (freeze) return
+    startPoint = lastPoint = currentPoint = touch2point(evt.touches[0]);
+    phase = 1;
+    ismoving = true;
+    target = evt.target;
+    loop();
+  };
+
+  var onmove = function (evt) {
+    // if (freeze) return
+
+    lastPoint = currentPoint;
+    currentPoint = touch2point(evt.touches[0]);
+  };
+
+  var onend = function (evt) {
+    // if (freeze) return
+    trigger('scrollend', currentPoint, lastPoint, startPoint, target);
+    ismoving = false;
+  };
+
+  var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
+  var _on = function (evt, fn) {
+    handlers[evt].push(fn);
+    return function () { return off(evt, fn); }
+  };
+
+  on(elm, 'touchstart', onstart);
+  on(elm, 'touchmove', onmove);
+  on(elm, 'touchend', onend);
+
+  return {
+    on: _on, off: _off
+    // destroy: () => {}
+  }
+
+  function render () {
+    var xx = currentPoint.x - startPoint.x;
+    var yy = currentPoint.y - startPoint.y;
+
+    // if (phase === 1) {
+      phase = Math.abs(xx) >= Math.abs(yy) ? 2 : 4;
+    // }
+
+    if (phase === 2) ;
+    else if (phase === 4) {
+      trigger('scroll', currentPoint, lastPoint, startPoint, target);
+    }
+  }
+}
+
 // console.log('the best gallery is coming...')
 
 var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
 var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
 
-var html$1 = document.documentElement;
-var doc_h = function () { return html$1.clientHeight; };
-var doc_w = function () { return html$1.clientWidth; };
+var html$2 = document.documentElement;
+var doc_h$1 = function () { return html$2.clientHeight; };
+var doc_w$1 = function () { return html$2.clientWidth; };
 
 var showHideAnimationDuration = 333;
 var showHideComplete = function (fn) { return setTimeout(fn, showHideAnimationDuration + 20); };
@@ -82,6 +167,8 @@ function gallery (options) {
   var opts = Object.assign({}, defaultOptions,
     options);
 
+  // var gesture = gestureFactory()
+
   var selector = opts.selector;
   var dataset = opts.dataset;
   var cache = [];
@@ -89,7 +176,7 @@ function gallery (options) {
   var div = document.createElement('div');
   document.body.appendChild(div);
 
-  var gallery, wrap, background, blocked = false;
+  var gallery, wrap, background, freeze = false;
   // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
   var offStach = [];
   var offs = function (fn) { return offStach.push(fn); };
@@ -118,12 +205,12 @@ function gallery (options) {
 
   var size = function (img) {
     var item = getCacheItem(img);
-    var docWidth = doc_w(), docHeight = doc_h();
+    var docWidth = doc_w$1(), docHeight = doc_h$1();
     var thin = (docWidth / docHeight) > item.r;
-    var w = thin ? docHeight * item.r : docWidth;
-    var h = thin ? docHeight : docWidth / item.r;
-    var x = thin ? (docWidth - w) / 2 : 0;
-    var y = thin ? 0 : (docHeight - h) / 2;
+    w = thin ? docHeight * item.r : docWidth;
+    h = thin ? docHeight : docWidth / item.r;
+    x = thin ? (docWidth - w) / 2 : 0;
+    y = thin ? 0 : (docHeight - h) / 2;
     return {w: w, h: h, x: x, y: y}
   };
 
@@ -142,6 +229,8 @@ function gallery (options) {
    */
   // var on = () => {}
   // var off = () => {}
+
+  var x, y, w, h;
 
   var gallery = {
     // on, off
@@ -165,10 +254,12 @@ function gallery (options) {
     disableTransition();
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w);
 
+    var gesture$$1 = opts.gesture = window.ges = gesture(wrap);
+
     offs(on(wrap, 'click', function (evt) { return hide(evt.target); }));
-    offs(on(wrap, 'touchstart', onTouchStart));
-    offs(on(wrap, 'touchmove', onTouchMove));
-    offs(on(wrap, 'touchend', onTouchEnd));
+
+    offs(gesture$$1.on('scroll', onscroll));
+    offs(gesture$$1.on('scrollend', onscrollend));
 
     gallery.style.display = 'block';
     raf(function () {
@@ -177,29 +268,44 @@ function gallery (options) {
   }
 
   function show (img) {
-    if (blocked) { return }
-    blocked = true;
+    if (freeze) { return }
+    freeze = true;
     enableTransition();
     var sizes = size(img);
 
     applyTranslateScale(wrap, sizes.x, sizes.y, 1);
     applyOpacity(background, 1);
-    showHideComplete(function () { return blocked = !!disableTransition(); });
+    showHideComplete(function () { return freeze = !!disableTransition(); });
   }
 
   function hide (img) {
-    if (blocked) { return }
-    blocked = true;
+    if (freeze) { return }
+    freeze = true;
     enableTransition();
     var rect = getRect(getCacheItem(img).elm);
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width);
     applyOpacity(background, 0);
-    showHideComplete(function () { return blocked = !(gallery.style.display = 'none'); });
+    showHideComplete(function () { return freeze = !(gallery.style.display = 'none'); });
   }
 
-  function onTouchStart () {}
-  function onTouchMove () {}
-  function onTouchEnd () {}
+  function onscroll (currentPoint, lastPoint, startPoint, target) {
+    var yy = currentPoint.y - startPoint.y;
+    applyTranslateScale(wrap, x, y + yy, 1);
+    var opacity = 1 - Math.abs(yy * 2 / doc_h$1());
+    applyOpacity(background, opacity > 0 ? opacity : 0);
+  }
+
+  function onscrollend (currentPoint, lastPoint, startPoint, target) {
+    var yy = Math.abs(currentPoint.y - startPoint.y);
+
+    if (yy / doc_h$1() > 1/7) { hide(target); }
+    else {
+      enableTransition();
+      applyTranslateScale(wrap, x, y, 1);
+      applyOpacity(background, 1);
+      showHideComplete(function () { return disableTransition(); });
+    }
+  }
 }
 
 export default gallery;

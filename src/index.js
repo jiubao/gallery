@@ -2,6 +2,7 @@ import {raf, caf} from '@jiubao/raf'
 import { on, off, isFunction, addClass, removeClass } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css';
+import gestureFactory from './gesture.js'
 
 // console.log('the best gallery is coming...')
 
@@ -27,13 +28,15 @@ function gallery (options) {
     ...options
   }
 
+  // var gesture = gestureFactory()
+
   var {selector, dataset} = opts
   var cache = []
   // the container
   var div = document.createElement('div')
   document.body.appendChild(div)
 
-  var gallery, wrap, background, blocked = false
+  var gallery, wrap, background, freeze = false
   // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
   var offStach = []
   var offs = fn => offStach.push(fn)
@@ -64,10 +67,10 @@ function gallery (options) {
     var item = getCacheItem(img)
     var docWidth = doc_w(), docHeight = doc_h()
     var thin = (docWidth / docHeight) > item.r
-    var w = thin ? docHeight * item.r : docWidth
-    var h = thin ? docHeight : docWidth / item.r
-    var x = thin ? (docWidth - w) / 2 : 0
-    var y = thin ? 0 : (docHeight - h) / 2
+    w = thin ? docHeight * item.r : docWidth
+    h = thin ? docHeight : docWidth / item.r
+    x = thin ? (docWidth - w) / 2 : 0
+    y = thin ? 0 : (docHeight - h) / 2
     return {w, h, x, y}
   }
 
@@ -86,6 +89,8 @@ function gallery (options) {
    */
   // var on = () => {}
   // var off = () => {}
+
+  var x, y, w, h
 
   var gallery = {
     // on, off
@@ -109,10 +114,12 @@ function gallery (options) {
     disableTransition()
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w)
 
+    var gesture = opts.gesture = window.ges = gestureFactory(wrap)
+
     offs(on(wrap, 'click', evt => hide(evt.target)))
-    offs(on(wrap, 'touchstart', onTouchStart))
-    offs(on(wrap, 'touchmove', onTouchMove))
-    offs(on(wrap, 'touchend', onTouchEnd))
+
+    offs(gesture.on('scroll', onscroll))
+    offs(gesture.on('scrollend', onscrollend))
 
     gallery.style.display = 'block'
     raf(() => {
@@ -121,29 +128,44 @@ function gallery (options) {
   }
 
   function show (img) {
-    if (blocked) return
-    blocked = true
+    if (freeze) return
+    freeze = true
     enableTransition()
     var sizes = size(img)
 
     applyTranslateScale(wrap, sizes.x, sizes.y, 1)
     applyOpacity(background, 1)
-    showHideComplete(() => blocked = !!disableTransition())
+    showHideComplete(() => freeze = !!disableTransition())
   }
 
   function hide (img) {
-    if (blocked) return
-    blocked = true
+    if (freeze) return
+    freeze = true
     enableTransition()
     var rect = getRect(getCacheItem(img).elm)
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width)
     applyOpacity(background, 0)
-    showHideComplete(() => blocked = !(gallery.style.display = 'none'))
+    showHideComplete(() => freeze = !(gallery.style.display = 'none'))
   }
 
-  function onTouchStart () {}
-  function onTouchMove () {}
-  function onTouchEnd () {}
+  function onscroll (currentPoint, lastPoint, startPoint, target) {
+    var yy = currentPoint.y - startPoint.y
+    applyTranslateScale(wrap, x, y + yy, 1)
+    var opacity = 1 - Math.abs(yy * 2 / doc_h())
+    applyOpacity(background, opacity > 0 ? opacity : 0)
+  }
+
+  function onscrollend (currentPoint, lastPoint, startPoint, target) {
+    var yy = Math.abs(currentPoint.y - startPoint.y)
+
+    if (yy / doc_h() > 1/7) hide(target)
+    else {
+      enableTransition()
+      applyTranslateScale(wrap, x, y, 1)
+      applyOpacity(background, 1)
+      showHideComplete(() => disableTransition())
+    }
+  }
 }
 
 export default gallery
