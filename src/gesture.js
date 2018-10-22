@@ -46,6 +46,13 @@ function gesture (elm) {
 
     lastPoint = currentPoint
     currentPoint = touch2point(evt.touches[0])
+
+    var xx = currentPoint.x - startPoint.x
+    var yy = currentPoint.y - startPoint.y
+
+    if (phase === 1) {
+      phase = Math.abs(xx) >= Math.abs(yy) ? 2 : 4
+    }
   }
 
   const onend = evt => {
@@ -70,16 +77,7 @@ function gesture (elm) {
   }
 
   function render () {
-    var xx = currentPoint.x - startPoint.x
-    var yy = currentPoint.y - startPoint.y
-
-    // if (phase === 1) {
-      phase = Math.abs(xx) >= Math.abs(yy) ? 2 : 4
-    // }
-
-    if (phase === 2) {
-    }
-    else if (phase === 4) {
+    if (phase === 4) {
       trigger('scroll', currentPoint, lastPoint, startPoint, target)
     }
   }
