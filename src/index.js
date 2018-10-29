@@ -148,15 +148,15 @@ function gallery (options) {
     showHideComplete(() => freeze = !(gallery.style.display = 'none'))
   }
 
-  function onscroll (currentPoint, lastPoint, startPoint, target) {
-    var yy = currentPoint.y - startPoint.y
+  function onscroll (points, target) {
+    var yy = points.current[0].y - points.start[0].y
     applyTranslateScale(wrap, x, y + yy, 1)
     var opacity = 1 - Math.abs(yy * 2 / doc_h())
     applyOpacity(background, opacity > 0 ? opacity : 0)
   }
 
-  function onscrollend (currentPoint, lastPoint, startPoint, target) {
-    var yy = Math.abs(currentPoint.y - startPoint.y)
+  function onscrollend (points, target) {
+    var yy = Math.abs(points.current[0].y - points.start[0].y)
 
     if (yy / doc_h() > 1/7) hide(target)
     else {

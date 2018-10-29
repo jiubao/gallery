@@ -24,6 +24,8 @@
   };
 
   var off = function (element, evt, handler) { return element.removeEventListener(evt, handler, false); };
+  var isString = function (value) { return typeof value === 'string'; };
+  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
 
   var html = function (literalSections) {
   	var subsets = [], len = arguments.length - 1;
@@ -95,13 +97,29 @@
       return handlers[evt].forEach(function (fn) { return fn.apply(void 0, args); });
     };
 
-    var startPoint = {}, lastPoint = {}, currentPoint = {}, target = {};
+    var target = {};
+
+    var points = {
+      start: [],
+      last: [],
+      current: []
+    };
 
     var loop = function () { if (ismoving) { raf(loop); render(); }};
 
+    var setTouchPoints = function (evt, item) {
+      // if (!evt.touches || !evt.touches.length) return
+      if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+      if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
+      if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
+    };
+
     var onstart = function (evt) {
       // if (freeze) return
-      startPoint = lastPoint = currentPoint = touch2point(evt.touches[0]);
+      setTouchPoints(evt, ['start', 'last', 'current']);
+      // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
+      // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
+
       phase = 1;
       ismoving = true;
       target = evt.target;
@@ -111,13 +129,18 @@
     var onmove = function (evt) {
       // if (freeze) return
 
-      lastPoint = currentPoint;
-      currentPoint = touch2point(evt.touches[0]);
+      points.last = points.current;
+      setTouchPoints(evt, 'current');
+
+      if (phase === 1) {
+        phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4;
+      }
     };
 
     var onend = function (evt) {
       // if (freeze) return
-      trigger('scrollend', currentPoint, lastPoint, startPoint, target);
+      phase === 4 && trigger('scrollend', points, target);
+      phase = 0;
       ismoving = false;
     };
 
@@ -137,17 +160,7 @@
     }
 
     function render () {
-      var xx = currentPoint.x - startPoint.x;
-      var yy = currentPoint.y - startPoint.y;
-
-      // if (phase === 1) {
-        phase = Math.abs(xx) >= Math.abs(yy) ? 2 : 4;
-      // }
-
-      if (phase === 2) ;
-      else if (phase === 4) {
-        trigger('scroll', currentPoint, lastPoint, startPoint, target);
-      }
+      phase === 4 && trigger('scroll', points, target);
     }
   }
 
@@ -294,15 +307,15 @@
       showHideComplete(function () { return freeze = !(gallery.style.display = 'none'); });
     }
 
-    function onscroll (currentPoint, lastPoint, startPoint, target) {
-      var yy = currentPoint.y - startPoint.y;
+    function onscroll (points, target) {
+      var yy = points.current[0].y - points.start[0].y;
       applyTranslateScale(wrap, x, y + yy, 1);
       var opacity = 1 - Math.abs(yy * 2 / doc_h$1());
       applyOpacity(background, opacity > 0 ? opacity : 0);
     }
 
-    function onscrollend (currentPoint, lastPoint, startPoint, target) {
-      var yy = Math.abs(currentPoint.y - startPoint.y);
+    function onscrollend (points, target) {
+      var yy = Math.abs(points.current[0].y - points.start[0].y);
 
       if (yy / doc_h$1() > 1/7) { hide(target); }
       else {

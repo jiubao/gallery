@@ -6,6 +6,8 @@ export const on = (element, evt, handler) => {
 export const off = (element, evt, handler) => element.removeEventListener(evt, handler, false)
 
 export const isFunction = value => typeof value === 'function'
+export const isString = value => typeof value === 'string'
+export const isArray = arr => Array.isArray(arr) || arr instanceof Array
 
 export const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])
 

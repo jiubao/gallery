@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass } from './utils'
+import { on, off, isString, isArray, addClass, removeClass } from './utils'
 
 const html = document.documentElement
 const doc_h = () => html.clientHeight
@@ -28,13 +28,29 @@ function gesture (elm) {
   }
   const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
 
-  var point0 = {}, point1 = {}, startPoint = {}, lastPoint = {}, currentPoint = {}, target = {}
+  var target = {}
+
+  var points = {
+    start: [],
+    last: [],
+    current: []
+  }
 
   const loop = () => { if (ismoving) { raf(loop); render() }}
 
+  const setTouchPoints = (evt, item) => {
+    // if (!evt.touches || !evt.touches.length) return
+    if (isArray(item)) return item.forEach(i => setTouchPoints(evt, i))
+    if (isString(item)) points[item][0] = touch2point(evt.touches[0])
+    if (evt.touches.length > 1) points[item][1] = touch2point(evt.touches[1])
+  }
+
   const onstart = evt => {
     // if (freeze) return
-    startPoint = lastPoint = currentPoint = touch2point(evt.touches[0])
+    setTouchPoints(evt, ['start', 'last', 'current'])
+    // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
+    // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
+
     phase = 1
     ismoving = true
     target = evt.target
@@ -44,20 +60,18 @@ function gesture (elm) {
   const onmove = evt => {
     // if (freeze) return
 
-    lastPoint = currentPoint
-    currentPoint = touch2point(evt.touches[0])
-
-    var xx = currentPoint.x - startPoint.x
-    var yy = currentPoint.y - startPoint.y
+    points.last = points.current
+    setTouchPoints(evt, 'current')
 
     if (phase === 1) {
-      phase = Math.abs(xx) >= Math.abs(yy) ? 2 : 4
+      phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4
     }
   }
 
   const onend = evt => {
     // if (freeze) return
-    trigger('scrollend', currentPoint, lastPoint, startPoint, target)
+    phase === 4 && trigger('scrollend', points, target)
+    phase = 0
     ismoving = false
   }
 
@@ -77,9 +91,7 @@ function gesture (elm) {
   }
 
   function render () {
-    if (phase === 4) {
-      trigger('scroll', currentPoint, lastPoint, startPoint, target)
-    }
+    phase === 4 && trigger('scroll', points, target)
   }
 }
 
