@@ -77,6 +77,7 @@
      * 0000 0001: start
      * 0000 0010: swipe
      * 0000 0100: vertical scrolling
+     * 0000 1000: pinch (two fingers)
      */
     var phase = 0;
     var ismoving = false;
@@ -88,7 +89,10 @@
       'zoom': [],
       'double': [],
       'pan': [],
-      'tap': []
+      'tap': [],
+      'pinch': [],
+      'pinchstart': [],
+      'pinchend': []
     };
     var trigger = function (evt) {
       var args = [], len = arguments.length - 1;
@@ -120,12 +124,16 @@
       // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
       // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
 
-      phase = 1;
+      phase = evt.touches.length > 1 ? 8 : 1;
       ismoving = true;
       target = evt.target;
+
+      phase === 8 && trigger('pinchstart', points, target);
       loop();
     };
 
+    /// TODO: check pinch every time, if one point, switch behavior
+    /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
     var onmove = function (evt) {
       // if (freeze) return
 
@@ -135,11 +143,14 @@
       if (phase === 1) {
         phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4;
       }
+
+      if (evt.touches.length > 1) { phase = 8; }
     };
 
     var onend = function (evt) {
       // if (freeze) return
       phase === 4 && trigger('scrollend', points, target);
+      phase === 8 && trigger('pinchend', points, target);
       phase = 0;
       ismoving = false;
     };
@@ -161,6 +172,8 @@
 
     function render () {
       phase === 4 && trigger('scroll', points, target);
+
+      if (phase === 8) { trigger('pinch', points, target); }
     }
   }
 
@@ -176,6 +189,11 @@
   var showHideAnimationDuration = 333;
   var showHideComplete = function (fn) { return setTimeout(fn, showHideAnimationDuration + 20); };
   var getRect = function (elm) { return elm.getBoundingClientRect(); };
+
+  var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
+  var square = function (x) { return x * x; };
+  var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
+  var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
 
   var defaultOptions = {
     selector: 'data-gallery-item',
@@ -251,6 +269,8 @@
 
     var x, y, w, h;
 
+    var pinch = {x: 0, y: 0, z: 1};
+
     var gallery = {
       // on, off
       destroy: function () {
@@ -279,6 +299,9 @@
 
       offs(gesture$$1.on('scroll', onscroll));
       offs(gesture$$1.on('scrollend', onscrollend));
+      // offs(gesture.on('startpinch', onstartpinch))
+      offs(gesture$$1.on('pinch', onpinch));
+      offs(gesture$$1.on('pinchstart', onpinchstart));
 
       gallery.style.display = 'block';
       raf(function () {
@@ -324,6 +347,30 @@
         applyOpacity(background, 1);
         showHideComplete(function () { return disableTransition(); });
       }
+    }
+
+    // function _onstart (points, target) {}
+    //
+    // function onstartpinch (points, target) {
+    //   _onstart(points, target)
+    // }
+
+    function onpinch (points, target) {
+      var zoomLevel = calculateZoomLevel(points); //* pinch.z
+      var center1 = getCenterPoint(points.start[0], points.start[1]);
+      var center2 = getCenterPoint(points.current[0], points.current[1]);
+
+      var dx = center2.x - (center1.x - pinch.x) * zoomLevel;
+      var dy = center2.y - (center1.y - pinch.y) * zoomLevel;
+      applyTranslateScale(wrap, dx, dy, zoomLevel * pinch.z);
+    }
+
+    function onpinchstart(points, target) {
+      var rect = getRect(target);
+      pinch.x = rect.x;
+      pinch.y = rect.y;
+      pinch.z = rect.width / w;
+      // window.g(JSON.stringify(pinch))
     }
   }
 

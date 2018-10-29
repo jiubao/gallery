@@ -12,6 +12,7 @@ function gesture (elm) {
    * 0000 0001: start
    * 0000 0010: swipe
    * 0000 0100: vertical scrolling
+   * 0000 1000: pinch (two fingers)
    */
   var phase = 0
   var freeze = false
@@ -24,7 +25,10 @@ function gesture (elm) {
     'zoom': [],
     'double': [],
     'pan': [],
-    'tap': []
+    'tap': [],
+    'pinch': [],
+    'pinchstart': [],
+    'pinchend': []
   }
   const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
 
@@ -51,12 +55,16 @@ function gesture (elm) {
     // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
     // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
 
-    phase = 1
+    phase = evt.touches.length > 1 ? 8 : 1
     ismoving = true
     target = evt.target
+
+    phase === 8 && trigger('pinchstart', points, target)
     loop()
   }
 
+  /// TODO: check pinch every time, if one point, switch behavior
+  /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   const onmove = evt => {
     // if (freeze) return
 
@@ -66,11 +74,14 @@ function gesture (elm) {
     if (phase === 1) {
       phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4
     }
+
+    if (evt.touches.length > 1) phase = 8
   }
 
   const onend = evt => {
     // if (freeze) return
     phase === 4 && trigger('scrollend', points, target)
+    phase === 8 && trigger('pinchend', points, target)
     phase = 0
     ismoving = false
   }
@@ -92,6 +103,8 @@ function gesture (elm) {
 
   function render () {
     phase === 4 && trigger('scroll', points, target)
+
+    if (phase === 8) trigger('pinch', points, target)
   }
 }
 
