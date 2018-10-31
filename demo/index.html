@@ -23,7 +23,7 @@
     <div class="" id="sizes">sssss </div>
     <script type="text/javascript">
     var isObject = o => o !== null && typeof o === 'object';
-    var mode = 'dev'
+    var mode = 'prod'
     var g = (...args) => {
       if (mode === 'prod') return
       document.getElementById('sizes').innerHTML = args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'

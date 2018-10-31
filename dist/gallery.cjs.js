@@ -99,17 +99,6 @@ function enumFactory () {
   }
 
   function add (name) {
-    // args.forEach(name => {
-    //   bit[name] = next
-    //   next = next << 1
-    // })
-
-    // if (Array.isArray(name)) name.forEach(n => add(n))
-    // else {
-    //   bit[name] = next
-    //   next = next << 1
-    // }
-
     bit[name] = next;
     next = next << 1;
 
@@ -355,8 +344,6 @@ function gallery (options) {
 
   var x, y, w, h;
 
-  var pinch = {x: 0, y: 0, z: 1};
-  // var shape = {x: 0, y: 0, z: 1}
   var shape = {init: shapeit(), start: shapeit(), last: shapeit(), current: shapeit()};
 
   var zoom = '';
@@ -389,9 +376,8 @@ function gallery (options) {
 
     offs(gesture$$1.on('scroll', onscroll));
     offs(gesture$$1.on('scrollend', onscrollend));
-    // offs(gesture.on('startpinch', onstartpinch))
     offs(gesture$$1.on('pinch', onpinch));
-    offs(gesture$$1.on('pinchstart', onpinchstart));
+    // offs(gesture.on('pinchstart', onpinchstart))
     offs(gesture$$1.on('pinchend', onpinchend));
     offs(gesture$$1.on('pan', onpan));
     offs(gesture$$1.on('panstart', onpanstart));
@@ -455,30 +441,26 @@ function gallery (options) {
 
   function onpinch (points, target) {
     var zoomLevel = calculateZoomLevel(points); //* pinch.z
-    zoom = zoomLevel > 1 ? 'in' : (zoomLevel < 1 ? 'out' : '');
     var center1 = getCenterPoint(points.start[0], points.start[1]);
     var center2 = getCenterPoint(points.current[0], points.current[1]);
 
-    var dx = center2.x - (center1.x - pinch.x) * zoomLevel;
-    var dy = center2.y - (center1.y - pinch.y) * zoomLevel;
-    applyTranslateScale(wrap, dx, dy, zoomLevel * pinch.z);
+    var dx = center2.x - (center1.x - shape.start.x) * zoomLevel;
+    var dy = center2.y - (center1.y - shape.start.y) * zoomLevel;
+
+    var _zoom = zoomLevel * shape.start.z;
+    zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+    applyTranslateScale(wrap, dx, dy, _zoom);
   }
 
-  function onpinchstart(points, target) {
-    var rect = getRect(target);
-    pinch.x = rect.x;
-    pinch.y = rect.y;
-    pinch.z = rect.width / w;
-  }
+  // function onpinchstart(points, target) {
+  //   var rect = getRect(target)
+  //   pinch.x = rect.x
+  //   pinch.y = rect.y
+  //   pinch.z = rect.width / w
+  // }
 
   function onpinchend(points, target) {
-    if (zoom === 'out') {
-      try {
-        hide(target);
-      } catch (e) {
-        ga('pinchend.e: ', e);
-      }
-    }
+    zoom === 'out' && hide(target);
   }
 
   function onstart(points, target) {

@@ -33,17 +33,6 @@ function enumFactory () {
   }
 
   function add (name) {
-    // args.forEach(name => {
-    //   bit[name] = next
-    //   next = next << 1
-    // })
-
-    // if (Array.isArray(name)) name.forEach(n => add(n))
-    // else {
-    //   bit[name] = next
-    //   next = next << 1
-    // }
-
     bit[name] = next
     next = next << 1
 
