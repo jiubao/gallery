@@ -76,6 +76,7 @@ function gallery (options) {
     h = thin ? docHeight : docWidth / item.r
     x = thin ? (docWidth - w) / 2 : 0
     y = thin ? 0 : (docHeight - h) / 2
+    shape.init = {x, y, w, h, z: 1}
     return {w, h, x, y}
   }
 
@@ -95,9 +96,16 @@ function gallery (options) {
   // var on = () => {}
   // var off = () => {}
 
+  var shapeit = () => ({x: 0, y: 0, z: 1, w: 0, h: 0})
+
   var x, y, w, h
 
   var pinch = {x: 0, y: 0, z: 1}
+  var pan = {x: 0, y: 0}
+  // var shape = {x: 0, y: 0, z: 1}
+  var shape = {init: shapeit(), start: shapeit(), last: shapeit(), current: shapeit()}
+
+  var zoom = ''
 
   var gallery = {
     // on, off
@@ -130,6 +138,10 @@ function gallery (options) {
     // offs(gesture.on('startpinch', onstartpinch))
     offs(gesture.on('pinch', onpinch))
     offs(gesture.on('pinchstart', onpinchstart))
+    offs(gesture.on('pinchend', onpinchend))
+    offs(gesture.on('pan', onpan))
+    offs(gesture.on('panstart', onpanstart))
+    offs(gesture.on('start', onstart))
 
     gallery.style.display = 'block'
     raf(() => {
@@ -153,12 +165,15 @@ function gallery (options) {
     freeze = true
     enableTransition()
     var rect = getRect(getCacheItem(img).elm)
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width)
+    ga('hide.rect', rect)
+
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
     applyOpacity(background, 0)
     showHideComplete(() => freeze = !(gallery.style.display = 'none'))
   }
 
   function onscroll (points, target) {
+    if (zoom !== '') return
     var yy = points.current[0].y - points.start[0].y
     applyTranslateScale(wrap, x, y + yy, 1)
     var opacity = 1 - Math.abs(yy * 2 / doc_h())
@@ -166,6 +181,7 @@ function gallery (options) {
   }
 
   function onscrollend (points, target) {
+    if (zoom !== '') return
     var yy = Math.abs(points.current[0].y - points.start[0].y)
 
     if (yy / doc_h() > 1/7) hide(target)
@@ -185,6 +201,7 @@ function gallery (options) {
 
   function onpinch (points, target) {
     var zoomLevel = calculateZoomLevel(points) //* pinch.z
+    zoom = zoomLevel > 1 ? 'in' : (zoomLevel < 1 ? 'out' : '')
     var center1 = getCenterPoint(points.start[0], points.start[1])
     var center2 = getCenterPoint(points.current[0], points.current[1])
 
@@ -198,7 +215,44 @@ function gallery (options) {
     pinch.x = rect.x
     pinch.y = rect.y
     pinch.z = rect.width / w
-    // window.g(JSON.stringify(pinch))
+  }
+
+  function onpinchend(points, target) {
+    if (zoom === 'out') {
+      try {
+        hide(target)
+      } catch (e) {
+        ga('pinchend.e: ', e)
+      }
+    }
+  }
+
+  function onstart(points, target) {
+    // g(target)
+    var rect = getRect(target)
+    shape.start.x = rect.x
+    shape.start.y = rect.y
+    shape.start.w = rect.width
+    shape.start.h = rect.height
+    shape.start.z = rect.width / w
+  }
+
+  function onpanstart(points, target, phase) {
+    // ga('panstart: ', shape.start)
+  }
+
+  function onpan(points, target, phase) {
+    // ga(zoom)
+    if (zoom === 'in') {
+      // ga('zzz')
+      // var zoomLevel = calculateZoomLevel(points) //* pinch.z
+      // ga(zoomLevel)
+      var dx = points.current[0].x - points.start[0].x + shape.start.x
+      var dy = points.current[0].y - points.start[0].y + shape.start.y
+      // ga({dx, dy})
+      // ga('pan: ', {dx, dy, z: shape.start.z})
+      applyTranslateScale(wrap, dx, dy, shape.start.z)
+    }
   }
 }
 

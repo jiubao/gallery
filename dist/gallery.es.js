@@ -62,6 +62,68 @@ var main = function (src, width, height, index) { return html(templateObject, cl
 
 var tpls = {main: main};
 
+function enumFactory () {
+  var value = 0, next = 1;
+
+  var bit = {
+    'idle': 0,
+    is: arraify(is),
+    or: arraify(or), rm: arraify(rm), set: set, add: arraify(add), get: get
+  };
+
+  return bit
+
+  function get (v) {
+    return typeof v === 'number' ? v : bit[v]
+  }
+
+  function is (v) {
+    return value & get(v)
+  }
+
+  function or (v) {
+    value = value | get(v);
+    return bit
+  }
+
+  function rm (v) {
+    value = value & ~get(v);
+    return bit
+  }
+
+  function set (v) {
+    value = get(v);
+    return bit
+  }
+
+  function add (name) {
+    // args.forEach(name => {
+    //   bit[name] = next
+    //   next = next << 1
+    // })
+
+    // if (Array.isArray(name)) name.forEach(n => add(n))
+    // else {
+    //   bit[name] = next
+    //   next = next << 1
+    // }
+
+    bit[name] = next;
+    next = next << 1;
+
+    return bit
+  }
+}
+
+function arraify (fn) {
+  return function () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+
+    return args.reduce(function (result, current) { return fn(current); }, fn(args[0]))
+  }
+}
+
 var html$1 = document.documentElement;
 var touch2point = function (touch) { return ({x: touch.pageX, y: touch.pageY}); };
 
@@ -72,8 +134,10 @@ function gesture (elm) {
    * 0000 0010: swipe
    * 0000 0100: vertical scrolling
    * 0000 1000: pinch (two fingers)
+   * 0001 0000: pan (one fingers move)
    */
-  var phase = 0;
+  // var phase = 0
+  var phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
   var ismoving = false;
 
   var handlers = {
@@ -82,26 +146,29 @@ function gesture (elm) {
     'scrollend': [],
     'zoom': [],
     'double': [],
-    'pan': [],
     'tap': [],
+
+    'start': [],
+    'move': [],
+    'end': [],
+
+    'pan': [],
+    'panstart': [],
+    'panend': [],
+
     'pinch': [],
     'pinchstart': [],
     'pinchend': []
   };
-  var trigger = function (evt) {
-    var args = [], len = arguments.length - 1;
-    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
-
-    return handlers[evt].forEach(function (fn) { return fn.apply(void 0, args); });
-  };
 
   var target = {};
-
   var points = {
     start: [],
     last: [],
     current: []
   };
+  // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
+  var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase); }); };
 
   var loop = function () { if (ismoving) { raf(loop); render(); }};
 
@@ -110,6 +177,7 @@ function gesture (elm) {
     if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
     if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
     if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
+    else { points[item].splice(1, 10); }
   };
 
   var onstart = function (evt) {
@@ -118,11 +186,18 @@ function gesture (elm) {
     // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
     // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
 
-    phase = evt.touches.length > 1 ? 8 : 1;
-    ismoving = true;
     target = evt.target;
 
-    phase === 8 && trigger('pinchstart', points, target);
+    // phase = evt.touches.length > 1 ? 8 : 1
+    phase.set('start');
+    if (evt.touches.length > 1) { phase.or('pinch'); }
+
+    ismoving = true;
+
+    trigger('start');
+    if (phase.is('pinch')) { trigger('pinchstart'); }
+    else { trigger('panstart'); } // one touch point trigger pan
+
     loop();
   };
 
@@ -134,19 +209,27 @@ function gesture (elm) {
     points.last = points.current;
     setTouchPoints(evt, 'current');
 
-    if (phase === 1) {
-      phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4;
+    if (phase.is('start') && evt.touches.length === 1) {
+      Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll');
+      phase.or('pan');
     }
 
-    if (evt.touches.length > 1) { phase = 8; }
+    phase.rm('start').or('move');
+    //
+    // if (evt.touches.length === 1) phase = 16
+
+    if (evt.touches.length > 1) { phase.or('pinch'); }
   };
 
   var onend = function (evt) {
     // if (freeze) return
-    phase === 4 && trigger('scrollend', points, target);
-    phase === 8 && trigger('pinchend', points, target);
-    phase = 0;
+
+    phase.rm('start', 'move').or('end');
+    phase.is('scroll') && trigger('scrollend');
+    phase.is('pinch') && trigger('pinchend');
     ismoving = false;
+    trigger('end');
+    phase.set(0);
   };
 
   var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
@@ -165,9 +248,13 @@ function gesture (elm) {
   }
 
   function render () {
-    phase === 4 && trigger('scroll', points, target);
+    trigger('move');
 
-    if (phase === 8) { trigger('pinch', points, target); }
+    // ga(phase)
+
+    phase.is('scroll') && trigger('scroll');
+    phase.is('pinch') && trigger('pinch');
+    phase.is('pan') && trigger('pan');
   }
 }
 
@@ -242,6 +329,7 @@ function gallery (options) {
     h = thin ? docHeight : docWidth / item.r;
     x = thin ? (docWidth - w) / 2 : 0;
     y = thin ? 0 : (docHeight - h) / 2;
+    shape.init = {x: x, y: y, w: w, h: h, z: 1};
     return {w: w, h: h, x: x, y: y}
   };
 
@@ -261,9 +349,15 @@ function gallery (options) {
   // var on = () => {}
   // var off = () => {}
 
+  var shapeit = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
+
   var x, y, w, h;
 
   var pinch = {x: 0, y: 0, z: 1};
+  // var shape = {x: 0, y: 0, z: 1}
+  var shape = {init: shapeit(), start: shapeit(), last: shapeit(), current: shapeit()};
+
+  var zoom = '';
 
   var gallery = {
     // on, off
@@ -296,6 +390,10 @@ function gallery (options) {
     // offs(gesture.on('startpinch', onstartpinch))
     offs(gesture$$1.on('pinch', onpinch));
     offs(gesture$$1.on('pinchstart', onpinchstart));
+    offs(gesture$$1.on('pinchend', onpinchend));
+    offs(gesture$$1.on('pan', onpan));
+    offs(gesture$$1.on('panstart', onpanstart));
+    offs(gesture$$1.on('start', onstart));
 
     gallery.style.display = 'block';
     raf(function () {
@@ -319,12 +417,15 @@ function gallery (options) {
     freeze = true;
     enableTransition();
     var rect = getRect(getCacheItem(img).elm);
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / getRect(img).width);
+    ga('hide.rect', rect);
+
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
     applyOpacity(background, 0);
     showHideComplete(function () { return freeze = !(gallery.style.display = 'none'); });
   }
 
   function onscroll (points, target) {
+    if (zoom !== '') { return }
     var yy = points.current[0].y - points.start[0].y;
     applyTranslateScale(wrap, x, y + yy, 1);
     var opacity = 1 - Math.abs(yy * 2 / doc_h$1());
@@ -332,6 +433,7 @@ function gallery (options) {
   }
 
   function onscrollend (points, target) {
+    if (zoom !== '') { return }
     var yy = Math.abs(points.current[0].y - points.start[0].y);
 
     if (yy / doc_h$1() > 1/7) { hide(target); }
@@ -351,6 +453,7 @@ function gallery (options) {
 
   function onpinch (points, target) {
     var zoomLevel = calculateZoomLevel(points); //* pinch.z
+    zoom = zoomLevel > 1 ? 'in' : (zoomLevel < 1 ? 'out' : '');
     var center1 = getCenterPoint(points.start[0], points.start[1]);
     var center2 = getCenterPoint(points.current[0], points.current[1]);
 
@@ -364,7 +467,44 @@ function gallery (options) {
     pinch.x = rect.x;
     pinch.y = rect.y;
     pinch.z = rect.width / w;
-    // window.g(JSON.stringify(pinch))
+  }
+
+  function onpinchend(points, target) {
+    if (zoom === 'out') {
+      try {
+        hide(target);
+      } catch (e) {
+        ga('pinchend.e: ', e);
+      }
+    }
+  }
+
+  function onstart(points, target) {
+    // g(target)
+    var rect = getRect(target);
+    shape.start.x = rect.x;
+    shape.start.y = rect.y;
+    shape.start.w = rect.width;
+    shape.start.h = rect.height;
+    shape.start.z = rect.width / w;
+  }
+
+  function onpanstart(points, target, phase) {
+    // ga('panstart: ', shape.start)
+  }
+
+  function onpan(points, target, phase) {
+    // ga(zoom)
+    if (zoom === 'in') {
+      // ga('zzz')
+      // var zoomLevel = calculateZoomLevel(points) //* pinch.z
+      // ga(zoomLevel)
+      var dx = points.current[0].x - points.start[0].x + shape.start.x;
+      var dy = points.current[0].y - points.start[0].y + shape.start.y;
+      // ga({dx, dy})
+      // ga('pan: ', {dx, dy, z: shape.start.z})
+      applyTranslateScale(wrap, dx, dy, shape.start.z);
+    }
   }
 }
 
@@ -381,7 +521,7 @@ export default gallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [5,0,7,0,6,0,8,0,32,10,1,5,0,7,0,6,0,8,0,27,10,1,5,0,7,0,6,0,8,0,21,10,1,5,0,7,0,6,0,8,0,56,13,22,3,18,2,24,3,18,2,29,3,28,11,2,54,3,28,11,2,48,3,53,2,12,4,5,0,7,0,6,0,8,0,32,13,58,3,23,2,15,3,57,2,47,9,60,3,23,2,42,9,51,3,61,2,49,3,23,2,12,4,5,0,7,0,6,0,8,0,27,13,15,3,17,2,59,3,63,62,2,25,3,30,1,36,31,1,34,9,35,20,38,10,1,18,10,1,39,10,1,37,19,2,30,3,18,2,12,4,5,0,7,0,6,0,8,0,21,13,15,3,17,2,16,9,50,3,24,1,22,2,25,3,16,1,36,31,1,34,9,35,20,38,10,1,18,10,1,39,10,1,37,19,2,12,4,5,0,7,0,6,0,8,0,21,1,52,13,29,3,28,11,2,12,4,5,0,7,0,6,0,8,0,26,13,15,3,17,2,24,3,14,11,2,22,3,14,11,2,16,3,46,20,9,14,11,10,1,9,14,11,19,2,12,40,41,1,5,26,9,55,1,13,4,1,1,15,3,1,17,2,4,1,1,24,3,1,14,11,2,4,1,1,16,3,1,45,20,9,14,11,19,2,4,12,4,4,5,26,9,43,1,13,4,1,1,15,3,1,17,2,4,1,1,22,3,1,14,11,2,4,1,1,16,3,1,44,20,9,14,11,19,2,4,12,1,41,40,4,5,0,7,0,6,0,8,0,33,1,5,0,7,0,6,0,8,0,27,10,1,5,0,7,0,6,0,8,0,33,1,5,0,7,0,6,0,8,0,21,13,25,3,23,2,12],
-    ["_"," ",";",":","\n",".","style","src","css","-",",","%","}","{","50","position","transform","absolute","0",")","(","wrap","top","none","left","transition","center","bg","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","touch","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","action","9999","000","#"],
+    [6,0,8,0,7,0,9,0,36,10,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,22,10,1,6,0,8,0,7,0,9,0,59,13,23,3,19,2,24,3,19,2,33,3,32,11,2,57,3,32,11,2,51,3,56,2,12,5,6,0,8,0,7,0,9,0,36,13,61,3,14,2,16,3,60,2,46,4,54,3,63,2,52,3,14,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,30,13,16,3,18,2,62,3,65,64,2,26,3,34,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,34,3,19,2,12,5,6,0,8,0,7,0,9,0,22,13,16,3,18,2,17,4,53,3,24,1,23,2,26,3,17,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,22,1,55,13,33,3,32,11,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,29,13,16,3,18,2,24,3,15,11,2,23,3,15,11,2,17,3,50,21,4,15,11,10,1,4,15,11,20,2,12,44,45,1,6,29,4,58,1,13,5,1,1,16,3,1,18,2,5,1,1,24,3,1,15,11,2,5,1,1,17,3,1,49,21,4,15,11,20,2,5,12,5,5,6,29,4,47,1,13,5,1,1,16,3,1,18,2,5,1,1,23,3,1,15,11,2,5,1,1,17,3,1,48,21,4,15,11,20,2,5,12,1,45,44,5,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,22,13,26,3,14,2,12],
+    ["_"," ",";",":","-","\n",".","style","src","css",",","%","}","{","none","50","position","transform","absolute","0",")","(","wrap","top","left","user","transition","touch","select","center","bg","action","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));

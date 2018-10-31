@@ -17,14 +17,31 @@
       <img src="./imgs/4.jpg" data-gallery-item alt="">
       <img src="./imgs/5.jpg" data-gallery-item alt="">
     </div>
+    <div class="" id="clear">
+      clear
+    </div>
     <div class="" id="sizes">sssss </div>
     <script type="text/javascript">
-    // window.g = s => {document.getElementById('sizes').innerHTML = s}
+    var isObject = o => o !== null && typeof o === 'object';
+    var mode = 'dev'
+    var g = (...args) => {
+      if (mode === 'prod') return
+      document.getElementById('sizes').innerHTML = args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'
+    };
+    var ga = (...args) => {
+      if (mode === 'prod') return
+      var elm = document.getElementById('sizes')
+      elm.innerHTML = elm.innerHTML + args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      document.getElementById('sizes').innerHTML = ''
+    }, false)
     </script>
     <script src="../dist/gallery.umd.js"></script>
     <script type="text/javascript">
     // var items = document.querySelectorAll('img')
-    var g = gallery()
+    var gal = gallery()
     </script>
   </body>
 </html>

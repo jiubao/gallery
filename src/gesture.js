@@ -1,5 +1,6 @@
 import {raf, caf} from '@jiubao/raf'
 import { on, off, isString, isArray, addClass, removeClass } from './utils'
+import enumFactory from './enum'
 
 const html = document.documentElement
 const doc_h = () => html.clientHeight
@@ -13,8 +14,10 @@ function gesture (elm) {
    * 0000 0010: swipe
    * 0000 0100: vertical scrolling
    * 0000 1000: pinch (two fingers)
+   * 0001 0000: pan (one fingers move)
    */
-  var phase = 0
+  // var phase = 0
+  var phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan')
   var freeze = false
   var ismoving = false
 
@@ -24,21 +27,29 @@ function gesture (elm) {
     'scrollend': [],
     'zoom': [],
     'double': [],
-    'pan': [],
     'tap': [],
+
+    'start': [],
+    'move': [],
+    'end': [],
+
+    'pan': [],
+    'panstart': [],
+    'panend': [],
+
     'pinch': [],
     'pinchstart': [],
     'pinchend': []
   }
-  const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
 
   var target = {}
-
   var points = {
     start: [],
     last: [],
     current: []
   }
+  // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
+  const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase))
 
   const loop = () => { if (ismoving) { raf(loop); render() }}
 
@@ -47,6 +58,7 @@ function gesture (elm) {
     if (isArray(item)) return item.forEach(i => setTouchPoints(evt, i))
     if (isString(item)) points[item][0] = touch2point(evt.touches[0])
     if (evt.touches.length > 1) points[item][1] = touch2point(evt.touches[1])
+    else points[item].splice(1, 10)
   }
 
   const onstart = evt => {
@@ -55,11 +67,18 @@ function gesture (elm) {
     // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
     // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
 
-    phase = evt.touches.length > 1 ? 8 : 1
-    ismoving = true
     target = evt.target
 
-    phase === 8 && trigger('pinchstart', points, target)
+    // phase = evt.touches.length > 1 ? 8 : 1
+    phase.set('start')
+    if (evt.touches.length > 1) phase.or('pinch')
+
+    ismoving = true
+
+    trigger('start')
+    if (phase.is('pinch')) trigger('pinchstart')
+    else trigger('panstart') // one touch point trigger pan
+
     loop()
   }
 
@@ -71,19 +90,27 @@ function gesture (elm) {
     points.last = points.current
     setTouchPoints(evt, 'current')
 
-    if (phase === 1) {
-      phase = Math.abs(points.current[0].x - points.start[0].x) >= Math.abs(points.current[0].y - points.start[0].y) ? 2 : 4
+    if (phase.is('start') && evt.touches.length === 1) {
+      Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll')
+      phase.or('pan')
     }
 
-    if (evt.touches.length > 1) phase = 8
+    phase.rm('start').or('move')
+    //
+    // if (evt.touches.length === 1) phase = 16
+
+    if (evt.touches.length > 1) phase.or('pinch')
   }
 
   const onend = evt => {
     // if (freeze) return
-    phase === 4 && trigger('scrollend', points, target)
-    phase === 8 && trigger('pinchend', points, target)
-    phase = 0
+
+    phase.rm('start', 'move').or('end')
+    phase.is('scroll') && trigger('scrollend')
+    phase.is('pinch') && trigger('pinchend')
     ismoving = false
+    trigger('end')
+    phase.set(0)
   }
 
   const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)
@@ -102,9 +129,13 @@ function gesture (elm) {
   }
 
   function render () {
-    phase === 4 && trigger('scroll', points, target)
+    trigger('move')
 
-    if (phase === 8) trigger('pinch', points, target)
+    // ga(phase)
+
+    phase.is('scroll') && trigger('scroll')
+    phase.is('pinch') && trigger('pinch')
+    phase.is('pan') && trigger('pan')
   }
 }
 
