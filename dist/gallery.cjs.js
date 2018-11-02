@@ -65,24 +65,37 @@ var main = function (src, width, height, index) { return html(templateObject, cl
 var tpls = {main: main};
 
 function enumFactory () {
-  var value = 0, next = 1;
+  // TODO: should rm idle
+  var value = 0, next = 1, enums = {'idle': 0};
 
-  var get = function (v) { return typeof v === 'number' ? v : bit[v]; };
+  var get = function (v) { return typeof v === 'number' ? v : enums[v]; };
   var is = function (v) { return !!(value & get(v)); };
   var or = function (v) { return value = value | get(v); };
   var rm = function (v) { return value = value & ~get(v); };
-  var set = function (v) { value = get(v); return bit };
-  var add = function (name) { bit[name] = next; next = next << 1; };
+  // const set = v => { value = get(v); return bit }
+  var add = function (name) { enums[name] = next; next = next << 1; };
   var spread = function (fn, value) { return function () {
   var args = [], len = arguments.length;
   while ( len-- ) args[ len ] = arguments[ len ];
  args.forEach(function (arg) { return fn(arg); }); return bit }; };
 
   var bit = {
-    // TODO: should rm idle
-    'idle': 0,
-    or: spread(or), rm: spread(rm), add: spread(add),
-    is: is, set: set, get: get
+    v: function () { return value; },
+    or: spread(or),
+    rm: spread(rm),
+    add: spread(add),
+    is: function () {
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+
+      return args.reduce(function (result, arg) { return result && is(arg); }, is(args[0]));
+  },
+    set: function () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+ value = args.reduce(function (r, v) { return r | get(v); }, get(args[0])); return bit }
+    // get,
+    // enums
   };
 
   return bit
@@ -101,7 +114,7 @@ function gesture (elm) {
    * 0001 0000: pan (one fingers move)
    */
   // var phase = 0
-  var phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
+  var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
   var ismoving = false;
 
   var handlers = {

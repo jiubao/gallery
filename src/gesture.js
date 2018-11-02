@@ -17,7 +17,8 @@ function gesture (elm) {
    * 0001 0000: pan (one fingers move)
    */
   // var phase = 0
-  var phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan')
+  // TODO: rm window.phase
+  var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan')
   var freeze = false
   var ismoving = false
 
