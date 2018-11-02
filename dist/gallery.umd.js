@@ -188,13 +188,13 @@
       phase.set('start');
       if (evt.touches.length > 1) { phase.or('pinch'); }
 
-      ismoving = true;
+      // ismoving = true
 
       trigger('start');
       if (phase.is('pinch')) { trigger('pinchstart'); }
       else { trigger('panstart'); } // one touch point trigger pan
 
-      loop();
+      // loop()
     };
 
     /// TODO: check pinch every time, if one point, switch behavior
@@ -202,7 +202,10 @@
     var onmove = function (evt) {
       // if (freeze) return
       ga('gesture.onmove');
-      ismoving = true;
+      if (!ismoving) {
+        ismoving = true;
+        loop();
+      }
 
       points.last = points.current;
       setTouchPoints(evt, 'current');
