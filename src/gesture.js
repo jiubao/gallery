@@ -104,12 +104,12 @@ function gesture (elm) {
 
   const onend = evt => {
     // if (freeze) return
+    trigger('end')
 
     phase.rm('start', 'move').or('end')
     phase.is('scroll') && trigger('scrollend')
     phase.is('pinch') && trigger('pinchend')
     ismoving = false
-    trigger('end')
     phase.set(0)
   }
 

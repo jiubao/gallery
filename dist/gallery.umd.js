@@ -218,12 +218,12 @@
 
     var onend = function (evt) {
       // if (freeze) return
+      trigger('end');
 
       phase.rm('start', 'move').or('end');
       phase.is('scroll') && trigger('scrollend');
       phase.is('pinch') && trigger('pinchend');
       ismoving = false;
-      trigger('end');
       phase.set(0);
     };
 
@@ -280,11 +280,38 @@
     var opts = Object.assign({}, defaultOptions,
       options);
 
+    var cache = [];
+    var buildCache = function () {
+      cache.splice(0, cache.length);
+      document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
+        img.dataset.galleryIndex = index;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        cache[index] = { elm: img, w: w, h: h, r: w / h };
+      });
+    };
+    var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
+
+    var setInitShape = function (img) {
+      var item = getCacheItem(img);
+      var docWidth = doc_w$1(), docHeight = doc_h$1();
+      var thin = (docWidth / docHeight) > item.r;
+      var w = thin ? docHeight * item.r : docWidth;
+      var h = thin ? docHeight : docWidth / item.r;
+      var x = thin ? (docWidth - w) / 2 : 0;
+      var y = thin ? 0 : (docHeight - h) / 2;
+      shape.init = {x: x, y: y, w: w, h: h, z: 1};
+      return shape.init
+    };
+    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
+
+    // var x, y, w, h
+
+    var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
+
     // var gesture = gestureFactory()
 
     var selector = opts.selector;
     var dataset = opts.dataset;
-    var cache = [];
     // the container
     var div = document.createElement('div');
     document.body.appendChild(div);
@@ -298,35 +325,12 @@
     offs(on(document, 'click', function (evt) {
       var target = evt.target;
       if (target.tagName === 'IMG' && dataset in target.dataset) {
-        document.querySelectorAll(("img[" + selector + "]")).forEach(function (item, index) {
-          item.dataset.galleryIndex = index;
-          var w = item.naturalWidth, h = item.naturalHeight;
-          cache[index] = { elm: item, w: w, h: h, r: w / h };
-        });
-        var sizes = size(target);
+        buildCache();
+        var sizes = setInitShape(target);
         div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex);
         raf(function () { return init(target, sizes); });
       }
     }));
-
-    // click
-    // items.forEach(item => on(item, 'click', evt => {
-    //   show(evt.target)
-    // }))
-
-    var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
-
-    var size = function (img) {
-      var item = getCacheItem(img);
-      var docWidth = doc_w$1(), docHeight = doc_h$1();
-      var thin = (docWidth / docHeight) > item.r;
-      w = thin ? docHeight * item.r : docWidth;
-      h = thin ? docHeight : docWidth / item.r;
-      x = thin ? (docWidth - w) / 2 : 0;
-      y = thin ? 0 : (docHeight - h) / 2;
-      shape.init = {x: x, y: y, w: w, h: h, z: 1};
-      return {w: w, h: h, x: x, y: y}
-    };
 
     var enableTransition = function () { return removeClass(gallery, classes.disableTransition); };
     var disableTransition = function () { return addClass(gallery, classes.disableTransition); };
@@ -343,12 +347,6 @@
      */
     // var on = () => {}
     // var off = () => {}
-
-    var shapeit = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
-
-    var x, y, w, h;
-
-    var shape = {init: shapeit(), start: shapeit(), last: shapeit(), current: shapeit()};
 
     var zoom = '';
 
@@ -385,7 +383,9 @@
       offs(gesture$$1.on('pinchend', onpinchend));
       offs(gesture$$1.on('pan', onpan));
       offs(gesture$$1.on('panstart', onpanstart));
+
       offs(gesture$$1.on('start', onstart));
+      offs(gesture$$1.on('move', onmove));
 
       gallery.style.display = 'block';
       raf(function () {
@@ -397,9 +397,9 @@
       if (freeze) { return }
       freeze = true;
       enableTransition();
-      var sizes = size(img);
+      // var sizes = size(img)
 
-      applyTranslateScale(wrap, sizes.x, sizes.y, 1);
+      applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
       applyOpacity(background, 1);
       showHideComplete(function () { return freeze = !!disableTransition(); });
     }
@@ -419,7 +419,7 @@
     function onscroll (points, target) {
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
-      applyTranslateScale(wrap, x, y + yy, 1);
+      applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
       var opacity = 1 - Math.abs(yy * 2 / doc_h$1());
       applyOpacity(background, opacity > 0 ? opacity : 0);
     }
@@ -431,7 +431,7 @@
       if (yy / doc_h$1() > 1/7) { hide(target); }
       else {
         enableTransition();
-        applyTranslateScale(wrap, x, y, 1);
+        applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
         applyOpacity(background, 1);
         showHideComplete(function () { return disableTransition(); });
       }
@@ -454,27 +454,33 @@
       var _zoom = zoomLevel * shape.start.z;
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
       applyTranslateScale(wrap, dx, dy, _zoom);
+      if (zoom === 'out') {
+        var rect = getRect(getCacheItem(target).elm);
+        ga((shape.current.w - rect.width) / (shape.init.w - rect.width));
+        applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width));
+      }
     }
-
-    // function onpinchstart(points, target) {
-    //   var rect = getRect(target)
-    //   pinch.x = rect.x
-    //   pinch.y = rect.y
-    //   pinch.z = rect.width / w
-    // }
 
     function onpinchend(points, target) {
       zoom === 'out' && hide(target);
     }
 
     function onstart(points, target) {
-      // g(target)
       var rect = getRect(target);
-      shape.start.x = rect.x;
-      shape.start.y = rect.y;
-      shape.start.w = rect.width;
-      shape.start.h = rect.height;
-      shape.start.z = rect.width / w;
+      shape.start.x = shape.last.x = shape.current.x = rect.x;
+      shape.start.y = shape.last.y = shape.current.y = rect.y;
+      shape.start.w = shape.last.w = shape.current.w = rect.width;
+      shape.start.h = shape.last.h = shape.current.h = rect.height;
+      shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
+    }
+
+    function onmove(points, target) {
+      var rect = getRect(target);
+      shape.current.x = rect.x;
+      shape.current.y = rect.y;
+      shape.current.w = rect.width;
+      shape.current.h = rect.height;
+      shape.current.z = rect.width / shape.init.w;
     }
 
     function onpanstart(points, target, phase) {

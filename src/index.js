@@ -33,10 +33,37 @@ function gallery (options) {
     ...options
   }
 
+  var cache = []
+  var buildCache = () => {
+    cache.splice(0, cache.length)
+    document.querySelectorAll(`img[${selector}]`).forEach((img, index) => {
+      img.dataset.galleryIndex = index
+      var w = img.naturalWidth, h = img.naturalHeight
+      cache[index] = { elm: img, w, h, r: w / h }
+    })
+  }
+  const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
+
+  var setInitShape = img => {
+    var item = getCacheItem(img)
+    var docWidth = doc_w(), docHeight = doc_h()
+    var thin = (docWidth / docHeight) > item.r
+    var w = thin ? docHeight * item.r : docWidth
+    var h = thin ? docHeight : docWidth / item.r
+    var x = thin ? (docWidth - w) / 2 : 0
+    var y = thin ? 0 : (docHeight - h) / 2
+    shape.init = {x, y, w, h, z: 1}
+    return shape.init
+  }
+  var emptyshape = () => ({x: 0, y: 0, z: 1, w: 0, h: 0})
+
+  // var x, y, w, h
+
+  var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()}
+
   // var gesture = gestureFactory()
 
   var {selector, dataset} = opts
-  var cache = []
   // the container
   var div = document.createElement('div')
   document.body.appendChild(div)
@@ -50,35 +77,12 @@ function gallery (options) {
   offs(on(document, 'click', evt => {
     var target = evt.target
     if (target.tagName === 'IMG' && dataset in target.dataset) {
-      document.querySelectorAll(`img[${selector}]`).forEach((item, index) => {
-        item.dataset.galleryIndex = index
-        var w = item.naturalWidth, h = item.naturalHeight
-        cache[index] = { elm: item, w, h, r: w / h }
-      })
-      var sizes = size(target)
+      buildCache()
+      var sizes = setInitShape(target)
       div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex)
       raf(() => init(target, sizes))
     }
   }))
-
-  // click
-  // items.forEach(item => on(item, 'click', evt => {
-  //   show(evt.target)
-  // }))
-
-  const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
-
-  const size = img => {
-    var item = getCacheItem(img)
-    var docWidth = doc_w(), docHeight = doc_h()
-    var thin = (docWidth / docHeight) > item.r
-    w = thin ? docHeight * item.r : docWidth
-    h = thin ? docHeight : docWidth / item.r
-    x = thin ? (docWidth - w) / 2 : 0
-    y = thin ? 0 : (docHeight - h) / 2
-    shape.init = {x, y, w, h, z: 1}
-    return {w, h, x, y}
-  }
 
   const enableTransition = () => removeClass(gallery, cls.disableTransition)
   const disableTransition = () => addClass(gallery, cls.disableTransition)
@@ -95,12 +99,6 @@ function gallery (options) {
    */
   // var on = () => {}
   // var off = () => {}
-
-  var shapeit = () => ({x: 0, y: 0, z: 1, w: 0, h: 0})
-
-  var x, y, w, h
-
-  var shape = {init: shapeit(), start: shapeit(), last: shapeit(), current: shapeit()}
 
   var zoom = ''
 
@@ -137,7 +135,9 @@ function gallery (options) {
     offs(gesture.on('pinchend', onpinchend))
     offs(gesture.on('pan', onpan))
     offs(gesture.on('panstart', onpanstart))
+
     offs(gesture.on('start', onstart))
+    offs(gesture.on('move', onmove))
 
     gallery.style.display = 'block'
     raf(() => {
@@ -149,9 +149,9 @@ function gallery (options) {
     if (freeze) return
     freeze = true
     enableTransition()
-    var sizes = size(img)
+    // var sizes = size(img)
 
-    applyTranslateScale(wrap, sizes.x, sizes.y, 1)
+    applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
     applyOpacity(background, 1)
     showHideComplete(() => freeze = !!disableTransition())
   }
@@ -171,7 +171,7 @@ function gallery (options) {
   function onscroll (points, target) {
     if (zoom !== '') return
     var yy = points.current[0].y - points.start[0].y
-    applyTranslateScale(wrap, x, y + yy, 1)
+    applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
     var opacity = 1 - Math.abs(yy * 2 / doc_h())
     applyOpacity(background, opacity > 0 ? opacity : 0)
   }
@@ -183,7 +183,7 @@ function gallery (options) {
     if (yy / doc_h() > 1/7) hide(target)
     else {
       enableTransition()
-      applyTranslateScale(wrap, x, y, 1)
+      applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
       applyOpacity(background, 1)
       showHideComplete(() => disableTransition())
     }
@@ -206,27 +206,33 @@ function gallery (options) {
     var _zoom = zoomLevel * shape.start.z
     zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
     applyTranslateScale(wrap, dx, dy, _zoom)
+    if (zoom === 'out') {
+      var rect = getRect(getCacheItem(target).elm)
+      ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
+      applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width))
+    }
   }
-
-  // function onpinchstart(points, target) {
-  //   var rect = getRect(target)
-  //   pinch.x = rect.x
-  //   pinch.y = rect.y
-  //   pinch.z = rect.width / w
-  // }
 
   function onpinchend(points, target) {
     zoom === 'out' && hide(target)
   }
 
   function onstart(points, target) {
-    // g(target)
     var rect = getRect(target)
-    shape.start.x = rect.x
-    shape.start.y = rect.y
-    shape.start.w = rect.width
-    shape.start.h = rect.height
-    shape.start.z = rect.width / w
+    shape.start.x = shape.last.x = shape.current.x = rect.x
+    shape.start.y = shape.last.y = shape.current.y = rect.y
+    shape.start.w = shape.last.w = shape.current.w = rect.width
+    shape.start.h = shape.last.h = shape.current.h = rect.height
+    shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
+  }
+
+  function onmove(points, target) {
+    var rect = getRect(target)
+    shape.current.x = rect.x
+    shape.current.y = rect.y
+    shape.current.w = rect.width
+    shape.current.h = rect.height
+    shape.current.z = rect.width / shape.init.w
   }
 
   function onpanstart(points, target, phase) {
