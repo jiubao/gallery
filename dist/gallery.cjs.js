@@ -390,8 +390,8 @@ function gallery (options) {
   }
 
   function show (img) {
-    if (freeze) { return }
-    freeze = true;
+    // if (freeze) return
+    // freeze = true
     enableTransition();
     // var sizes = size(img)
 
@@ -452,13 +452,17 @@ function gallery (options) {
     applyTranslateScale(wrap, dx, dy, _zoom);
     if (zoom === 'out') {
       var rect = getRect(getCacheItem(target).elm);
-      ga((shape.current.w - rect.width) / (shape.init.w - rect.width));
-      applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width));
+      // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
+      shape.start.z <= 1 && applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width));
     }
   }
 
   function onpinchend(points, target) {
-    zoom === 'out' && hide(target);
+    if (zoom === 'out') {
+      if (shape.start.z <= 1) { hide(target); }
+      else { show(target); }
+    }
+    // zoom === 'out' && shape.start.z <= 1 && hide(target)
   }
 
   function onstart(points, target) {
