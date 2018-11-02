@@ -1,49 +1,22 @@
 function enumFactory () {
   var value = 0, next = 0b1
 
+  const get = v => typeof v === 'number' ? v : bit[v]
+  const is = v => !!(value & get(v))
+  const or = v => value = value | get(v)
+  const rm = v => value = value & ~get(v)
+  const set = v => { value = get(v); return bit }
+  const add = name => { bit[name] = next; next = next << 1 }
+  const spread = (fn, value) => (...args) => { args.forEach(arg => fn(arg)); return bit }
+
   var bit = {
+    // TODO: should rm idle
     'idle': 0b0,
-    is: arraify(is),
-    or: arraify(or), rm: arraify(rm), set, add: arraify(add), get
+    or: spread(or), rm: spread(rm), add: spread(add),
+    is, set, get
   }
 
   return bit
-
-  function get (v) {
-    return typeof v === 'number' ? v : bit[v]
-  }
-
-  function is (v) {
-    return value & get(v)
-  }
-
-  function or (v) {
-    value = value | get(v)
-    return bit
-  }
-
-  function rm (v) {
-    value = value & ~get(v)
-    return bit
-  }
-
-  function set (v) {
-    value = get(v)
-    return bit
-  }
-
-  function add (name) {
-    bit[name] = next
-    next = next << 1
-
-    return bit
-  }
-}
-
-function arraify (fn) {
-  return function (...args) {
-    return args.reduce((result, current) => fn(current), fn(args[0]))
-  }
 }
 
 export default enumFactory

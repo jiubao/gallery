@@ -67,52 +67,25 @@ var tpls = {main: main};
 function enumFactory () {
   var value = 0, next = 1;
 
+  var get = function (v) { return typeof v === 'number' ? v : bit[v]; };
+  var is = function (v) { return !!(value & get(v)); };
+  var or = function (v) { return value = value | get(v); };
+  var rm = function (v) { return value = value & ~get(v); };
+  var set = function (v) { value = get(v); return bit };
+  var add = function (name) { bit[name] = next; next = next << 1; };
+  var spread = function (fn, value) { return function () {
+  var args = [], len = arguments.length;
+  while ( len-- ) args[ len ] = arguments[ len ];
+ args.forEach(function (arg) { return fn(arg); }); return bit }; };
+
   var bit = {
+    // TODO: should rm idle
     'idle': 0,
-    is: arraify(is),
-    or: arraify(or), rm: arraify(rm), set: set, add: arraify(add), get: get
+    or: spread(or), rm: spread(rm), add: spread(add),
+    is: is, set: set, get: get
   };
 
   return bit
-
-  function get (v) {
-    return typeof v === 'number' ? v : bit[v]
-  }
-
-  function is (v) {
-    return value & get(v)
-  }
-
-  function or (v) {
-    value = value | get(v);
-    return bit
-  }
-
-  function rm (v) {
-    value = value & ~get(v);
-    return bit
-  }
-
-  function set (v) {
-    value = get(v);
-    return bit
-  }
-
-  function add (name) {
-    bit[name] = next;
-    next = next << 1;
-
-    return bit
-  }
-}
-
-function arraify (fn) {
-  return function () {
-    var args = [], len = arguments.length;
-    while ( len-- ) args[ len ] = arguments[ len ];
-
-    return args.reduce(function (result, current) { return fn(current); }, fn(args[0]))
-  }
 }
 
 var html$1 = document.documentElement;
