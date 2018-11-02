@@ -177,6 +177,7 @@
 
     var onstart = function (evt) {
       // if (freeze) return
+      ga('gesture.start');
       setTouchPoints(evt, ['start', 'last', 'current']);
       // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
       // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
@@ -200,24 +201,35 @@
     /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
     var onmove = function (evt) {
       // if (freeze) return
+      ga('gesture.onmove');
+      ismoving = true;
 
       points.last = points.current;
       setTouchPoints(evt, 'current');
 
-      if (phase.is('start') && evt.touches.length === 1) {
+      // evt.touches.length === 1 && phase.rm('pinch')
+      // evt.touches.length > 1 && phase.or('pinch')
+      if (evt.touches.length > 1) { phase.rm('pan').or('pinch'); }
+      else {
+        // if (phase.is('pinch')) trigger('panstart')
+        phase.rm('pinch').or('pan');
+        ga('xxxxxxxxxxx: ', phase.is('pan'));
+      }
+      // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
+
+      if (phase.is('start') && !phase.is('pinch')) {
         Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll');
-        phase.or('pan');
+        // phase.or('pan')
       }
 
       phase.rm('start').or('move');
       //
       // if (evt.touches.length === 1) phase = 16
-
-      if (evt.touches.length > 1) { phase.or('pinch'); }
     };
 
     var onend = function (evt) {
       // if (freeze) return
+      ga('gesture.end');
       trigger('end');
 
       phase.rm('start', 'move').or('end');
@@ -230,7 +242,7 @@
     var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
     var _on = function (evt, fn) {
       handlers[evt].push(fn);
-      return function () { return off(evt, fn); }
+      return function () { return off(elm, evt, fn); }
     };
 
     on(elm, 'touchstart', onstart);
@@ -245,6 +257,7 @@
     function render () {
       trigger('move');
 
+      ga('yyyyyyyyyyyyy: ', phase.is('pan'));
       // ga(phase)
 
       phase.is('scroll') && trigger('scroll');
@@ -328,7 +341,7 @@
         buildCache();
         var sizes = setInitShape(target);
         div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex);
-        raf(function () { return init(target, sizes); });
+        raf(function () { return init(target); });
       }
     }));
 
@@ -352,28 +365,30 @@
 
     var gallery = {
       // on, off
-      destroy: function () {
-        // unbind document click
-        // offDocClick()
-        // offTouchStart()
-        // offTouchMove()
-        // offTouchEnd()
-        offStach.forEach(function (o) { return o(); });
-      }
+      destroy: destroy
     };
 
     return gallery
 
-    function init (img, sizes) {
-      var rect = getRect(img);
+    function destroy () {
+      // TODO: leave the first click which is the document click, should be included in the future
+      // TODO: remove all events and dom elements in destroy
+      offStach.splice(1, offStach.length).forEach(function (o) { return o(); });
+    }
+
+    // TODO: reset all private variables
+    function init (img) {
       gallery = div.childNodes[1];
       wrap = gallery.querySelector('.' + classes.wrap);
       background = gallery.querySelector('.' + classes.bg);
+
+      var rect = getRect(img);
       disableTransition();
-      applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w);
+      applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
 
       var gesture$$1 = opts.gesture = window.ges = gesture(wrap);
 
+      // TODO: tap to toggle controls, double tap to zoom in / out
       offs(on(wrap, 'click', function (evt) { return hide(evt.target); }));
 
       offs(gesture$$1.on('scroll', onscroll));
@@ -382,7 +397,7 @@
       // offs(gesture.on('pinchstart', onpinchstart))
       offs(gesture$$1.on('pinchend', onpinchend));
       offs(gesture$$1.on('pan', onpan));
-      offs(gesture$$1.on('panstart', onpanstart));
+      // offs(gesture.on('panstart', onpanstart))
 
       offs(gesture$$1.on('start', onstart));
       offs(gesture$$1.on('move', onmove));
@@ -409,14 +424,18 @@
       freeze = true;
       enableTransition();
       var rect = getRect(getCacheItem(img).elm);
-      ga('hide.rect', rect);
+      // ga('hide.rect', rect)
 
       applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
       applyOpacity(background, 0);
-      showHideComplete(function () { return freeze = !(gallery.style.display = 'none'); });
+      showHideComplete(function () {
+        freeze = !(gallery.style.display = 'none');
+        destroy();
+      });
     }
 
     function onscroll (points, target) {
+      ga('onscroll');
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
@@ -444,6 +463,8 @@
     // }
 
     function onpinch (points, target) {
+      ga('onpinch');
+
       var zoomLevel = calculateZoomLevel(points); //* pinch.z
       var center1 = getCenterPoint(points.start[0], points.start[1]);
       var center2 = getCenterPoint(points.current[0], points.current[1]);
@@ -475,10 +496,12 @@
       shape.start.y = shape.last.y = shape.current.y = rect.y;
       shape.start.w = shape.last.w = shape.current.w = rect.width;
       shape.start.h = shape.last.h = shape.current.h = rect.height;
-      shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
+      var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
+      zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
     }
 
     function onmove(points, target) {
+      ga('index.onmove');
       var rect = getRect(target);
       shape.current.x = rect.x;
       shape.current.y = rect.y;
@@ -487,12 +510,9 @@
       shape.current.z = rect.width / shape.init.w;
     }
 
-    function onpanstart(points, target, phase) {
-      // ga('panstart: ', shape.start)
-    }
-
     function onpan(points, target, phase) {
       // ga(zoom)
+      ga('onpan');
       if (zoom === 'in') {
         // ga('zzz')
         // var zoomLevel = calculateZoomLevel(points) //* pinch.z

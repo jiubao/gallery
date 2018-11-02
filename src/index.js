@@ -80,7 +80,7 @@ function gallery (options) {
       buildCache()
       var sizes = setInitShape(target)
       div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex)
-      raf(() => init(target, sizes))
+      raf(() => init(target))
     }
   }))
 
@@ -104,28 +104,30 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    destroy: () => {
-      // unbind document click
-      // offDocClick()
-      // offTouchStart()
-      // offTouchMove()
-      // offTouchEnd()
-      offStach.forEach(o => o())
-    }
+    destroy
   }
 
   return gallery
 
-  function init (img, sizes) {
-    var rect = getRect(img)
+  function destroy () {
+    // TODO: leave the first click which is the document click, should be included in the future
+    // TODO: remove all events and dom elements in destroy
+    offStach.splice(1, offStach.length).forEach(o => o())
+  }
+
+  // TODO: reset all private variables
+  function init (img) {
     gallery = div.childNodes[1]
     wrap = gallery.querySelector('.' + cls.wrap)
     background = gallery.querySelector('.' + cls.bg)
+
+    var rect = getRect(img)
     disableTransition()
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / sizes.w)
+    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
 
     var gesture = opts.gesture = window.ges = gestureFactory(wrap)
 
+    // TODO: tap to toggle controls, double tap to zoom in / out
     offs(on(wrap, 'click', evt => hide(evt.target)))
 
     offs(gesture.on('scroll', onscroll))
@@ -134,7 +136,7 @@ function gallery (options) {
     // offs(gesture.on('pinchstart', onpinchstart))
     offs(gesture.on('pinchend', onpinchend))
     offs(gesture.on('pan', onpan))
-    offs(gesture.on('panstart', onpanstart))
+    // offs(gesture.on('panstart', onpanstart))
 
     offs(gesture.on('start', onstart))
     offs(gesture.on('move', onmove))
@@ -161,14 +163,18 @@ function gallery (options) {
     freeze = true
     enableTransition()
     var rect = getRect(getCacheItem(img).elm)
-    ga('hide.rect', rect)
+    // ga('hide.rect', rect)
 
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
     applyOpacity(background, 0)
-    showHideComplete(() => freeze = !(gallery.style.display = 'none'))
+    showHideComplete(() => {
+      freeze = !(gallery.style.display = 'none')
+      destroy()
+    })
   }
 
   function onscroll (points, target) {
+    ga('onscroll')
     if (zoom !== '') return
     var yy = points.current[0].y - points.start[0].y
     applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
@@ -196,6 +202,8 @@ function gallery (options) {
   // }
 
   function onpinch (points, target) {
+    ga('onpinch')
+
     var zoomLevel = calculateZoomLevel(points) //* pinch.z
     var center1 = getCenterPoint(points.start[0], points.start[1])
     var center2 = getCenterPoint(points.current[0], points.current[1])
@@ -227,10 +235,12 @@ function gallery (options) {
     shape.start.y = shape.last.y = shape.current.y = rect.y
     shape.start.w = shape.last.w = shape.current.w = rect.width
     shape.start.h = shape.last.h = shape.current.h = rect.height
-    shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
+    var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
+    zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
   }
 
   function onmove(points, target) {
+    ga('index.onmove')
     var rect = getRect(target)
     shape.current.x = rect.x
     shape.current.y = rect.y
@@ -245,6 +255,7 @@ function gallery (options) {
 
   function onpan(points, target, phase) {
     // ga(zoom)
+    ga('onpan')
     if (zoom === 'in') {
       // ga('zzz')
       // var zoomLevel = calculateZoomLevel(points) //* pinch.z

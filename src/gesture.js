@@ -63,6 +63,7 @@ function gesture (elm) {
 
   const onstart = evt => {
     // if (freeze) return
+    ga('gesture.start')
     setTouchPoints(evt, ['start', 'last', 'current'])
     // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
     // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
@@ -86,24 +87,35 @@ function gesture (elm) {
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   const onmove = evt => {
     // if (freeze) return
+    ga('gesture.onmove')
+    ismoving = true
 
     points.last = points.current
     setTouchPoints(evt, 'current')
 
-    if (phase.is('start') && evt.touches.length === 1) {
+    // evt.touches.length === 1 && phase.rm('pinch')
+    // evt.touches.length > 1 && phase.or('pinch')
+    if (evt.touches.length > 1) phase.rm('pan').or('pinch')
+    else {
+      // if (phase.is('pinch')) trigger('panstart')
+      phase.rm('pinch').or('pan')
+      ga('xxxxxxxxxxx: ', phase.is('pan'))
+    }
+    // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
+
+    if (phase.is('start') && !phase.is('pinch')) {
       Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll')
-      phase.or('pan')
+      // phase.or('pan')
     }
 
     phase.rm('start').or('move')
     //
     // if (evt.touches.length === 1) phase = 16
-
-    if (evt.touches.length > 1) phase.or('pinch')
   }
 
   const onend = evt => {
     // if (freeze) return
+    ga('gesture.end')
     trigger('end')
 
     phase.rm('start', 'move').or('end')
@@ -116,7 +128,7 @@ function gesture (elm) {
   const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)
   const _on = (evt, fn) => {
     handlers[evt].push(fn)
-    return () => off(evt, fn)
+    return () => off(elm, evt, fn)
   }
 
   on(elm, 'touchstart', onstart)
@@ -131,6 +143,7 @@ function gesture (elm) {
   function render () {
     trigger('move')
 
+    ga('yyyyyyyyyyyyy: ', phase.is('pan'))
     // ga(phase)
 
     phase.is('scroll') && trigger('scroll')
