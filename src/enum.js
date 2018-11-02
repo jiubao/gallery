@@ -15,8 +15,8 @@ function enumFactory () {
     or: spread(or),
     rm: spread(rm),
     add: spread(add),
-    is: (...args) => args.reduce((result, arg) => result && is(arg), is(args[0])),
-    set: (...args) => { value = args.reduce((r, v) => r | get(v), get(args[0])); return bit }
+    is: (...args) => args.reduce((result, arg) => result && is(arg), true),
+    set: (...args) => { value = args.reduce((r, v) => r | get(v), 0); return bit }
     // get,
     // enums
   }

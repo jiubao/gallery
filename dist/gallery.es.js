@@ -86,12 +86,12 @@ function enumFactory () {
       var args = [], len = arguments.length;
       while ( len-- ) args[ len ] = arguments[ len ];
 
-      return args.reduce(function (result, arg) { return result && is(arg); }, is(args[0]));
+      return args.reduce(function (result, arg) { return result && is(arg); }, true);
   },
     set: function () {
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
- value = args.reduce(function (r, v) { return r | get(v); }, get(args[0])); return bit }
+ value = args.reduce(function (r, v) { return r | get(v); }, 0); return bit }
     // get,
     // enums
   };
@@ -112,6 +112,7 @@ function gesture (elm) {
    * 0001 0000: pan (one fingers move)
    */
   // var phase = 0
+  // TODO: rm window.phase
   var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
   var ismoving = false;
 
