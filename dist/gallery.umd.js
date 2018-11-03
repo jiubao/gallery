@@ -18,12 +18,35 @@
     caf = clearTimeout;
   }
 
-  var on = function (element, evt, handler) {
-    element.addEventListener(evt, handler, false);
-    return function () { return off(element, evt, handler); }
+  function index (_) {
+    var passive = false;
+
+    function noop () {}
+
+    var options = Object.defineProperty({}, 'passive', {
+      get: function get () { passive = true; }
+    });
+
+    window.addEventListener('testPassive', noop, options);
+    window.removeEventListener('testPassive', noop, options);
+    return passive
+  }
+
+  var passive = index();
+  var defaultEventOptions = passive ? {capture: true, passive: true} : true;
+
+  var on = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off(element, evt, handler, options); }
   };
 
-  var off = function (element, evt, handler) { return element.removeEventListener(evt, handler, false); };
+  var off = function (element, evt, handler, options) {
+  	if ( options === void 0 ) options = defaultEventOptions;
+
+  	return element.removeEventListener(evt, handler, options);
+  };
   var isString = function (value) { return typeof value === 'string'; };
   var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
 
@@ -31,7 +54,7 @@
   	var subsets = [], len = arguments.length - 1;
   	while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
 
-  	return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
+  	return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
   };
 
   var hasClass = function (elm, className) { return elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className); };
