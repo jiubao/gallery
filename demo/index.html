@@ -21,10 +21,12 @@
     <div class="" id="clear" style="font-size: 100px">
       clear
     </div>
-    <div class="" id="sizes">sssss </div>
+    <div class="" id="sizes"></div>
     <script type="text/javascript">
     var isObject = o => o !== null && typeof o === 'object';
+    var isNumber = v => typeof v === 'number';
     var mode = 'prod'
+    // var mode = 'dev'
     var g = (...args) => {
       if (mode === 'prod') return
       document.getElementById('sizes').innerHTML = args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'
@@ -32,7 +34,7 @@
     var ga = (...args) => {
       if (mode === 'prod') return
       var elm = document.getElementById('sizes')
-      elm.innerHTML = elm.innerHTML + args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'
+      elm.innerHTML = elm.innerHTML + args.map(arg => isObject(arg) ? JSON.stringify(arg) : (isNumber(arg) ? arg.toFixed(2) : arg)).join() + '<br>'
     }
 
     document.getElementById('clear').addEventListener('click', () => {

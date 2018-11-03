@@ -64,7 +64,7 @@ function gesture (elm) {
 
   const onstart = evt => {
     // if (freeze) return
-    ga('gesture.start')
+    // ga('gesture.start')
     setTouchPoints(evt, ['start', 'last', 'current'])
     // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
     // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
@@ -88,7 +88,7 @@ function gesture (elm) {
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   const onmove = evt => {
     // if (freeze) return
-    ga('gesture.onmove')
+    // ga('gesture.onmove')
 
     points.last = points.current
     setTouchPoints(evt, 'current')
@@ -97,9 +97,13 @@ function gesture (elm) {
     // evt.touches.length > 1 && phase.or('pinch')
     if (evt.touches.length > 1) phase.rm('pan').or('pinch')
     else {
-      // if (phase.is('pinch')) trigger('panstart')
+      if (phase.is('pinch')) {
+        setTouchPoints(evt, 'start')
+        ga('move.trigger.start')
+        trigger('start')
+      }
       phase.rm('pinch').or('pan')
-      ga('xxxxxxxxxxx: ', phase.is('pan'))
+      // ga('xxxxxxxxxxx: ', phase.is('pan'))
     }
     // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
 
@@ -123,13 +127,14 @@ function gesture (elm) {
     // if (freeze) return
     phase.rm('start', 'move').or('end')
 
-    ga('gesture.end')
+    // ga('gesture.end')
     trigger('end')
 
     phase.is('scroll') && trigger('scrollend')
     phase.is('pinch') && trigger('pinchend')
+    phase.is('pan') && trigger('panend')
     ismoving = false
-    phase.set(0)
+    // phase.set(0)
   }
 
   const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)
@@ -150,7 +155,7 @@ function gesture (elm) {
   function render () {
     trigger('move')
 
-    ga('yyyyyyyyyyyyy: ', phase.is('pan'))
+    // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
     // ga(phase)
 
     phase.is('scroll') && trigger('scroll')

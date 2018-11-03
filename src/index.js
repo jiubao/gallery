@@ -43,6 +43,7 @@ function gallery (options) {
     })
   }
   const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
+  var thin = false
 
   var setInitShape = img => {
     var item = getCacheItem(img)
@@ -136,6 +137,7 @@ function gallery (options) {
     // offs(gesture.on('pinchstart', onpinchstart))
     offs(gesture.on('pinchend', onpinchend))
     offs(gesture.on('pan', onpan))
+    offs(gesture.on('panend', onpanend))
     // offs(gesture.on('panstart', onpanstart))
 
     offs(gesture.on('start', onstart))
@@ -174,7 +176,7 @@ function gallery (options) {
   }
 
   function onscroll (points, target) {
-    ga('onscroll')
+    // ga('onscroll')
     if (zoom !== '') return
     var yy = points.current[0].y - points.start[0].y
     applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
@@ -202,7 +204,7 @@ function gallery (options) {
   // }
 
   function onpinch (points, target) {
-    ga('onpinch')
+    // ga('onpinch')
 
     var zoomLevel = calculateZoomLevel(points) //* pinch.z
     var center1 = getCenterPoint(points.start[0], points.start[1])
@@ -237,10 +239,11 @@ function gallery (options) {
     shape.start.h = shape.last.h = shape.current.h = rect.height
     var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
     zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
+    // ga('onstart.shape: ', shape)
   }
 
   function onmove(points, target) {
-    ga('index.onmove')
+    // ga('index.onmove')
     var rect = getRect(target)
     shape.current.x = rect.x
     shape.current.y = rect.y
@@ -255,7 +258,7 @@ function gallery (options) {
 
   function onpan(points, target, phase) {
     // ga(zoom)
-    ga('onpan')
+    // ga('onpan')
     if (zoom === 'in') {
       // ga('zzz')
       // var zoomLevel = calculateZoomLevel(points) //* pinch.z
@@ -266,6 +269,43 @@ function gallery (options) {
       // ga('pan: ', {dx, dy, z: shape.start.z})
       applyTranslateScale(wrap, dx, dy, shape.start.z)
     }
+  }
+
+  function onpanend(points, target, phase) {
+    ga('onpanend')
+    if (zoom !== 'in') return
+
+    var current = shape.current
+    var {x, y} = limitxy(current)
+
+    ga('xy:', x, y)
+    if (x === current.x && y === current.y) return
+
+    enableTransition()
+    applyTranslateScale(wrap, x, y, current.z)
+    showHideComplete(() => disableTransition())
+  }
+
+  function limitxy (topleft) {
+    var {x, y} = topleft
+    var dw = doc_w(), dh = doc_h()
+    var w = shape.current.w, h = shape.current.h
+
+    ga('limit:', dw, dh, w, h)
+
+    if (dw > w) x = (dw - w) / 2
+    else if (x > 0) x = 0
+    else if (x < dw - w) x = dw - w
+
+    ga('limit.x: ', x)
+
+    if (dh > h) y = (dh - h) / 2
+    else if (y > 0) y = 0
+    else if (y < dh - h) y = dh - h
+
+    ga('limit.y: ', y)
+
+    return {x, y}
   }
 }
 
