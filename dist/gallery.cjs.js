@@ -185,10 +185,6 @@ function gesture (elm) {
   var onmove = function (evt) {
     // if (freeze) return
     ga('gesture.onmove');
-    if (!ismoving) {
-      ismoving = true;
-      loop();
-    }
 
     points.last = points.current;
     setTouchPoints(evt, 'current');
@@ -211,14 +207,21 @@ function gesture (elm) {
     phase.rm('start').or('move');
     //
     // if (evt.touches.length === 1) phase = 16
+
+    if (!ismoving) {
+      // TODO: change from two points to one points
+      ismoving = true;
+      loop();
+    }
   };
 
   var onend = function (evt) {
     // if (freeze) return
+    phase.rm('start', 'move').or('end');
+
     ga('gesture.end');
     trigger('end');
 
-    phase.rm('start', 'move').or('end');
     phase.is('scroll') && trigger('scrollend');
     phase.is('pinch') && trigger('pinchend');
     ismoving = false;
