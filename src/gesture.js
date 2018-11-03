@@ -21,12 +21,13 @@ function gesture (elm) {
   var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan')
   var freeze = false
   var ismoving = false
+  var tapTimes = 0, tapStart = -1, tapLast = -1
 
   const handlers = {
-    'swipe': [],
-    'zoom': [],
-    'double': [],
+    // 'swipe': [],
     'tap': [],
+    'single': [],
+    'double': [],
 
     'start': [],
     'move': [],
@@ -83,6 +84,7 @@ function gesture (elm) {
     else trigger('panstart') // one touch point trigger pan
 
     // loop()
+    if (!phase.is('pinch')) tapStart = Date.now()
   }
 
   /// TODO: check pinch every time, if one point, switch behavior
@@ -100,7 +102,7 @@ function gesture (elm) {
     else {
       if (phase.is('pinch')) {
         setTouchPoints(evt, 'start')
-        ga('move.trigger.start')
+        // ga('move.trigger.start')
         trigger('start')
       }
       phase.rm('pinch').or('pan')
@@ -136,6 +138,22 @@ function gesture (elm) {
     phase.is('pan') && trigger('panend')
     ismoving = false
     // phase.set(0)
+
+    // TODO: learn single / double logic
+    if (!phase.is('pinch') && !phase.is('pan')) {
+      var now = Date.now()
+      if (now - tapStart <= 200) {
+        trigger('tap')
+        // if (now - tapLastTimestamp <= 200) tapTimes++
+        // else tapTimes = 0
+
+        tapTimes = now - tapLast <= 300 ? tapTimes + 1 : 1
+        tapLast = now
+
+        if (tapTimes === 1) setTimeout(() => tapTimes === 1 && trigger('single'), 300)
+        else if (tapTimes === 2) trigger('double')
+      }
+    }
   }
 
   const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)

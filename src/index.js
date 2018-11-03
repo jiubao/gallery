@@ -129,7 +129,10 @@ function gallery (options) {
     var gesture = opts.gesture = window.ges = gestureFactory(wrap)
 
     // TODO: tap to toggle controls, double tap to zoom in / out
-    offs(on(wrap, 'click', evt => hide(evt.target)))
+    // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+    offs(gesture.on('single', onsingle))
+    offs(gesture.on('double', ondouble))
 
     offs(gesture.on('scroll', onscroll))
     offs(gesture.on('scrollend', onscrollend))
@@ -176,6 +179,31 @@ function gallery (options) {
       freeze = !(gallery.style.display = 'none')
       destroy()
     })
+  }
+
+  function onsingle (points, target) {
+    ga('single')
+    // TODO: trigger wrong
+    hide(target)
+  }
+
+  function ondouble (points, target) {
+    ga('double.zoom: ', zoom)
+    if (zoom !== 'out') {
+      enableTransition()
+      var init = shape.init
+      if (zoom === 'in') applyTranslateScale(wrap, init.x, init.y, 1)
+      else {
+        var {x, y} = limitxy({
+          x: init.x * 2 - points.start[0].x,
+          y: init.y * 2 - points.start[0].y,
+          w: init.w * 2,
+          h: init.h * 2
+        })
+        applyTranslateScale(wrap, x, y, 2)
+      }
+      showHideComplete(() => disableTransition())
+    }
   }
 
   function onscroll (points, target) {
@@ -226,6 +254,7 @@ function gallery (options) {
     }
   }
 
+  // TODO: 缩小露底问题
   function onpinchend(points, target) {
     if (zoom === 'out') {
       if (shape.start.z <= 1) hide(target)
@@ -258,6 +287,8 @@ function gallery (options) {
     // ga('panstart: ', shape.start)
   }
 
+  // TODO: fast pan should have a panend animation
+  // TODO: 拖拽卡顿
   function onpan(points, target, phase) {
     // ga(zoom)
     // ga('onpan')
@@ -288,10 +319,9 @@ function gallery (options) {
     }
   }
 
-  function limitxy (topleft) {
-    var {x, y} = topleft
+  function limitxy (_shape) {
+    var {x, y, w, h} = _shape
     var dw = doc_w(), dh = doc_h()
-    var w = shape.current.w, h = shape.current.h
 
     if (dw > w) x = (dw - w) / 2
     else if (x > 0) x = 0

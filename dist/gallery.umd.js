@@ -144,12 +144,13 @@
     // TODO: rm window.phase
     var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
     var ismoving = false;
+    var tapTimes = 0, tapStart = -1, tapLast = -1;
 
     var handlers = {
-      'swipe': [],
-      'zoom': [],
-      'double': [],
+      // 'swipe': [],
       'tap': [],
+      'single': [],
+      'double': [],
 
       'start': [],
       'move': [],
@@ -206,6 +207,7 @@
       else { trigger('panstart'); } // one touch point trigger pan
 
       // loop()
+      if (!phase.is('pinch')) { tapStart = Date.now(); }
     };
 
     /// TODO: check pinch every time, if one point, switch behavior
@@ -223,7 +225,7 @@
       else {
         if (phase.is('pinch')) {
           setTouchPoints(evt, 'start');
-          ga('move.trigger.start');
+          // ga('move.trigger.start')
           trigger('start');
         }
         phase.rm('pinch').or('pan');
@@ -259,6 +261,22 @@
       phase.is('pan') && trigger('panend');
       ismoving = false;
       // phase.set(0)
+
+      // TODO: learn single / double logic
+      if (!phase.is('pinch') && !phase.is('pan')) {
+        var now = Date.now();
+        if (now - tapStart <= 200) {
+          trigger('tap');
+          // if (now - tapLastTimestamp <= 200) tapTimes++
+          // else tapTimes = 0
+
+          tapTimes = now - tapLast <= 300 ? tapTimes + 1 : 1;
+          tapLast = now;
+
+          if (tapTimes === 1) { setTimeout(function () { return tapTimes === 1 && trigger('single'); }, 300); }
+          else if (tapTimes === 2) { trigger('double'); }
+        }
+      }
     };
 
     var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
@@ -411,7 +429,10 @@
       var gesture$$1 = opts.gesture = window.ges = gesture(wrap);
 
       // TODO: tap to toggle controls, double tap to zoom in / out
-      offs(on(wrap, 'click', function (evt) { return hide(evt.target); }));
+      // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+      offs(gesture$$1.on('single', onsingle));
+      offs(gesture$$1.on('double', ondouble));
 
       offs(gesture$$1.on('scroll', onscroll));
       offs(gesture$$1.on('scrollend', onscrollend));
@@ -458,6 +479,33 @@
         freeze = !(gallery.style.display = 'none');
         destroy();
       });
+    }
+
+    function onsingle (points, target) {
+      ga('single');
+      // TODO: trigger wrong
+      hide(target);
+    }
+
+    function ondouble (points, target) {
+      ga('double.zoom: ', zoom);
+      if (zoom !== 'out') {
+        enableTransition();
+        var init = shape.init;
+        if (zoom === 'in') { applyTranslateScale(wrap, init.x, init.y, 1); }
+        else {
+          var ref = limitxy({
+            x: init.x * 2 - points.start[0].x,
+            y: init.y * 2 - points.start[0].y,
+            w: init.w * 2,
+            h: init.h * 2
+          });
+          var x = ref.x;
+          var y = ref.y;
+          applyTranslateScale(wrap, x, y, 2);
+        }
+        showHideComplete(function () { return disableTransition(); });
+      }
     }
 
     function onscroll (points, target) {
@@ -508,6 +556,7 @@
       }
     }
 
+    // TODO: 缩小露底问题
     function onpinchend(points, target) {
       if (zoom === 'out') {
         if (shape.start.z <= 1) { hide(target); }
@@ -536,6 +585,8 @@
       shape.current.z = rect.width / shape.init.w;
     }
 
+    // TODO: fast pan should have a panend animation
+    // TODO: 拖拽卡顿
     function onpan(points, target, phase) {
       // ga(zoom)
       // ga('onpan')
@@ -568,11 +619,12 @@
       }
     }
 
-    function limitxy (topleft) {
-      var x = topleft.x;
-      var y = topleft.y;
+    function limitxy (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
       var dw = doc_w$1(), dh = doc_h$1();
-      var w = shape.current.w, h = shape.current.h;
 
       if (dw > w) { x = (dw - w) / 2; }
       else if (x > 0) { x = 0; }

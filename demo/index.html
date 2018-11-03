@@ -26,7 +26,7 @@
     var isObject = o => o !== null && typeof o === 'object';
     var isNumber = v => typeof v === 'number';
     var mode = 'prod'
-    // var mode = 'dev'
+    // mode = 'dev'
     var g = (...args) => {
       if (mode === 'prod') return
       document.getElementById('sizes').innerHTML = args.map(arg => isObject(arg) ? JSON.stringify(arg) : arg).join() + '<br>'
