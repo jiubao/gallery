@@ -147,8 +147,6 @@
 
     var handlers = {
       'swipe': [],
-      'scroll': [],
-      'scrollend': [],
       'zoom': [],
       'double': [],
       'tap': [],
@@ -156,6 +154,9 @@
       'start': [],
       'move': [],
       'end': [],
+
+      'scroll': [],
+      'scrollend': [],
 
       'pan': [],
       'panstart': [],
@@ -414,15 +415,18 @@
 
       offs(gesture$$1.on('scroll', onscroll));
       offs(gesture$$1.on('scrollend', onscrollend));
-      offs(gesture$$1.on('pinch', onpinch));
+
       // offs(gesture.on('pinchstart', onpinchstart))
+      offs(gesture$$1.on('pinch', onpinch));
       offs(gesture$$1.on('pinchend', onpinchend));
-      offs(gesture$$1.on('pan', onpan));
-      offs(gesture$$1.on('panend', onpanend));
+
       // offs(gesture.on('panstart', onpanstart))
+      offs(gesture$$1.on('pan', onpan));
+      // offs(gesture.on('panend', onpanend))
 
       offs(gesture$$1.on('start', onstart));
       offs(gesture$$1.on('move', onmove));
+      offs(gesture$$1.on('end', onend));
 
       gallery.style.display = 'block';
       raf(function () {
@@ -509,7 +513,6 @@
         if (shape.start.z <= 1) { hide(target); }
         else { show(target); }
       }
-      // zoom === 'out' && shape.start.z <= 1 && hide(target)
     }
 
     function onstart(points, target) {
@@ -548,21 +551,21 @@
       }
     }
 
-    function onpanend(points, target, phase) {
-      ga('onpanend');
-      if (zoom !== 'in') { return }
+    function onend(points, target, phase) {
+      if (phase.is('pan') || phase.is('pinch')) {
+        if (zoom !== 'in') { return }
 
-      var current = shape.current;
-      var ref = limitxy(current);
-      var x = ref.x;
-      var y = ref.y;
+        var current = shape.current;
+        var ref = limitxy(current);
+        var x = ref.x;
+        var y = ref.y;
 
-      ga('xy:', x, y);
-      if (x === current.x && y === current.y) { return }
+        if (x === current.x && y === current.y) { return }
 
-      enableTransition();
-      applyTranslateScale(wrap, x, y, current.z);
-      showHideComplete(function () { return disableTransition(); });
+        enableTransition();
+        applyTranslateScale(wrap, x, y, current.z);
+        showHideComplete(function () { return disableTransition(); });
+      }
     }
 
     function limitxy (topleft) {
@@ -571,19 +574,13 @@
       var dw = doc_w$1(), dh = doc_h$1();
       var w = shape.current.w, h = shape.current.h;
 
-      ga('limit:', dw, dh, w, h);
-
       if (dw > w) { x = (dw - w) / 2; }
       else if (x > 0) { x = 0; }
       else if (x < dw - w) { x = dw - w; }
 
-      ga('limit.x: ', x);
-
       if (dh > h) { y = (dh - h) / 2; }
       else if (y > 0) { y = 0; }
       else if (y < dh - h) { y = dh - h; }
-
-      ga('limit.y: ', y);
 
       return {x: x, y: y}
     }

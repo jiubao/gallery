@@ -24,8 +24,6 @@ function gesture (elm) {
 
   const handlers = {
     'swipe': [],
-    'scroll': [],
-    'scrollend': [],
     'zoom': [],
     'double': [],
     'tap': [],
@@ -33,6 +31,9 @@ function gesture (elm) {
     'start': [],
     'move': [],
     'end': [],
+
+    'scroll': [],
+    'scrollend': [],
 
     'pan': [],
     'panstart': [],
