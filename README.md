@@ -22,7 +22,7 @@ import swiper from '@jiubao/gallery/dist/gallery.es'
 
 The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://unpkg.com):
 ```html
-<script src="https://unpkg.com/gallery"></script>
+<script src="https://unpkg.com/@jiubao/gallery"></script>
 ```
 
 ## Usage
@@ -41,5 +41,5 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * limit zoom in / out level
 
 
-[npm]: https://img.shields.io/npm/v/gallery.svg
-[npm-url]: https://npmjs.com/package/gallery
+[npm]: https://img.shields.io/npm/v/@jiubao/gallery.svg
+[npm-url]: https://npmjs.com/package/@jiubao/gallery
