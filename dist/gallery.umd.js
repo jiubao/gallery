@@ -1,1 +1,1130 @@
-!function(t,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):t.gallery=n()}(this,function(){"use strict";var t=["webkit","moz","ms","o"],U=t.reduce(function(t,n){return t||window[n+"RequestAnimationFrame"]},window.requestAnimationFrame).bind(window),n=t.reduce(function(t,n){return t||window[n+"CancelAnimationFrame"]},window.cancelAnimationFrame).bind(window);if(!U||!n){var e=0;U=function(t){var n=+new Date;return e=Math.max(n,e+16),setTimeout(t,e-n)},n=clearTimeout}var i=!!function(t){var n=!1;function e(){}var r=Object.defineProperty({},"passive",{get:function(){n=!0}});return window.addEventListener("testPassive",e,r),window.removeEventListener("testPassive",e,r),n}()&&{capture:!1,passive:!0},D=function(t,n,e,r){return void 0===r&&(r=i),t.addEventListener(n,e,r),function(){return w(t,n,e,r)}},w=function(t,n,e,r){return void 0===r&&(r=i),t.removeEventListener(n,e,r)},H="_src_style_css_bg",P="_src_style_css_wrap",a="_src_style_css_disableTransition",S=Object.freeze(['\n<div class="','">\n  <div class="','"></div>\n  <div class="','">\n    <img data-gallery-index="','" src="','" style="width: ',"px; height: ",'px;" />\n  </div>\n</div>\n']);document.documentElement;var x=function(t){return{x:t.pageX,y:t.pageY}};function $(e){var r,n,i,a,t,c,o=window.phase=(r=0,n=1,i={idle:0},a=function(t){return"number"==typeof t?t:i[t]},t=function(e,t){return function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return t.forEach(function(t){return e(t)}),c}},c={v:function(){return r},or:t(function(t){return r|=a(t)}),rm:t(function(t){return r&=~a(t)}),add:t(function(t){i[t]=n,n<<=1}),is:function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return t.reduce(function(t,n){return t&&!!(r&a(n))},!0)},set:function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return r=t.reduce(function(t,n){return t|a(n)},0),c}},c).add("start","move","end","scroll","pinch","pan"),u=!1,s=0,l=-1,f=-1,d={tap:[],single:[],double:[],start:[],move:[],end:[],scroll:[],scrollend:[],pan:[],panstart:[],panend:[],pinch:[],pinchstart:[],pinchend:[]},h={},p={start:[],last:[],current:[]},y=function(t){return d[t].forEach(function(t){return t(p,h,o)})},v=function(){u&&(U(v),y("move"),o.is("scroll")&&y("scroll"),o.is("pinch")&&y("pinch"),o.is("pan")&&y("pan"))},m=function(n,t){if(e=t,Array.isArray(e)||e instanceof Array)return t.forEach(function(t){return m(n,t)});var e;"string"==typeof t&&(p[t][0]=x(n.touches[0])),1<n.touches.length?p[t][1]=x(n.touches[1]):p[t].splice(1,10)};return D(e,"touchstart",function(t){m(t,["start","last","current"]),h=t.target,o.set("start"),1<t.touches.length&&o.or("pinch"),y("start"),o.is("pinch")?y("pinchstart"):y("panstart"),o.is("pinch")||(l=Date.now())}),D(e,"touchmove",function(t){p.last=p.current,m(t,"current"),1<t.touches.length?o.rm("pan").or("pinch"):(o.is("pinch")&&(m(t,"start"),y("start")),o.rm("pinch").or("pan")),o.is("start")&&!o.is("pinch")&&Math.abs(p.current[0].x-p.start[0].x)<Math.abs(p.current[0].y-p.start[0].y)&&o.or("scroll"),o.rm("start").or("move"),u||(u=!0,v())}),D(e,"touchend",function(t){if(o.rm("start","move").or("end"),y("end"),o.is("scroll")&&y("scrollend"),o.is("pinch")&&y("pinchend"),o.is("pan")&&y("panend"),u=!1,!o.is("pinch")&&!o.is("pan")){var n=Date.now();n-l<=200&&(y("tap"),s=n-f<=300?s+1:1,f=n,1===s?setTimeout(function(){return 1===s&&y("single")},300):2===s&&y("double"))}}),{on:function(t,n){return d[t].push(n),function(){return w(e,t,n)}},off:function(t,n){return d[t].splice(d[t].indexOf(n),1)}}}var B=function(t,n,e,r){return t.style.transform="translate3d("+n+"px,"+e+"px,0) scale("+r+")"},f=function(t,n){return t.style.opacity=n},r=document.documentElement,W=function(){return r.clientHeight},X=function(){return r.clientWidth},s=function(t){return setTimeout(t,353)},Y=function(t){return t.getBoundingClientRect()},d=function(t,n){return{x:.5*(t.x+n.x),y:.5*(t.y+n.y)}},c=function(t){return t*t},h=function(t,n){return Math.sqrt(c(t.x-n.x)+c(t.y-n.y))},p={selector:"data-gallery-item",dataset:"galleryItem"};return function(t){var y=Object.assign({},p,t),v=[],m=function(t){return v[Number(t.dataset.galleryIndex)]},w={init:{x:0,y:0,z:1,w:0,h:0},start:{x:0,y:0,z:1,w:0,h:0},last:{x:0,y:0,z:1,w:0,h:0},current:{x:0,y:0,z:1,w:0,h:0}},x=y.selector,g=y.dataset,b=document.createElement("div");document.body.appendChild(b);var z,_,e=!1,n=[],E=function(t){return n.push(t)};E(D(document,"click",function(t){var n,e,r,i,a,c,o,u,s,l,f,d,h=t.target;if("IMG"===h.tagName&&g in h.dataset){v.splice(0,v.length),document.querySelectorAll("img["+x+"]").forEach(function(t,n){t.dataset.galleryIndex=n;var e=t.naturalWidth,r=t.naturalHeight;v[n]={elm:t,w:e,h:r,r:e/r}});var p=(n=m(h),a=(i=(e=X())/(r=W())>n.r)?r*n.r:e,c=i?r:e/n.r,o=i?(e-a)/2:0,u=i?0:(r-c)/2,w.init={x:o,y:u,w:a,h:c,z:1},w.init);b.innerHTML=(s=h.src,l=p.w,f=p.h,d=h.dataset.galleryIndex,function(r){for(var t=[],n=arguments.length-1;0<n--;)t[n]=arguments[n+1];return t.reduce(function(t,n,e){return t+n+r[e+1]},r[0])}(S,"_src_style_css_gallery",H,P,d,s,l,f)),U(function(){return function(t){A=b.childNodes[1],z=A.querySelector("."+P),_=A.querySelector("."+H);var n=Y(t);L(),B(z,n.left,n.top,n.width/w.init.w);var e=y.gesture=window.ges=$(z);E(e.on("single",M)),E(e.on("double",R)),E(e.on("scroll",T)),E(e.on("scrollend",j)),E(e.on("pinch",k)),E(e.on("pinchend",q)),E(e.on("pan",C)),E(e.on("start",O)),E(e.on("move",I)),E(e.on("end",F)),A.style.display="block",U(function(){N()})}(h)})}}));var A,o=function(){return t=A,n=new RegExp("(\\s|^)"+a+"(\\s|$)"),void(t.className=t.className.replace(n," ").replace(/^\s\s*/,"").replace(/\s\s*$/,""));var t,n},L=function(){return r=n=a,void((e=t=A).className&&new RegExp("(^|\\s)"+r+"(\\s|$)").test(e.className)||(t.className+=(t.className?" ":"")+n));var t,n,e,r},l="";return A={destroy:r};function r(){n.splice(1,n.length).forEach(function(t){return t()})}function N(t){o(),B(z,w.init.x,w.init.y,1),f(_,1),s(function(){return e=!!L()})}function i(t){if(!e){e=!0,o();var n=Y(m(t).elm);B(z,n.left,n.top,n.width/w.init.w),f(_,0),s(function(){e=!(A.style.display="none"),r()})}}function M(t,n){ga("single"),i(n)}function R(t,n){if(ga("double.zoom: ",l),"out"!==l){o();var e=w.init;if("in"===l)B(z,e.x,e.y,1);else{var r=u({x:2*e.x-t.start[0].x,y:2*e.y-t.start[0].y,w:2*e.w,h:2*e.h}),i=r.x,a=r.y;B(z,i,a,2)}s(function(){return L()})}}function T(t,n){if(""===l){var e=t.current[0].y-t.start[0].y;B(z,w.init.x,w.init.y+e,1);var r=1-Math.abs(2*e/W());f(_,0<r?r:0)}}function j(t,n){""===l&&(Math.abs(t.current[0].y-t.start[0].y)/W()>1/7?i(n):(o(),B(z,w.init.x,w.init.y,1),f(_,1),s(function(){return L()})))}function k(t,n){var e,r=h((e=t).current[0],e.current[1])/h(e.start[0],e.start[1]),i=d(t.start[0],t.start[1]),a=d(t.current[0],t.current[1]),c=a.x-(i.x-w.start.x)*r,o=a.y-(i.y-w.start.y)*r,u=r*w.start.z;if(l=1<u?"in":u<1?"out":"",B(z,c,o,u),"out"===l){var s=Y(m(n).elm);w.start.z<=1&&f(_,(w.current.w-s.width)/(w.init.w-s.width))}}function q(t,n){"out"===l&&(w.start.z<=1?i(n):N())}function O(t,n){var e=Y(n);w.start.x=w.last.x=w.current.x=e.x,w.start.y=w.last.y=w.current.y=e.y,w.start.w=w.last.w=w.current.w=e.width,w.start.h=w.last.h=w.current.h=e.height;var r=w.start.z=w.last.z=w.current.z=e.width/w.init.w;l=1<r?"in":r<1?"out":""}function I(t,n){var e=Y(n);w.current.x=e.x,w.current.y=e.y,w.current.w=e.width,w.current.h=e.height,w.current.z=e.width/w.init.w}function C(t,n,e){if("in"===l){var r=t.current[0].x-t.start[0].x+w.start.x,i=t.current[0].y-t.start[0].y+w.start.y;B(z,r,i,w.start.z)}}function F(t,n,e){if(e.is("pan")||e.is("pinch")){if("in"!==l)return;var r=w.current,i=u(r),a=i.x,c=i.y;if(a===r.x&&c===r.y)return;o(),B(z,a,c,r.z),s(function(){return L()})}}function u(t){var n=t.x,e=t.y,r=t.w,i=t.h,a=X(),c=W();return r<a?n=(a-r)/2:0<n?n=0:n<a-r&&(n=a-r),i<c?e=(c-i)/2:0<e?e=0:e<c-i&&(e=c-i),{x:n,y:e}}}}),function(t,n,e){e.setAttribute("rel","stylesheet"),e.setAttribute("href",URL.createObjectURL(new Blob([6,0,8,0,7,0,9,0,36,10,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,22,10,1,6,0,8,0,7,0,9,0,59,13,23,3,19,2,24,3,19,2,33,3,32,11,2,57,3,32,11,2,51,3,56,2,12,5,6,0,8,0,7,0,9,0,36,13,61,3,14,2,16,3,60,2,46,4,54,3,63,2,52,3,14,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,30,13,16,3,18,2,62,3,65,64,2,26,3,34,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,34,3,19,2,12,5,6,0,8,0,7,0,9,0,22,13,16,3,18,2,17,4,53,3,24,1,23,2,26,3,17,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,22,1,55,13,33,3,32,11,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,29,13,16,3,18,2,24,3,15,11,2,23,3,15,11,2,17,3,50,21,4,15,11,10,1,4,15,11,20,2,12,44,45,1,6,29,4,58,1,13,5,1,1,16,3,1,18,2,5,1,1,24,3,1,15,11,2,5,1,1,17,3,1,49,21,4,15,11,20,2,5,12,5,5,6,29,4,47,1,13,5,1,1,16,3,1,18,2,5,1,1,23,3,1,15,11,2,5,1,1,17,3,1,48,21,4,15,11,20,2,5,12,1,45,44,5,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,22,13,26,3,14,2,12].map(function(t){return n[t]}),{type:"text/css"}))),URL.revokeObjectURL(e.getAttribute("href"))}(0,["_"," ",";",":","-","\n",".","style","src","css",",","%","}","{","none","50","position","transform","absolute","0",")","(","wrap","top","left","user","transition","touch","select","center","bg","action","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","9999","000","#"],document.head.appendChild(document.createElement("link")));
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.gallery = factory());
+}(this, (function () { 'use strict';
+
+  // for a 60Hz monitor, requestAnimationFrame will trigger the callback every 16.67ms (1000 / 60 == 16.66...)
+  var vendorPrefixes = ['webkit','moz','ms','o'];
+  var raf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "RequestAnimationFrame")]; }, window.requestAnimationFrame).bind(window);
+  var caf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "CancelAnimationFrame")]; }, window.cancelAnimationFrame).bind(window);
+  if (!raf || !caf) {
+    var last = 0;
+    raf = function (fn) {
+      var now = +new Date();
+      last = Math.max(now, last + 16);
+      return setTimeout(fn, last - now)
+    };
+    caf = clearTimeout;
+  }
+
+  function index (_) {
+    var passive = false;
+
+    function noop () {}
+
+    var options = Object.defineProperty({}, 'passive', {
+      get: function get () { passive = true; }
+    });
+
+    window.addEventListener('testPassive', noop, options);
+    window.removeEventListener('testPassive', noop, options);
+    return passive
+  }
+
+  var passive = index();
+  var defaultEventOptions = passive ? {capture: false, passive: true} : false;
+
+  var on = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off(element, evt, handler, options); }
+  };
+
+  var off = function (element, evt, handler, options) {
+  	if ( options === void 0 ) options = defaultEventOptions;
+
+  	return element.removeEventListener(evt, handler, options);
+  };
+  var isString = function (value) { return typeof value === 'string'; };
+  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
+
+  var html = function (literalSections) {
+  	var subsets = [], len = arguments.length - 1;
+  	while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
+
+  	return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
+  };
+
+  var hasClass = function (elm, className) { return elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className); };
+  var addClass = function (elm, className) {
+  	if (!hasClass(elm, className)) {
+  		elm.className += (elm.className ? ' ' : '') + className;
+  	}
+  };
+  var removeClass = function (elm, className) {
+  	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+  	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+  };
+
+  var classes = {
+  	gallery: "_src_style_css_gallery",
+  	bg: "_src_style_css_bg",
+  	wrap: "_src_style_css_wrap",
+  	full: "_src_style_css_full",
+  	center: "_src_style_css_center",
+  	disableTransition: "_src_style_css_disableTransition"
+  };
+
+  var templateObject$1 = Object.freeze(["\n        <div><img data-gallery-index=\"", "\" src=\"", "\"/></div>\n      "]);
+  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <div class=\"swiper\">\n      <div>\n      ", "\n      </div>\n    </div>\n  </div>\n</div>\n"]);
+  // function htmlEscape(str) {
+  //     return str.replace(/&/g, '&amp;') // first!
+  //               .replace(/>/g, '&gt;')
+  //               .replace(/</g, '&lt;')
+  //               .replace(/"/g, '&quot;')
+  //               .replace(/'/g, '&#39;')
+  //               .replace(/`/g, '&#96;');
+  // }
+
+      // <img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" />
+          // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
+        // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
+
+  var main = function (imgs, width, height, index) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, imgs.map(function (img) { return html(templateObject$1, img.i, img.src); }).join('')); };
+
+  var tpls = {main: main};
+
+  function enumFactory () {
+    // TODO: should rm idle
+    var value = 0, next = 1, enums = {'idle': 0};
+
+    var get = function (v) { return typeof v === 'number' ? v : enums[v]; };
+    var is = function (v) { return !!(value & get(v)); };
+    var or = function (v) { return value = value | get(v); };
+    var rm = function (v) { return value = value & ~get(v); };
+    // const set = v => { value = get(v); return bit }
+    var add = function (name) { enums[name] = next; next = next << 1; };
+    var spread = function (fn, value) { return function () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+   args.forEach(function (arg) { return fn(arg); }); return bit }; };
+
+    var bit = {
+      v: function () { return value; },
+      or: spread(or),
+      rm: spread(rm),
+      add: spread(add),
+      is: function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        return args.reduce(function (result, arg) { return result && is(arg); }, true);
+    },
+      set: function () {
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+   value = args.reduce(function (r, v) { return r | get(v); }, 0); return bit }
+      // get,
+      // enums
+    };
+
+    return bit
+  }
+
+  var html$1 = document.documentElement;
+  var touch2point = function (touch) { return ({x: touch.pageX, y: touch.pageY}); };
+
+  function gesture (elm) {
+    /*
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: swipe
+     * 0000 0100: vertical scrolling
+     * 0000 1000: pinch (two fingers)
+     * 0001 0000: pan (one fingers move)
+     */
+    // var phase = 0
+    // TODO: rm window.phase
+    var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan');
+    var ismoving = false;
+    var tapTimes = 0, tapStart = -1, tapLast = -1;
+
+    var handlers = {
+      // 'swipe': [],
+      'tap': [],
+      'single': [],
+      'double': [],
+
+      'start': [],
+      'move': [],
+      'end': [],
+
+      'scroll': [],
+      'scrollend': [],
+
+      'pan': [],
+      'panstart': [],
+      'panend': [],
+
+      'pinch': [],
+      'pinchstart': [],
+      'pinchend': []
+    };
+
+    var target = {};
+    var points = {
+      start: [],
+      last: [],
+      current: []
+    };
+    // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
+    var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase); }); };
+
+    var loop = function () { if (ismoving) { raf(loop); render(); }};
+
+    var setTouchPoints = function (evt, item) {
+      // if (!evt.touches || !evt.touches.length) return
+      if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+      if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
+      if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
+      else { points[item].splice(1, 10); }
+    };
+
+    var onstart = function (evt) {
+      // if (freeze) return
+      // ga('gesture.start')
+      setTouchPoints(evt, ['start', 'last', 'current']);
+      // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
+      // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
+
+      target = evt.target;
+
+      // phase = evt.touches.length > 1 ? 8 : 1
+      phase.set('start');
+      if (evt.touches.length > 1) { phase.or('pinch'); }
+
+      // ismoving = true
+
+      trigger('start');
+      if (phase.is('pinch')) { trigger('pinchstart'); }
+      else { trigger('panstart'); } // one touch point trigger pan
+
+      // loop()
+      if (!phase.is('pinch')) { tapStart = Date.now(); }
+    };
+
+    /// TODO: check pinch every time, if one point, switch behavior
+    /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
+    var onmove = function (evt) {
+      // if (freeze) return
+      // ga('gesture.onmove')
+
+      points.last = points.current;
+      setTouchPoints(evt, 'current');
+
+      // evt.touches.length === 1 && phase.rm('pinch')
+      // evt.touches.length > 1 && phase.or('pinch')
+      if (evt.touches.length > 1) { phase.rm('pan').or('pinch'); }
+      else {
+        if (phase.is('pinch')) {
+          setTouchPoints(evt, 'start');
+          // ga('move.trigger.start')
+          trigger('start');
+        }
+        phase.rm('pinch').or('pan');
+        // ga('xxxxxxxxxxx: ', phase.is('pan'))
+      }
+      // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
+
+      if (phase.is('start') && !phase.is('pinch')) {
+        Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll');
+        // phase.or('pan')
+      }
+
+      phase.rm('start').or('move');
+      //
+      // if (evt.touches.length === 1) phase = 16
+
+      if (!ismoving) {
+        // TODO: change from two points to one points
+        ismoving = true;
+        loop();
+      }
+    };
+
+    var onend = function (evt) {
+      // if (freeze) return
+      phase.rm('start', 'move').or('end');
+
+      // ga('gesture.end')
+      trigger('end');
+
+      phase.is('scroll') && trigger('scrollend');
+      phase.is('pinch') && trigger('pinchend');
+      phase.is('pan') && trigger('panend');
+      ismoving = false;
+      // phase.set(0)
+
+      // TODO: learn single / double logic
+      if (!phase.is('pinch') && !phase.is('pan')) {
+        var now = Date.now();
+        if (now - tapStart <= 200) {
+          trigger('tap');
+          // if (now - tapLastTimestamp <= 200) tapTimes++
+          // else tapTimes = 0
+
+          tapTimes = now - tapLast <= 300 ? tapTimes + 1 : 1;
+          tapLast = now;
+
+          if (tapTimes === 1) { setTimeout(function () { return tapTimes === 1 && trigger('single'); }, 300); }
+          else if (tapTimes === 2) { trigger('double'); }
+        }
+      }
+    };
+
+    var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
+    var _on = function (evt, fn) {
+      handlers[evt].push(fn);
+      return function () { return off(elm, evt, fn); }
+    };
+
+    on(elm, 'touchstart', onstart);
+    on(elm, 'touchmove', onmove);
+    on(elm, 'touchend', onend);
+
+    return {
+      on: _on, off: _off
+      // destroy: () => {}
+    }
+
+    function render () {
+      trigger('move');
+
+      // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
+      // ga(phase)
+
+      phase.is('scroll') && trigger('scroll');
+      phase.is('pinch') && trigger('pinch');
+      phase.is('pan') && trigger('pan');
+    }
+  }
+
+  function Link (arr) {
+    var this$1 = this;
+
+    arr.forEach(function (item) { return this$1.append(item); });
+  }
+
+  Link.prototype.append = function (item) {
+    var node = item.$next = item.$prev = item;
+    if (!this.$tail) { return this.$head = this.$tail = node }
+    node.$prev = this.$tail;
+    node.$next = this.$tail.$next;
+    this.$tail.$next = node;
+    node.$next.$prev = node;
+    return this.$tail = node
+  };
+
+  var on$1 = function (element, evt, handler) {
+    element.addEventListener(evt, handler, false);
+  };
+
+  var off$1 = function (element, evt, handler) {
+    element.removeEventListener(evt, handler, false);
+  };
+
+  var isFunction$1 = function (value) {
+    return typeof value === 'function'
+  };
+
+  var inViewport = function (item) {
+    var rect = item.getBoundingClientRect();
+    return (rect.top < window.innerHeight && rect.bottom > 0) &&
+      (rect.left < window.innerWidth && rect.right > 0)
+  };
+
+  var easing = {
+    'cubic': function (k) { return --k * k * k + 1; },
+    // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+    // quint: k => 1 - Math.pow(1 - k, 5),
+    // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+    'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+  };
+
+  // TODO: desktop support, mouse / pointer events
+  // var touch = 'ontouchstart' in window
+  // export var pointerdown = touch ? 'touchstart' : 'mousedown'
+  // export var pointermove = touch ? 'touchmove' : 'mousemove'
+  // export var pointerup = touch ? 'touchend' : 'mouseup'
+  var pointerdown = 'touchstart';
+  var pointermove = 'touchmove';
+  var pointerup = 'touchend';
+
+  var computedProp = function (el, prop) { return window.getComputedStyle(el, null).getPropertyValue(prop); };
+
+  // export const requestFrame = fn => {
+  //   var ticking = false
+  //   return () => {
+  //     if (!ticking) {
+  //       raf(() => {
+  //         fn()
+  //         ticking = false
+  //       })
+  //       ticking = true
+  //     }
+  //   }
+  // }
+
+  function bitEnum () {
+    this.value = 0;
+  }
+  bitEnum.prototype = {
+    is: function (v) {
+      return this.value & v
+    },
+    or: function (v) {
+      this.value = this.value | v;
+      return this
+    },
+    rm: function (v) {
+      this.value = this.value & ~v;
+      return this
+    },
+    set: function (v) {
+      this.value = v;
+      return this
+    }
+  };
+
+  var options = { 'root': null, 'rootMargin': '0px', 'threshold': [0, 0.01] };
+
+  var observable = !!window['IntersectionObserver'];
+
+  var observe = function (el, fn) {
+    if (!observable) { return fn() }
+    var observer = new IntersectionObserver (fn, options);
+    observer.observe(el);
+    return function () { observer.unobserve(el); }
+  };
+
+  var FAST_THRESHOLD = 120; // threshold to identify fast swipe
+  var FAST_INTERVAL = 250; // swipe duration in fast mode
+  var MAX_INTERVAL = 1000; // total swipe duration
+  var MAX_PART = MAX_INTERVAL * 2 / 3;
+  var AUTO_TIMEOUT = 3000; // auto swipe interval
+
+  var passive$1 = index();
+
+  // quote property name to pervent mangling
+  var defaultOptions = {
+    'auto': false,
+    'cycle': true,
+    'expose': false,
+    'root': null, // required
+    'elms': [], // required
+    'index': 0,
+    'width': window.screen.width, // if css is false, need width & height
+    'height': 200,
+    'css': false,
+    'ease': 'cubic',
+    'plugins': [],
+    'initHandlers': [],
+    'startHandlers': [],
+    'moveHandlers': [],
+    'endHandlers': [],
+    'animationEndHandlers': []
+  };
+
+  // hidden div to store swipe elements which are out of current three
+  var hides = document.createElement('div');
+  hides.style.display = 'none';
+  document.body.appendChild(hides);
+
+  function swipeIt (options) {
+    var opts = Object.assign({}, defaultOptions,
+      options);
+
+    var index$$1 = opts.index;
+    var root = opts.root;
+    var elms = opts.elms;
+    var width = opts.width;
+    var height = opts.height;
+    var cycle = opts.cycle;
+    var expose = opts.expose;
+    var auto = opts.auto;
+    var css = opts.css;
+    var ease = opts.ease;
+    var plugins = opts.plugins;
+
+    plugins.forEach(function (p) { return Object.keys(p).forEach(function (action) { return opts[action + 'Handlers'].push(p[action]); }); });
+
+    var onFn = function (action) { return function () {
+      var arguments$1 = arguments;
+
+      var args = [], len = arguments.length;
+      while ( len-- ) { args[ len ] = arguments$1[ len ]; }
+
+      return opts[action + 'Handlers'].forEach(function (f) { return f.apply(null, args); });
+   }    };
+    var onInit = onFn('init');
+    var onStart = onFn('start');
+    var onMove = onFn('move');
+    var onEnd = onFn('end');
+    // var onAnimationEnd = onFn('animationEnd')
+
+    if (!root) { return }
+
+    if (css) {
+      width = Number(computedProp(root, 'width').slice(0, -2));
+      height = Number(computedProp(root, 'height').slice(0, -2));
+    }
+    var main = root.children[0], animations = {main: -1, auto: -1}, threshold = width / 3;
+
+    /* phase
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: dragging
+     * 0000 0100: animating
+     * 0000 1000: vertical scrolling
+     * 0001 0000: auto animating
+     * 0010 0000: cancel auto animating
+     */
+
+    var phaseEnum = {
+      idle:     0,
+      start:    1,
+      drag:     2,
+      animate:  4,
+      scroll:   8,
+      auto:     16,
+      cancel:   32
+    };
+    var phase = new bitEnum();
+
+    /* autoPhase
+     * 0: distance <= width / 2
+     * 1: distance > width / 2
+     */
+    var autoPhase = 0;
+    var restartX = 0, direction = 0; // -1: left, 0: na, 1: right
+    var x = 0, startTime = 0, startX = 0, currentX = 0, startY = 0, slides = [];
+    var two = false;
+    auto = cycle && auto;
+
+    var current = elms[index$$1];
+
+    // const moveE = el => moveX(el, el.x)
+    var moveEx = function (el, x) { el.x = x; moveX(el, x); };
+    var hide = function (el) { return hides.appendChild(el); };
+
+    var show = function (el) { return main.appendChild(el); };
+    var stopR = function (_) { return !cycle && currentX > startX && current === slides.$head; };
+    var stopL = function (_) { return !cycle && currentX <= startX && current === slides.$tail; };
+
+    var clearAuto = function (_) { return clearTimeout(animations.auto); };
+    var clearAndCancel = function (_) { return clearAuto(phase.set(phaseEnum.cancel)); };
+    var clearMain = function (_) { return caf(animations.main); };
+    var clearAnimations = function (_) {clearAuto(); clearMain();};
+
+    init();
+
+    return {
+      'destroy': destroy,
+      'index': function (_) { return current.$index; },
+      'on': function (evt, callback) {
+        var fns = opts[evt + 'Handlers'];
+        fns.push(callback);
+        return function () { return fns.splice(fns.indexOf(callback), 1); }
+      }
+    }
+
+    function moveX (el, x) {
+      if (!el) { return }
+      el.style.transition = el.style.webkitTransition = '';
+      el.style.transform = el.style.webkitTransform = "translate3d(" + x + "px, 0, 0)";
+      onMove(current.$index, current, main, elms);
+    }
+
+    function onTouchStart (evt) {
+      clearAnimations();
+      phase.or(phaseEnum.start).rm(phaseEnum.scroll);
+      direction = 0;
+
+      var touch = evt.touches[0];
+      startTime = Date.now();
+      restartX = currentX = startX = touch.pageX;
+      startY = touch.clientY;
+      onStart(current.$index, current, main, elms);
+    }
+
+    function onTouchMove (evt) {
+      if (phase.is(phaseEnum.scroll)) { return }
+
+      var touch = evt.touches[0];
+      var gap = touch.pageX - currentX;
+
+      // identify vertical scrolling
+      if (phase.is(phaseEnum.start) && Math.abs(gap) * 2 < Math.abs(touch.clientY - startY)) {
+        phase.or(phaseEnum.scroll).rm(phaseEnum.start);
+        return
+      }
+
+      var _d = gap > 0 ? 1 : -1;
+      if (direction !== _d) {
+        restartX = currentX;
+        startTime = Date.now();
+        direction = _d;
+      }
+
+      phase.set(phaseEnum.drag);
+      currentX = touch.pageX;
+
+      x = x + gap;
+      // moveX(main, x)
+      moveEx(main, x);
+
+      evt.preventDefault();
+    }
+
+    function moveRight () {
+      two || hide(current.$next);
+      current = current.$prev;
+      if (!stopR()) {
+        moveEx(current.$prev, current.x - width);
+        show(current.$prev);
+      }
+    }
+
+    function moveLeft () {
+      two || hide(current.$prev);
+      current = current.$next;
+      if (!stopL()) {
+        moveEx(current.$next, current.x + width);
+        show(current.$next);
+      }
+    }
+
+    function onAutoAnimation () {
+      if (autoPhase === 0 && -current.x - x > width / 2) {
+        autoPhase = 1;
+        moveLeft();
+      }
+    }
+
+    function autoSwipePostpone () {
+      clearAuto();
+      animations.auto = setTimeout(function () {
+        autoSwipeImmediate();
+      }, AUTO_TIMEOUT);
+    }
+
+    function autoSwipeImmediate () {
+      autoPhase = 0;
+      phase.set(phaseEnum.auto);
+      onStart(current.$index, current, main, elms);
+      animate(main, x, -current.x - width, MAX_PART, onAutoAnimation, autoSwipePostpone);
+      // animate(main, x, x - width, MAX_INTERVAL, onAutoAnimation, autoCallback)
+      // onEnd(current.$next.$index, current.$next, main, elms)
+    }
+
+    function autoSwipe() {
+      if (Math.abs(x + current.x) > 3) { autoSwipeImmediate(); }
+      else { autoSwipePostpone(); }
+    }
+
+    function onTouchEnd (evt) {
+      // auto && autoCallback()
+      if (phase.is(phaseEnum.scroll) && !phase.is(phaseEnum.animate) && !phase.is(phaseEnum.auto)) { return auto && autoSwipe(); }
+      phase.set(phaseEnum.animate);
+      var right = currentX > restartX;
+      var fast = (Date.now() - startTime) < FAST_THRESHOLD;
+
+      if (!stopR() && !stopL()) {
+        var cx = current.x + x;
+        if (fast) {
+          if (right && cx > 0) { moveRight(); }
+          else if (!right && cx < 0) { moveLeft(); }
+        } else if (cx > threshold) { moveRight(); }
+        else if (cx < -threshold) { moveLeft(); }
+      }
+
+      var to = current.x * -1;
+
+      var t = Math.min(Math.max(MAX_INTERVAL * Math.abs(to - x) / width, FAST_INTERVAL), MAX_PART);
+      animate(main, x, to, fast ? FAST_INTERVAL : t, null, auto ? function () { return autoSwipe(); } : null);
+      // animate(main, x, to, fast ? FAST_INTERVAL : t)
+
+      // onEnd(current.$index, current, main, elms)
+    }
+
+    function animate (elm, from, to, interval, onAnimation, callback) {
+      var start = Date.now();
+      function loop () {
+        var now = Date.now();
+        var during = now - start;
+        if (during >= interval) { x = to; }
+        isFunction$1(onAnimation) && onAnimation();
+        if (during >= interval) {
+          // moveX(elm, to)
+          moveEx(elm, to);
+          !phase.is(phaseEnum.cancel) && isFunction$1(callback) && callback();
+          phase.set(phaseEnum.idle);
+          // return onAnimationEnd(current.$index, current, main, elms)
+          return onEnd(current.$index, current, main, elms)
+        }
+        var distance = (to - from) * easing[ease](during / interval) + from;
+        x = distance;
+        // moveX(elm, distance)
+        moveEx(elm, x);
+        animations.main = raf(loop);
+      }
+      loop();
+    }
+
+    function init () {
+      if (elms.length === 0) { return onInit(-1) }
+      // if (!expose) root.style.overflow = 'hidden'
+      root.style.position = 'relative';
+      if (!css) {
+        root.style.width = width + 'px';
+        root.style.height = height + 'px';
+      }
+      var needClone = elms.length === 2 && cycle;
+      if (needClone) {
+        elms.push(elms[0].cloneNode(true));
+        show(elms[2]);
+        elms.push(elms[1].cloneNode(true));
+        show(elms[3]);
+        elms[0].$index = elms[2].$index = 0;
+        elms[1].$index = elms[3].$index = 1;
+      }
+      var one = elms.length === 1;
+      two = elms.length === 2;
+      // slides = new Link(elms, needClone ? '0101' : null)
+      slides = new Link(elms);
+      needClone || elms.forEach(function (e, i) { return e.$index = i; });
+
+      moveEx(current, 0);
+      one || two || moveEx(current.$prev, -width);
+      one || moveEx(current.$next, width);
+      elms.forEach(function (el) {
+        el.style.position = 'absolute';
+        if (!css) {
+          el.style.width = width + 'px';
+          el.style.height = height + 'px';
+        }
+        // el.style.overflow = 'hidden'
+        if (!two && !one && el !== current && el !== current.$prev && el !== current.$next) { hide(el); }
+      });
+
+      if (one) { return onInit(current.$index, current, main, elms) }
+
+      if (!two && !cycle && index$$1 === 0) { hide(current.$prev); }
+      if (!two && !cycle && index$$1 === elms.length - 1) { hide(current.$next); }
+
+      destroy();
+      on$1(root, pointerdown, onTouchStart);
+      on$1(root, pointermove, onTouchMove);
+      on$1(root, pointerup, onTouchEnd);
+
+      if (auto) {
+        // stop auto swipe when out of screen
+        if (observable) {
+          raf(function () {
+            opts.unobserve = observe(root, function (entries) {
+              if (entries && entries[0].intersectionRatio === 0) { clearAndCancel(); }
+              else { autoSwipe(); }
+            });
+          });
+        } else {
+          var toggleSwiper = function () { return inViewport(root) ? autoSwipePostpone() : clearAndCancel(); };
+          on$1(window, 'touchmove', function () { return inViewport(root) || clearAndCancel(); });
+          on$1(window, 'touchend', toggleSwiper);
+          toggleSwiper();
+        }
+
+        // stop auto swipe when invisible
+        // Set the name of the hidden property and the change event for visibility
+        var ref = ['webkit', 'moz', 'ms', '-'].reduce(function (result, current) { return typeof document[result[0]] !== 'undefined' ? result : [current + 'Hidden', current + 'visibilitychange']; }, ['hidden', 'visibilitychange']);
+        var hidden = ref[0];
+        var visibilitychange = ref[1];
+        // Handle page visibility change
+        hidden[0] !== '-' && document.addEventListener(visibilitychange, function () { return document[hidden] ? clearAndCancel() : autoSwipePostpone(); }, false);
+      }
+
+      main.x = 0;
+      onInit(current.$index, current, main, elms);
+    }
+
+    function destroy () {
+      clearAnimations();
+      isFunction$1(opts.unobserve) && opts.unobserve();
+      off$1(root, pointerdown, onTouchStart);
+      off$1(root, pointermove, onTouchMove);
+      off$1(root, pointerup, onTouchEnd);
+    }
+  }
+
+  // console.log('the best gallery is coming...')
+
+  var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
+  var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
+
+  var html$2 = document.documentElement;
+  var doc_h$1 = function () { return html$2.clientHeight; };
+  var doc_w$1 = function () { return html$2.clientWidth; };
+
+  var showHideAnimationDuration = 333;
+  var showHideComplete = function (fn) { return setTimeout(fn, showHideAnimationDuration + 20); };
+  var getRect = function (elm) { return elm.getBoundingClientRect(); };
+
+  var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
+  var square = function (x) { return x * x; };
+  var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
+  var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
+
+  var defaultOptions$1 = {
+    selector: 'data-gallery-item',
+    dataset: 'galleryItem'
+  };
+
+  function gallery (options) {
+    var opts = Object.assign({}, defaultOptions$1,
+      options);
+
+    var cache = [];
+    var buildCache = function () {
+      cache.splice(0, cache.length);
+      document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
+        img.dataset.galleryIndex = index;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
+      });
+    };
+    var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
+
+    var setInitShape = function (img) {
+      var item = getCacheItem(img);
+      var docWidth = doc_w$1(), docHeight = doc_h$1();
+      var thin = (docWidth / docHeight) > item.r;
+      var w = thin ? docHeight * item.r : docWidth;
+      var h = thin ? docHeight : docWidth / item.r;
+      var x = thin ? (docWidth - w) / 2 : 0;
+      var y = thin ? 0 : (docHeight - h) / 2;
+      shape.init = {x: x, y: y, w: w, h: h, z: 1};
+      return shape.init
+    };
+    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
+
+    // var x, y, w, h
+
+    var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
+
+    // var gesture = gestureFactory()
+
+    var selector = opts.selector;
+    var dataset = opts.dataset;
+    // the container
+    var div = document.createElement('div');
+    document.body.appendChild(div);
+
+    var gallery, wrap, background, freeze = false;
+    var swiperDom, swiperInstance;
+    // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
+    var offStach = [];
+    var offs = function (fn) { return offStach.push(fn); };
+
+    // click document
+    offs(on(document, 'click', function (evt) {
+      var target = evt.target;
+      if (target.tagName === 'IMG' && dataset in target.dataset) {
+        buildCache();
+        var sizes = setInitShape(target);
+        div.innerHTML = tpls.main(cache, sizes.w, sizes.h, target.dataset.galleryIndex);
+        raf(function () { return init(getCacheItem(target)); });
+      }
+    }));
+
+    var enableTransition = function () { return removeClass(gallery, classes.disableTransition); };
+    var disableTransition = function () { return addClass(gallery, classes.disableTransition); };
+
+    /*
+     * events (pan | pinch | press | rotate | swipe | tap)
+     * horizontal swipe: flick to next / previous
+     * vertical swipe: close gallery
+     * spread: zoom in
+     * pinch: zoom out and close gallery
+     * double tap: zoom in / zoom out based on tap point
+     * pan: drag to pan
+     * tap: toggle controls
+     */
+    // var on = () => {}
+    // var off = () => {}
+
+    var zoom = '';
+
+    var gallery = {
+      // on, off
+      destroy: destroy
+    };
+
+    return gallery
+
+    function destroy () {
+      // TODO: leave the first click which is the document click, should be included in the future
+      // TODO: remove all events and dom elements in destroy
+      offStach.splice(1, offStach.length).forEach(function (o) { return o(); });
+    }
+
+    // TODO: reset all private variables
+    function init (target) {
+      var img = target.elm;
+      gallery = div.childNodes[1];
+      wrap = gallery.querySelector('.' + classes.wrap);
+      background = gallery.querySelector('.' + classes.bg);
+      swiperDom = gallery.querySelector('.swiper');
+
+      var rect = getRect(img);
+      disableTransition();
+      applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
+
+      swiperInstance = swipeIt({
+        root: swiperDom,
+        elms: Array.prototype.slice.apply(swiperDom.children[0].children),
+        auto: false,
+        index: target.i
+      });
+
+      var gesture$$1 = opts.gesture = window.ges = gesture(wrap);
+
+      // TODO: tap to toggle controls, double tap to zoom in / out
+      // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+      offs(gesture$$1.on('single', onsingle));
+      offs(gesture$$1.on('double', ondouble));
+
+      offs(gesture$$1.on('scroll', onscroll));
+      offs(gesture$$1.on('scrollend', onscrollend));
+
+      // offs(gesture.on('pinchstart', onpinchstart))
+      offs(gesture$$1.on('pinch', onpinch));
+      offs(gesture$$1.on('pinchend', onpinchend));
+
+      // offs(gesture.on('panstart', onpanstart))
+      offs(gesture$$1.on('pan', onpan));
+      // offs(gesture.on('panend', onpanend))
+
+      offs(gesture$$1.on('start', onstart));
+      offs(gesture$$1.on('move', onmove));
+      offs(gesture$$1.on('end', onend));
+
+      gallery.style.display = 'block';
+      raf(function () {
+        show(img);
+      });
+    }
+
+    function show (img) {
+      // if (freeze) return
+      // freeze = true
+      enableTransition();
+      // var sizes = size(img)
+
+      applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
+      applyOpacity(background, 1);
+      showHideComplete(function () { return freeze = !!disableTransition(); });
+    }
+
+    function hide (img) {
+      if (freeze) { return }
+      freeze = true;
+      enableTransition();
+      var rect = getRect(getCacheItem(img).elm);
+      // ga('hide.rect', rect)
+
+      applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
+      applyOpacity(background, 0);
+      showHideComplete(function () {
+        freeze = !(gallery.style.display = 'none');
+        destroy();
+      });
+    }
+
+    function onsingle (points, target) {
+      ga('single');
+      // TODO: trigger wrong
+      hide(target);
+    }
+
+    function ondouble (points, target) {
+      ga('double.zoom: ', zoom);
+      if (zoom !== 'out') {
+        enableTransition();
+        var init = shape.init;
+        if (zoom === 'in') { applyTranslateScale(wrap, init.x, init.y, 1); }
+        else {
+          var ref = limitxy({
+            x: init.x * 2 - points.start[0].x,
+            y: init.y * 2 - points.start[0].y,
+            w: init.w * 2,
+            h: init.h * 2
+          });
+          var x = ref.x;
+          var y = ref.y;
+          applyTranslateScale(wrap, x, y, 2);
+        }
+        showHideComplete(function () { return disableTransition(); });
+      }
+    }
+
+    function onscroll (points, target) {
+      // ga('onscroll')
+      if (zoom !== '') { return }
+      var yy = points.current[0].y - points.start[0].y;
+      applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
+      var opacity = 1 - Math.abs(yy * 2 / doc_h$1());
+      applyOpacity(background, opacity > 0 ? opacity : 0);
+    }
+
+    function onscrollend (points, target) {
+      if (zoom !== '') { return }
+      var yy = Math.abs(points.current[0].y - points.start[0].y);
+
+      if (yy / doc_h$1() > 1/7) { hide(target); }
+      else {
+        enableTransition();
+        applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
+        applyOpacity(background, 1);
+        showHideComplete(function () { return disableTransition(); });
+      }
+    }
+
+    // function _onstart (points, target) {}
+    //
+    // function onstartpinch (points, target) {
+    //   _onstart(points, target)
+    // }
+
+    function onpinch (points, target) {
+      // ga('onpinch')
+
+      var zoomLevel = calculateZoomLevel(points); //* pinch.z
+      var center1 = getCenterPoint(points.start[0], points.start[1]);
+      var center2 = getCenterPoint(points.current[0], points.current[1]);
+
+      var dx = center2.x - (center1.x - shape.start.x) * zoomLevel;
+      var dy = center2.y - (center1.y - shape.start.y) * zoomLevel;
+
+      var _zoom = zoomLevel * shape.start.z;
+      zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+      applyTranslateScale(wrap, dx, dy, _zoom);
+      if (zoom === 'out') {
+        var rect = getRect(getCacheItem(target).elm);
+        // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
+        shape.start.z <= 1 && applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width));
+      }
+    }
+
+    // TODO: 缩小露底问题
+    function onpinchend(points, target) {
+      if (zoom === 'out') {
+        if (shape.start.z <= 1) { hide(target); }
+        else { show(target); }
+      }
+    }
+
+    function onstart(points, target) {
+      var rect = getRect(target);
+      shape.start.x = shape.last.x = shape.current.x = rect.x;
+      shape.start.y = shape.last.y = shape.current.y = rect.y;
+      shape.start.w = shape.last.w = shape.current.w = rect.width;
+      shape.start.h = shape.last.h = shape.current.h = rect.height;
+      var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
+      zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+      // ga('onstart.shape: ', shape)
+    }
+
+    function onmove(points, target) {
+      // ga('index.onmove')
+      var rect = getRect(target);
+      shape.current.x = rect.x;
+      shape.current.y = rect.y;
+      shape.current.w = rect.width;
+      shape.current.h = rect.height;
+      shape.current.z = rect.width / shape.init.w;
+    }
+
+    // TODO: fast pan should have a panend animation
+    // TODO: 拖拽卡顿
+    function onpan(points, target, phase) {
+      // ga(zoom)
+      // ga('onpan')
+      if (zoom === 'in') {
+        // ga('zzz')
+        // var zoomLevel = calculateZoomLevel(points) //* pinch.z
+        // ga(zoomLevel)
+        var dx = points.current[0].x - points.start[0].x + shape.start.x;
+        var dy = points.current[0].y - points.start[0].y + shape.start.y;
+        // ga({dx, dy})
+        // ga('pan: ', {dx, dy, z: shape.start.z})
+        applyTranslateScale(wrap, dx, dy, shape.start.z);
+      }
+    }
+
+    function onend(points, target, phase) {
+      if (phase.is('pan') || phase.is('pinch')) {
+        if (zoom !== 'in') { return }
+
+        var current = shape.current;
+        var ref = limitxy(current);
+        var x = ref.x;
+        var y = ref.y;
+
+        if (x === current.x && y === current.y) { return }
+
+        enableTransition();
+        applyTranslateScale(wrap, x, y, current.z);
+        showHideComplete(function () { return disableTransition(); });
+      }
+    }
+
+    function limitxy (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
+      var dw = doc_w$1(), dh = doc_h$1();
+
+      if (dw > w) { x = (dw - w) / 2; }
+      else if (x > 0) { x = 0; }
+      else if (x < dw - w) { x = dw - w; }
+
+      if (dh > h) { y = (dh - h) / 2; }
+      else if (y > 0) { y = 0; }
+      else if (y < dh - h) { y = dh - h; }
+
+      return {x: x, y: y}
+    }
+  }
+
+  return gallery;
+
+})));
+(function (encoded, words, link) {
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', URL.createObjectURL(
+        new Blob(
+            encoded.map(function (index) {
+                return words[index];
+            }),
+            {type: 'text/css'}
+        )
+    ));
+    URL.revokeObjectURL(link.getAttribute('href'));
+}(
+    [6,0,8,0,7,0,9,0,36,10,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,22,10,1,6,0,8,0,7,0,9,0,59,13,23,3,19,2,24,3,19,2,33,3,32,11,2,57,3,32,11,2,51,3,56,2,12,5,6,0,8,0,7,0,9,0,36,13,61,3,14,2,16,3,60,2,46,4,54,3,63,2,52,3,14,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,30,13,16,3,18,2,62,3,65,64,2,26,3,34,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,34,3,19,2,12,5,6,0,8,0,7,0,9,0,22,13,16,3,18,2,17,4,53,3,24,1,23,2,26,3,17,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,22,1,55,13,33,3,32,11,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,29,13,16,3,18,2,24,3,15,11,2,23,3,15,11,2,17,3,50,21,4,15,11,10,1,4,15,11,20,2,12,44,45,1,6,29,4,58,1,13,5,1,1,16,3,1,18,2,5,1,1,24,3,1,15,11,2,5,1,1,17,3,1,49,21,4,15,11,20,2,5,12,5,5,6,29,4,47,1,13,5,1,1,16,3,1,18,2,5,1,1,23,3,1,15,11,2,5,1,1,17,3,1,48,21,4,15,11,20,2,5,12,1,45,44,5,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,22,13,26,3,14,2,12],
+    ["_"," ",";",":","-","\n",".","style","src","css",",","%","}","{","none","50","position","transform","absolute","0",")","(","wrap","top","left","user","transition","touch","select","center","bg","action","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","9999","000","#"],
+    document.head.appendChild(document.createElement('link'))
+));

@@ -39,6 +39,8 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * limit zoom in / out level
+* zoom out and zoom in: should not close
+* pan accelerate
 
 
 [npm]: https://img.shields.io/npm/v/@jiubao/gallery.svg

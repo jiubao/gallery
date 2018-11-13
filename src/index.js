@@ -1,8 +1,9 @@
 import {raf, caf} from '@jiubao/raf'
 import { on, off, isFunction, addClass, removeClass } from './utils'
 import tpls from './html.js'
-import {classes as cls} from './style.css';
+import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
+import swiper from 'swipe-core/dist/swipe-core.es'
 
 // console.log('the best gallery is coming...')
 
@@ -39,7 +40,7 @@ function gallery (options) {
     document.querySelectorAll(`img[${selector}]`).forEach((img, index) => {
       img.dataset.galleryIndex = index
       var w = img.naturalWidth, h = img.naturalHeight
-      cache[index] = { elm: img, w, h, r: w / h }
+      cache[index] = { elm: img, w, h, r: w / h, src: img.src, i: index }
     })
   }
   const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
@@ -70,6 +71,7 @@ function gallery (options) {
   document.body.appendChild(div)
 
   var gallery, wrap, background, freeze = false
+  var swiperDom, swiperInstance
   // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
   var offStach = []
   var offs = fn => offStach.push(fn)
@@ -80,8 +82,8 @@ function gallery (options) {
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       buildCache()
       var sizes = setInitShape(target)
-      div.innerHTML = tpls.main(target.src, sizes.w, sizes.h, target.dataset.galleryIndex)
-      raf(() => init(target))
+      div.innerHTML = tpls.main(cache, sizes.w, sizes.h, target.dataset.galleryIndex)
+      raf(() => init(getCacheItem(target)))
     }
   }))
 
@@ -117,14 +119,23 @@ function gallery (options) {
   }
 
   // TODO: reset all private variables
-  function init (img) {
+  function init (target) {
+    var img = target.elm
     gallery = div.childNodes[1]
     wrap = gallery.querySelector('.' + cls.wrap)
     background = gallery.querySelector('.' + cls.bg)
+    swiperDom = gallery.querySelector('.swiper')
 
     var rect = getRect(img)
     disableTransition()
     applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
+
+    swiperInstance = swiper({
+      root: swiperDom,
+      elms: Array.prototype.slice.apply(swiperDom.children[0].children),
+      auto: false,
+      index: target.i
+    })
 
     var gesture = opts.gesture = window.ges = gestureFactory(wrap)
 
