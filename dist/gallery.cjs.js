@@ -47,12 +47,15 @@ var classes = {
 	bg: "_src_style_css_bg",
 	wrap: "_src_style_css_wrap",
 	full: "_src_style_css_full",
+	swiper: "_src_style_css_swiper",
+	swiperWrap: "_src_style_css_swiperWrap",
+	swiperItem: "_src_style_css_swiperItem",
 	center: "_src_style_css_center",
 	disableTransition: "_src_style_css_disableTransition"
 };
 
-var templateObject$1 = Object.freeze(["\n        <div><img data-gallery-index=\"", "\" src=\"", "\"/></div>\n      "]);
-var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <div class=\"swiper\">\n      <div>\n      ", "\n      </div>\n    </div>\n  </div>\n</div>\n"]);
+var templateObject$1 = Object.freeze(["\n      <div class=\"", "\">\n        <div class=\"", "\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
+var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\">\n    <div class=\"", "\">\n    ", "\n    </div>\n  </div>\n</div>\n"]);
 // function htmlEscape(str) {
 //     return str.replace(/&/g, '&amp;') // first!
 //               .replace(/>/g, '&gt;')
@@ -66,7 +69,7 @@ var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "
         // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
       // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
 
-var main = function (imgs, width, height, index) { return html(templateObject, classes.gallery, classes.bg, classes.wrap, imgs.map(function (img) { return html(templateObject$1, img.i, img.src); }).join('')); };
+var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, classes.wrap, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
 
 var tpls = {main: main};
 
@@ -319,11 +322,12 @@ function gallery (options) {
       img.dataset.galleryIndex = index;
       var w = img.naturalWidth, h = img.naturalHeight;
       cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
+      cache[index].shape = getInitShape(img);
     });
   };
   var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
 
-  var setInitShape = function (img) {
+  var getInitShape = function (img) {
     var item = getCacheItem(img);
     var docWidth = doc_w$1(), docHeight = doc_h$1();
     var thin = (docWidth / docHeight) > item.r;
@@ -331,8 +335,11 @@ function gallery (options) {
     var h = thin ? docHeight : docWidth / item.r;
     var x = thin ? (docWidth - w) / 2 : 0;
     var y = thin ? 0 : (docHeight - h) / 2;
-    shape.init = {x: x, y: y, w: w, h: h, z: 1};
-    return shape.init
+
+    return {x: x, y: y, w: w, h: h, z: 1}
+
+    // shape.init = {x, y, w, h, z: 1}
+    // return shape.init
   };
   var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
 
@@ -359,9 +366,11 @@ function gallery (options) {
     var target = evt.target;
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       buildCache();
-      var sizes = setInitShape(target);
-      div.innerHTML = tpls.main(cache, sizes.w, sizes.h, target.dataset.galleryIndex);
-      raf.raf(function () { return init(getCacheItem(target)); });
+      // var sizes = setInitShape(target)
+      var item = getCacheItem(target);
+      shape.init = item.shape;
+      div.innerHTML = tpls.main(cache);
+      raf.raf(function () { return init(item); });
     }
   }));
 
@@ -397,46 +406,81 @@ function gallery (options) {
   }
 
   // TODO: reset all private variables
-  function init (target) {
-    var img = target.elm;
+  function init (item) {
+    var img = item.elm;
     gallery = div.childNodes[1];
-    wrap = gallery.querySelector('.' + classes.wrap);
     background = gallery.querySelector('.' + classes.bg);
-    swiperDom = gallery.querySelector('.swiper');
+    swiperDom = gallery.querySelector('.' + classes.swiper);
 
     var rect = getRect(img);
     disableTransition();
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
+
+    cache.forEach(function (c) {
+      c.wrap = gallery.querySelector(("." + (classes.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
+      if (c.i === item.i) { applyTranslateScale(c.wrap, rect.left, rect.top, rect.width / shape.init.w); }
+      else { applyTranslateScale(c.wrap, c.shape.x, c.shape.y, 1); }
+
+      var gesture$$1 = gesture(c.wrap);
+
+      // TODO: tap to toggle controls, double tap to zoom in / out
+      // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+      offs(gesture$$1.on('single', onsingle));
+      offs(gesture$$1.on('double', ondouble));
+
+      offs(gesture$$1.on('scroll', onscroll));
+      offs(gesture$$1.on('scrollend', onscrollend));
+
+      // offs(gesture.on('pinchstart', onpinchstart))
+      offs(gesture$$1.on('pinch', onpinch));
+      offs(gesture$$1.on('pinchend', onpinchend));
+
+      // offs(gesture.on('panstart', onpanstart))
+      offs(gesture$$1.on('pan', onpan));
+      // offs(gesture.on('panend', onpanend))
+
+      offs(gesture$$1.on('start', onstart));
+      offs(gesture$$1.on('move', onmove));
+      offs(gesture$$1.on('end', onend));
+    });
+
+    wrap = item.wrap;
 
     swiperInstance = swiper({
       root: swiperDom,
       elms: Array.prototype.slice.apply(swiperDom.children[0].children),
       auto: false,
-      index: target.i
+      index: item.i
     });
 
-    var gesture$$1 = opts.gesture = window.ges = gesture(wrap);
+    swiperInstance.on('end', function (index) {
+      wrap = cache[index].wrap;
+      shape.init = cache[index].shape;
+    });
 
-    // TODO: tap to toggle controls, double tap to zoom in / out
-    // offs(on(wrap, 'click', evt => hide(evt.target)))
-
-    offs(gesture$$1.on('single', onsingle));
-    offs(gesture$$1.on('double', ondouble));
-
-    offs(gesture$$1.on('scroll', onscroll));
-    offs(gesture$$1.on('scrollend', onscrollend));
-
-    // offs(gesture.on('pinchstart', onpinchstart))
-    offs(gesture$$1.on('pinch', onpinch));
-    offs(gesture$$1.on('pinchend', onpinchend));
-
-    // offs(gesture.on('panstart', onpanstart))
-    offs(gesture$$1.on('pan', onpan));
-    // offs(gesture.on('panend', onpanend))
-
-    offs(gesture$$1.on('start', onstart));
-    offs(gesture$$1.on('move', onmove));
-    offs(gesture$$1.on('end', onend));
+    // // var gesture = opts.gesture = window.ges = gestureFactory(wrap)
+    // var gesture = gestureFactory(wrap)
+    //
+    // // TODO: tap to toggle controls, double tap to zoom in / out
+    // // offs(on(wrap, 'click', evt => hide(evt.target)))
+    //
+    // offs(gesture.on('single', onsingle))
+    // offs(gesture.on('double', ondouble))
+    //
+    // offs(gesture.on('scroll', onscroll))
+    // offs(gesture.on('scrollend', onscrollend))
+    //
+    // // offs(gesture.on('pinchstart', onpinchstart))
+    // offs(gesture.on('pinch', onpinch))
+    // offs(gesture.on('pinchend', onpinchend))
+    //
+    // // offs(gesture.on('panstart', onpanstart))
+    // offs(gesture.on('pan', onpan))
+    // // offs(gesture.on('panend', onpanend))
+    //
+    // offs(gesture.on('start', onstart))
+    // offs(gesture.on('move', onmove))
+    // offs(gesture.on('end', onend))
 
     gallery.style.display = 'block';
     raf.raf(function () {
@@ -640,7 +684,7 @@ module.exports = gallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [6,0,8,0,7,0,9,0,36,10,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,22,10,1,6,0,8,0,7,0,9,0,59,13,23,3,19,2,24,3,19,2,33,3,32,11,2,57,3,32,11,2,51,3,56,2,12,5,6,0,8,0,7,0,9,0,36,13,61,3,14,2,16,3,60,2,46,4,54,3,63,2,52,3,14,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,30,13,16,3,18,2,62,3,65,64,2,26,3,34,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,34,3,19,2,12,5,6,0,8,0,7,0,9,0,22,13,16,3,18,2,17,4,53,3,24,1,23,2,26,3,17,1,40,35,1,38,4,39,21,42,10,1,19,10,1,43,10,1,41,20,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,22,1,55,13,33,3,32,11,2,27,4,31,3,14,2,25,4,28,3,14,2,12,5,6,0,8,0,7,0,9,0,29,13,16,3,18,2,24,3,15,11,2,23,3,15,11,2,17,3,50,21,4,15,11,10,1,4,15,11,20,2,12,44,45,1,6,29,4,58,1,13,5,1,1,16,3,1,18,2,5,1,1,24,3,1,15,11,2,5,1,1,17,3,1,49,21,4,15,11,20,2,5,12,5,5,6,29,4,47,1,13,5,1,1,16,3,1,18,2,5,1,1,23,3,1,15,11,2,5,1,1,17,3,1,48,21,4,15,11,20,2,5,12,1,45,44,5,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,30,10,1,6,0,8,0,7,0,9,0,37,1,6,0,8,0,7,0,9,0,22,13,26,3,14,2,12],
-    ["_"," ",";",":","-","\n",".","style","src","css",",","%","}","{","none","50","position","transform","absolute","0",")","(","wrap","top","left","user","transition","touch","select","center","bg","action","100","width","opacity","ms","gallery","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","overflow","outline","origin","index","img","hidden","height","h","full","fixed","display","background","9999","000","#"],
+    [4,0,6,0,5,0,7,0,30,8,1,4,0,6,0,5,0,7,0,25,8,1,4,0,6,0,5,0,7,0,17,8,1,4,0,6,0,5,0,7,0,38,8,1,4,0,6,0,5,0,7,0,56,8,1,4,0,6,0,5,0,7,0,54,8,1,4,0,6,0,5,0,7,0,55,13,23,3,20,2,24,3,20,2,34,3,33,11,1,48,37,2,63,3,33,11,1,48,37,2,12,9,4,0,6,0,5,0,7,0,30,8,1,4,0,6,0,5,0,7,0,25,8,1,4,0,6,0,5,0,7,0,17,8,1,4,0,6,0,5,0,7,0,38,13,57,3,62,2,12,9,4,0,6,0,5,0,7,0,30,13,66,3,14,2,16,3,65,2,49,10,60,3,68,2,58,3,14,2,28,10,32,3,14,2,26,10,29,3,14,2,12,9,4,0,6,0,5,0,7,0,25,13,16,3,19,2,67,3,70,69,2,27,3,35,1,42,36,1,40,10,41,22,44,8,1,20,8,1,45,8,1,43,21,2,35,3,20,2,12,9,4,0,6,0,5,0,7,0,17,13,16,3,19,2,18,10,59,3,24,1,23,2,27,3,18,1,42,36,1,40,10,41,22,44,8,1,20,8,1,45,8,1,43,21,2,28,10,32,3,14,2,26,10,29,3,14,2,12,9,4,0,6,0,5,0,7,0,17,1,61,13,34,3,33,11,2,28,10,32,3,14,2,26,10,29,3,14,2,12,9,4,0,6,0,5,0,7,0,31,13,16,3,19,2,24,3,15,11,2,23,3,15,11,2,18,3,53,22,10,15,11,8,1,10,15,11,21,2,12,46,47,1,4,31,10,64,1,13,9,1,1,16,3,1,19,2,9,1,1,24,3,1,15,11,2,9,1,1,18,3,1,52,22,10,15,11,21,2,9,12,9,9,4,31,10,50,1,13,9,1,1,16,3,1,19,2,9,1,1,23,3,1,15,11,2,9,1,1,18,3,1,51,22,10,15,11,21,2,9,12,1,47,46,9,4,0,6,0,5,0,7,0,39,1,4,0,6,0,5,0,7,0,25,8,1,4,0,6,0,5,0,7,0,39,1,4,0,6,0,5,0,7,0,17,13,27,3,14,2,12],
+    ["_"," ",";",":",".","style","src","css",",","\n","-","%","}","{","none","50","position","wrap","transform","absolute","0",")","(","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","important","full","disableTransition","cubic","bezier","333","1","0.4","0.22","/","*","!","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","overflow","outline","origin","index","img","hidden","height","h","fixed","display","background","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));

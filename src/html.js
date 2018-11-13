@@ -13,16 +13,18 @@ import {classes as cls} from './style.css'
         // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
       // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
 
-var main = (imgs, width, height, index) => html`
+var main = imgs => html`
 <div class="${cls.gallery}">
   <div class="${cls.bg}"></div>
-  <div class="${cls.wrap}">
-    <div class="swiper">
-      <div>
-      ${imgs.map(img => html`
-        <div><img data-gallery-index="${img.i}" src="${img.src}"/></div>
-      `).join('')}
+  <div class="${cls.swiper}">
+    <div class="${cls.swiperWrap}">
+    ${imgs.map(img => html`
+      <div class="${cls.swiperItem}">
+        <div class="${cls.wrap}">
+          <img data-gallery-index="${img.i}" src="${img.src}" style="width: ${img.shape.w}px; height: ${img.shape.h}px;"/>
+        </div>
       </div>
+    `).join('')}
     </div>
   </div>
 </div>

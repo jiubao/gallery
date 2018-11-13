@@ -41,12 +41,13 @@ function gallery (options) {
       img.dataset.galleryIndex = index
       var w = img.naturalWidth, h = img.naturalHeight
       cache[index] = { elm: img, w, h, r: w / h, src: img.src, i: index }
+      cache[index].shape = getInitShape(img)
     })
   }
   const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
   var thin = false
 
-  var setInitShape = img => {
+  var getInitShape = img => {
     var item = getCacheItem(img)
     var docWidth = doc_w(), docHeight = doc_h()
     var thin = (docWidth / docHeight) > item.r
@@ -54,8 +55,11 @@ function gallery (options) {
     var h = thin ? docHeight : docWidth / item.r
     var x = thin ? (docWidth - w) / 2 : 0
     var y = thin ? 0 : (docHeight - h) / 2
-    shape.init = {x, y, w, h, z: 1}
-    return shape.init
+
+    return {x, y, w, h, z: 1}
+
+    // shape.init = {x, y, w, h, z: 1}
+    // return shape.init
   }
   var emptyshape = () => ({x: 0, y: 0, z: 1, w: 0, h: 0})
 
@@ -81,9 +85,11 @@ function gallery (options) {
     var target = evt.target
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       buildCache()
-      var sizes = setInitShape(target)
-      div.innerHTML = tpls.main(cache, sizes.w, sizes.h, target.dataset.galleryIndex)
-      raf(() => init(getCacheItem(target)))
+      // var sizes = setInitShape(target)
+      var item = getCacheItem(target)
+      shape.init = item.shape
+      div.innerHTML = tpls.main(cache)
+      raf(() => init(item))
     }
   }))
 
@@ -119,46 +125,81 @@ function gallery (options) {
   }
 
   // TODO: reset all private variables
-  function init (target) {
-    var img = target.elm
+  function init (item) {
+    var img = item.elm
     gallery = div.childNodes[1]
-    wrap = gallery.querySelector('.' + cls.wrap)
     background = gallery.querySelector('.' + cls.bg)
-    swiperDom = gallery.querySelector('.swiper')
+    swiperDom = gallery.querySelector('.' + cls.swiper)
 
     var rect = getRect(img)
     disableTransition()
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
+
+    cache.forEach(c => {
+      c.wrap = gallery.querySelector(`.${cls.wrap} img[data-gallery-index="${c.i}"]`).parentElement
+      if (c.i === item.i) applyTranslateScale(c.wrap, rect.left, rect.top, rect.width / shape.init.w)
+      else applyTranslateScale(c.wrap, c.shape.x, c.shape.y, 1)
+
+      var gesture = gestureFactory(c.wrap)
+
+      // TODO: tap to toggle controls, double tap to zoom in / out
+      // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+      offs(gesture.on('single', onsingle))
+      offs(gesture.on('double', ondouble))
+
+      offs(gesture.on('scroll', onscroll))
+      offs(gesture.on('scrollend', onscrollend))
+
+      // offs(gesture.on('pinchstart', onpinchstart))
+      offs(gesture.on('pinch', onpinch))
+      offs(gesture.on('pinchend', onpinchend))
+
+      // offs(gesture.on('panstart', onpanstart))
+      offs(gesture.on('pan', onpan))
+      // offs(gesture.on('panend', onpanend))
+
+      offs(gesture.on('start', onstart))
+      offs(gesture.on('move', onmove))
+      offs(gesture.on('end', onend))
+    })
+
+    wrap = item.wrap
 
     swiperInstance = swiper({
       root: swiperDom,
       elms: Array.prototype.slice.apply(swiperDom.children[0].children),
       auto: false,
-      index: target.i
+      index: item.i
     })
 
-    var gesture = opts.gesture = window.ges = gestureFactory(wrap)
+    swiperInstance.on('end', index => {
+      wrap = cache[index].wrap
+      shape.init = cache[index].shape
+    })
 
-    // TODO: tap to toggle controls, double tap to zoom in / out
-    // offs(on(wrap, 'click', evt => hide(evt.target)))
-
-    offs(gesture.on('single', onsingle))
-    offs(gesture.on('double', ondouble))
-
-    offs(gesture.on('scroll', onscroll))
-    offs(gesture.on('scrollend', onscrollend))
-
-    // offs(gesture.on('pinchstart', onpinchstart))
-    offs(gesture.on('pinch', onpinch))
-    offs(gesture.on('pinchend', onpinchend))
-
-    // offs(gesture.on('panstart', onpanstart))
-    offs(gesture.on('pan', onpan))
-    // offs(gesture.on('panend', onpanend))
-
-    offs(gesture.on('start', onstart))
-    offs(gesture.on('move', onmove))
-    offs(gesture.on('end', onend))
+    // // var gesture = opts.gesture = window.ges = gestureFactory(wrap)
+    // var gesture = gestureFactory(wrap)
+    //
+    // // TODO: tap to toggle controls, double tap to zoom in / out
+    // // offs(on(wrap, 'click', evt => hide(evt.target)))
+    //
+    // offs(gesture.on('single', onsingle))
+    // offs(gesture.on('double', ondouble))
+    //
+    // offs(gesture.on('scroll', onscroll))
+    // offs(gesture.on('scrollend', onscrollend))
+    //
+    // // offs(gesture.on('pinchstart', onpinchstart))
+    // offs(gesture.on('pinch', onpinch))
+    // offs(gesture.on('pinchend', onpinchend))
+    //
+    // // offs(gesture.on('panstart', onpanstart))
+    // offs(gesture.on('pan', onpan))
+    // // offs(gesture.on('panend', onpanend))
+    //
+    // offs(gesture.on('start', onstart))
+    // offs(gesture.on('move', onmove))
+    // offs(gesture.on('end', onend))
 
     gallery.style.display = 'block'
     raf(() => {
