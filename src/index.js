@@ -3,7 +3,7 @@ import { on, off, isFunction, addClass, removeClass } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
-import swiper from 'swipe-core/dist/swipe-core.es'
+import swiper from 'swipe-core'
 
 // console.log('the best gallery is coming...')
 
