@@ -135,6 +135,7 @@ function gallery (options) {
 
     scroll: (points, target) => {
       // ga('onscroll')
+      swiperInstance.stop()
       if (zoom !== '') return
       var yy = points.current[0].y - points.start[0].y
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
@@ -145,12 +146,12 @@ function gallery (options) {
       if (zoom !== '') return
       var yy = Math.abs(points.current[0].y - points.start[0].y)
 
-      if (yy / doc_h() > 1/7) hide(target)
+      if (yy / doc_h() > 1/7) hide(target, () => swiperInstance.start())
       else {
         enableTransition()
         applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
         applyOpacity(background, 1)
-        showHideComplete(() => disableTransition())
+        showHideComplete(() => {disableTransition(); swiperInstance.start()})
       }
     },
 
@@ -243,6 +244,8 @@ function gallery (options) {
   Object.keys(handlers).forEach(key => {
     var fn = handlers[key]
     handlers[key] = (...args) => {
+      // if (key === 'scroll') swiperInstance.stop()
+      // if (key === 'scrollend') swiperInstance.start()
       if (!swiping || key === 'onswipe') fn.apply(null, args)
     }
   })
@@ -359,7 +362,7 @@ function gallery (options) {
     showHideComplete(() => freeze = !!disableTransition())
   }
 
-  function hide (img) {
+  function hide (img, callback) {
     if (freeze) return
     freeze = true
     enableTransition()
@@ -371,6 +374,7 @@ function gallery (options) {
     showHideComplete(() => {
       freeze = !(gallery.style.display = 'none')
       destroy()
+      callback && callback()
     })
   }
 

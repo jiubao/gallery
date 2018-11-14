@@ -343,12 +343,19 @@
     return this.$tail = node
   };
 
-  var on$1 = function (element, evt, handler) {
-    element.addEventListener(evt, handler, false);
+  var passive$1 = index();
+  var defaultEventOptions$1 = passive$1 ? {capture: false, passive: true} : false;
+
+  var on$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.addEventListener(evt, handler, options);
   };
 
-  var off$1 = function (element, evt, handler) {
-    element.removeEventListener(evt, handler, false);
+  var off$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.removeEventListener(evt, handler, options);
   };
 
   var isFunction$1 = function (value) {
@@ -430,8 +437,6 @@
   var MAX_INTERVAL = 1000; // total swipe duration
   var MAX_PART = MAX_INTERVAL * 2 / 3;
   var AUTO_TIMEOUT = 3000; // auto swipe interval
-
-  var passive$1 = index();
 
   // quote property name to pervent mangling
   var defaultOptions = {
@@ -544,6 +549,8 @@
     var clearMain = function (_) { return caf(animations.main); };
     var clearAnimations = function (_) {clearAuto(); clearMain();};
 
+    var running = true;
+
     init();
 
     return {
@@ -553,7 +560,9 @@
         var fns = opts[evt + 'Handlers'];
         fns.push(callback);
         return function () { return fns.splice(fns.indexOf(callback), 1); }
-      }
+      },
+      stop: function () { return running = false; },
+      start: function () { return running = true; }
     }
 
     function moveX (el, x) {
@@ -564,6 +573,7 @@
     }
 
     function onTouchStart (evt) {
+      if (!running) { return }
       clearAnimations();
       phase.or(phaseEnum.start).rm(phaseEnum.scroll);
       direction = 0;
@@ -576,6 +586,7 @@
     }
 
     function onTouchMove (evt) {
+      if (!running) { return }
       if (phase.is(phaseEnum.scroll)) { return }
 
       var touch = evt.touches[0];
@@ -601,7 +612,7 @@
       // moveX(main, x)
       moveEx(main, x);
 
-      evt.preventDefault();
+      // evt.preventDefault();
     }
 
     function moveRight () {
@@ -632,6 +643,7 @@
     function autoSwipePostpone () {
       clearAuto();
       animations.auto = setTimeout(function () {
+        if (!running) { return }
         autoSwipeImmediate();
       }, AUTO_TIMEOUT);
     }
@@ -651,6 +663,7 @@
     }
 
     function onTouchEnd (evt) {
+      if (!running) { return }
       // auto && autoCallback()
       if (phase.is(phaseEnum.scroll) && !phase.is(phaseEnum.animate) && !phase.is(phaseEnum.auto)) { return auto && autoSwipe(); }
       phase.set(phaseEnum.animate);
@@ -913,6 +926,7 @@
 
       scroll: function (points, target) {
         // ga('onscroll')
+        swiperInstance.stop();
         if (zoom !== '') { return }
         var yy = points.current[0].y - points.start[0].y;
         applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
@@ -923,12 +937,12 @@
         if (zoom !== '') { return }
         var yy = Math.abs(points.current[0].y - points.start[0].y);
 
-        if (yy / doc_h() > 1/7) { hide(target); }
+        if (yy / doc_h() > 1/7) { hide(target, function () { return swiperInstance.start(); }); }
         else {
           enableTransition();
           applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
           applyOpacity(background, 1);
-          showHideComplete(function () { return disableTransition(); });
+          showHideComplete(function () {disableTransition(); swiperInstance.start();});
         }
       },
 
@@ -1026,6 +1040,8 @@
         var args = [], len = arguments.length;
         while ( len-- ) args[ len ] = arguments[ len ];
 
+        // if (key === 'scroll') swiperInstance.stop()
+        // if (key === 'scrollend') swiperInstance.start()
         if (!swiping || key === 'onswipe') { fn.apply(null, args); }
       };
     });
@@ -1142,7 +1158,7 @@
       showHideComplete(function () { return freeze = !!disableTransition(); });
     }
 
-    function hide (img) {
+    function hide (img, callback) {
       if (freeze) { return }
       freeze = true;
       enableTransition();
@@ -1154,6 +1170,7 @@
       showHideComplete(function () {
         freeze = !(gallery.style.display = 'none');
         destroy();
+        callback && callback();
       });
     }
 

@@ -427,6 +427,7 @@ function gallery (options) {
 
     scroll: function (points, target) {
       // ga('onscroll')
+      swiperInstance.stop();
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
@@ -437,12 +438,12 @@ function gallery (options) {
       if (zoom !== '') { return }
       var yy = Math.abs(points.current[0].y - points.start[0].y);
 
-      if (yy / doc_h() > 1/7) { hide(target); }
+      if (yy / doc_h() > 1/7) { hide(target, function () { return swiperInstance.start(); }); }
       else {
         enableTransition();
         applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
         applyOpacity(background, 1);
-        showHideComplete(function () { return disableTransition(); });
+        showHideComplete(function () {disableTransition(); swiperInstance.start();});
       }
     },
 
@@ -540,6 +541,8 @@ function gallery (options) {
       var args = [], len = arguments.length;
       while ( len-- ) args[ len ] = arguments[ len ];
 
+      // if (key === 'scroll') swiperInstance.stop()
+      // if (key === 'scrollend') swiperInstance.start()
       if (!swiping || key === 'onswipe') { fn.apply(null, args); }
     };
   });
@@ -656,7 +659,7 @@ function gallery (options) {
     showHideComplete(function () { return freeze = !!disableTransition(); });
   }
 
-  function hide (img) {
+  function hide (img, callback) {
     if (freeze) { return }
     freeze = true;
     enableTransition();
@@ -668,6 +671,7 @@ function gallery (options) {
     showHideComplete(function () {
       freeze = !(gallery.style.display = 'none');
       destroy();
+      callback && callback();
     });
   }
 
