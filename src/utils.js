@@ -25,3 +25,7 @@ export const removeClass = (elm, className) => {
 	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
 	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
 }
+
+const dom = document.documentElement
+export const doc_h = () => dom.clientHeight
+export const doc_w = () => dom.clientWidth

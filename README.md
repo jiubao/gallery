@@ -44,6 +44,9 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * gesture.on: support on an object
 * remove swiper's !important
 * disable swiper when gesture
+* switch to landscape
+* use js to simulate animation
+* desktop
 
 
 [npm]: https://img.shields.io/npm/v/@jiubao/gallery.svg

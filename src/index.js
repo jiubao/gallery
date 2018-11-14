@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass } from './utils'
+import { on, off, isFunction, addClass, removeClass, doc_w, doc_h } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
@@ -9,10 +9,6 @@ import swiper from 'swipe-core'
 
 const applyTranslateScale = (elm, x, y, scale) => elm.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`
 const applyOpacity = (elm, opacity) => elm.style.opacity = opacity
-
-const html = document.documentElement
-const doc_h = () => html.clientHeight
-const doc_w = () => html.clientWidth
 
 const showHideAnimationDuration = 333
 const showHideComplete = fn => setTimeout(fn, showHideAnimationDuration + 20)
@@ -169,7 +165,9 @@ function gallery (options) {
       root: swiperDom,
       elms: Array.prototype.slice.apply(swiperDom.children[0].children),
       auto: false,
-      index: item.i
+      index: item.i,
+      expose: true,
+      css: true
     })
 
     swiperInstance.on('end', index => {
