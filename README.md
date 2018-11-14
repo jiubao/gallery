@@ -42,8 +42,10 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * zoom out and zoom in: should not close
 * pan accelerate
 * gesture.on: support on an object
-* remove swiper's !important
+* ~~remove swiper's !important~~
+* ~~gap between slides~~
 * disable swiper when gesture
+* ~~disable gesture when swiper~~
 * switch to landscape
 * use js to simulate animation
 * desktop

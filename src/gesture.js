@@ -18,7 +18,7 @@ function gesture (elm) {
    */
   // var phase = 0
   // TODO: rm window.phase
-  var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan')
+  var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan', 'swipe')
   var freeze = false
   var ismoving = false
   var tapTimes = 0, tapStart = -1, tapLast = -1
@@ -42,7 +42,9 @@ function gesture (elm) {
 
     'pinch': [],
     'pinchstart': [],
-    'pinchend': []
+    'pinchend': [],
+
+    'swipe': []
   }
 
   var target = {}
@@ -115,6 +117,8 @@ function gesture (elm) {
       // phase.or('pan')
     }
 
+    if (phase.is('pan') && !phase.is('scroll')) phase.or('swipe')
+
     phase.rm('start').or('move')
     //
     // if (evt.touches.length === 1) phase = 16
@@ -178,8 +182,11 @@ function gesture (elm) {
     // ga(phase)
 
     phase.is('scroll') && trigger('scroll')
+    phase.is('swipe') && trigger('swipe')
     phase.is('pinch') && trigger('pinch')
     phase.is('pan') && trigger('pan')
+
+    // (phase.is('pan') && !phase.is('scroll')) && trigger('swipe')
   }
 }
 
