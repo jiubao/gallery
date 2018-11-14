@@ -881,6 +881,9 @@
     var enableTransition = function () { return removeClass(gallery, classes.disableTransition); };
     var disableTransition = function () { return addClass(gallery, classes.disableTransition); };
 
+    var stopSwiper = function () { return swiperInstance.stop(); };
+    var startSwiper = function () { return swiperInstance.start(); };
+
     /*
      * events (pan | pinch | press | rotate | swipe | tap)
      * horizontal swipe: flick to next / previous
@@ -937,17 +940,18 @@
         if (zoom !== '') { return }
         var yy = Math.abs(points.current[0].y - points.start[0].y);
 
-        if (yy / doc_h() > 1/7) { hide(target, function () { return swiperInstance.start(); }); }
+        if (yy / doc_h() > 1/7) { hide(target, startSwiper); }
         else {
           enableTransition();
           applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
           applyOpacity(background, 1);
-          showHideComplete(function () {disableTransition(); swiperInstance.start();});
+          showHideComplete(function () {disableTransition(); startSwiper();});
         }
       },
 
       pinch: function (points, target) {
         // ga('onpinch')
+        stopSwiper();
 
         var zoomLevel = calculateZoomLevel(points); //* pinch.z
         var center1 = getCenterPoint(points.start[0], points.start[1]);
@@ -969,8 +973,8 @@
       // TODO: 缩小露底问题
       pinchend: function (points, target) {
         if (zoom === 'out') {
-          if (shape.start.z <= 1) { hide(target); }
-          else { show(target); }
+          if (shape.start.z <= 1) { hide(target, startSwiper); }
+          else { show(target, startSwiper); }
         }
       },
 
@@ -980,6 +984,7 @@
         // ga(zoom)
         // ga('onpan')
         if (zoom === 'in') {
+          stopSwiper();
           // ga('zzz')
           // var zoomLevel = calculateZoomLevel(points) //* pinch.z
           // ga(zoomLevel)
@@ -1147,7 +1152,7 @@
       });
     }
 
-    function show (img) {
+    function show (img, callback) {
       // if (freeze) return
       // freeze = true
       enableTransition();
@@ -1155,7 +1160,10 @@
 
       applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
       applyOpacity(background, 1);
-      showHideComplete(function () { return freeze = !!disableTransition(); });
+      showHideComplete(function () {
+        freeze = !!disableTransition();
+        callback && callback();
+      });
     }
 
     function hide (img, callback) {

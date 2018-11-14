@@ -92,6 +92,9 @@ function gallery (options) {
   const enableTransition = () => removeClass(gallery, cls.disableTransition)
   const disableTransition = () => addClass(gallery, cls.disableTransition)
 
+  const stopSwiper = () => swiperInstance.stop()
+  const startSwiper = () => swiperInstance.start()
+
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
    * horizontal swipe: flick to next / previous
@@ -146,17 +149,18 @@ function gallery (options) {
       if (zoom !== '') return
       var yy = Math.abs(points.current[0].y - points.start[0].y)
 
-      if (yy / doc_h() > 1/7) hide(target, () => swiperInstance.start())
+      if (yy / doc_h() > 1/7) hide(target, startSwiper)
       else {
         enableTransition()
         applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
         applyOpacity(background, 1)
-        showHideComplete(() => {disableTransition(); swiperInstance.start()})
+        showHideComplete(() => {disableTransition(); startSwiper()})
       }
     },
 
     pinch: (points, target) => {
       // ga('onpinch')
+      stopSwiper()
 
       var zoomLevel = calculateZoomLevel(points) //* pinch.z
       var center1 = getCenterPoint(points.start[0], points.start[1])
@@ -178,8 +182,8 @@ function gallery (options) {
     // TODO: 缩小露底问题
     pinchend: (points, target) => {
       if (zoom === 'out') {
-        if (shape.start.z <= 1) hide(target)
-        else show(target)
+        if (shape.start.z <= 1) hide(target, startSwiper)
+        else show(target, startSwiper)
       }
     },
 
@@ -189,6 +193,7 @@ function gallery (options) {
       // ga(zoom)
       // ga('onpan')
       if (zoom === 'in') {
+        stopSwiper()
         // ga('zzz')
         // var zoomLevel = calculateZoomLevel(points) //* pinch.z
         // ga(zoomLevel)
@@ -351,7 +356,7 @@ function gallery (options) {
     })
   }
 
-  function show (img) {
+  function show (img, callback) {
     // if (freeze) return
     // freeze = true
     enableTransition()
@@ -359,7 +364,10 @@ function gallery (options) {
 
     applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
     applyOpacity(background, 1)
-    showHideComplete(() => freeze = !!disableTransition())
+    showHideComplete(() => {
+      freeze = !!disableTransition()
+      callback && callback()
+    })
   }
 
   function hide (img, callback) {
