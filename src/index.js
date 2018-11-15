@@ -110,6 +110,7 @@ function gallery (options) {
 
   var zoom = ''
   var swiping = false
+  // var occupy = 'idle' // idle, swipe, gesture
 
   const handlers = {
     single: (points, target) => {
@@ -132,13 +133,16 @@ function gallery (options) {
           })
           applyTranslateScale(wrap, x, y, 2)
         }
-        showHideComplete(() => disableTransition())
+        showHideComplete(() => {
+          disableTransition()
+          zoom === 'in' && startSwiper()
+        })
       }
     },
 
     scroll: (points, target) => {
       // ga('onscroll')
-      swiperInstance.stop()
+      stopSwiper()
       if (zoom !== '') return
       var yy = points.current[0].y - points.start[0].y
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
@@ -239,25 +243,32 @@ function gallery (options) {
         applyTranslateScale(wrap, x, y, current.z)
         showHideComplete(() => disableTransition())
       }
-    },
-
-    swipe: () => {
-      swiping = true
     }
+
+    // swipe: () => {
+    //   swiping = true
+    // }
   }
 
   Object.keys(handlers).forEach(key => {
     var fn = handlers[key]
     handlers[key] = (...args) => {
-      // if (key === 'scroll') swiperInstance.stop()
-      // if (key === 'scrollend') swiperInstance.start()
-      if (!swiping || key === 'onswipe') fn.apply(null, args)
+      // console.log('event: ', key)
+      // console.log('swiping', swiping)
+      // if (!swiping || key === 'double') fn.apply(null, args)
+      if (!swiping || key === 'double' || key === 'single') fn.apply(null, args)
     }
   })
 
   var gallery = {
     // on, off
-    destroy
+    destroy,
+    // get: () => {
+    //   return {
+    //     swiping,
+    //     occupy
+    //   }
+    // }
   }
 
   return gallery
@@ -320,11 +331,20 @@ function gallery (options) {
       css: true
     })
 
+    swiperInstance.on('move', index => {
+      // console.log('swipe.move')
+      swiping = true
+      // occupy = 'swipe'
+    })
     swiperInstance.on('end', index => {
       wrap = cache[index].wrap
       shape.init = cache[index].shape
       swiping = false
+      // occupy = ''
     })
+
+    swiping = false
+    // occupy = 'idle'
 
     // // var gesture = opts.gesture = window.ges = gestureFactory(wrap)
     // var gesture = gestureFactory(wrap)

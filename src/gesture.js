@@ -171,7 +171,7 @@ function gesture (elm) {
   on(elm, 'touchend', onend)
 
   return {
-    on: _on, off: _off
+    on: _on, off: _off, phase: () => phase
     // destroy: () => {}
   }
 

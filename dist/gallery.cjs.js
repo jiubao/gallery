@@ -282,7 +282,7 @@ function gesture (elm) {
   on(elm, 'touchend', onend);
 
   return {
-    on: _on, off: _off
+    on: _on, off: _off, phase: function () { return phase; }
     // destroy: () => {}
   }
 
@@ -404,6 +404,7 @@ function gallery (options) {
 
   var zoom = '';
   var swiping = false;
+  // var occupy = 'idle' // idle, swipe, gesture
 
   var handlers = {
     single: function (points, target) {
@@ -428,13 +429,16 @@ function gallery (options) {
           var y = ref.y;
           applyTranslateScale(wrap, x, y, 2);
         }
-        showHideComplete(function () { return disableTransition(); });
+        showHideComplete(function () {
+          disableTransition();
+          zoom === 'in' && startSwiper();
+        });
       }
     },
 
     scroll: function (points, target) {
       // ga('onscroll')
-      swiperInstance.stop();
+      stopSwiper();
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
@@ -537,11 +541,11 @@ function gallery (options) {
         applyTranslateScale(wrap, x, y, current.z);
         showHideComplete(function () { return disableTransition(); });
       }
-    },
-
-    swipe: function () {
-      swiping = true;
     }
+
+    // swipe: () => {
+    //   swiping = true
+    // }
   };
 
   Object.keys(handlers).forEach(function (key) {
@@ -550,15 +554,22 @@ function gallery (options) {
       var args = [], len = arguments.length;
       while ( len-- ) args[ len ] = arguments[ len ];
 
-      // if (key === 'scroll') swiperInstance.stop()
-      // if (key === 'scrollend') swiperInstance.start()
-      if (!swiping || key === 'onswipe') { fn.apply(null, args); }
+      // console.log('event: ', key)
+      // console.log('swiping', swiping)
+      // if (!swiping || key === 'double') fn.apply(null, args)
+      if (!swiping || key === 'double' || key === 'single') { fn.apply(null, args); }
     };
   });
 
   var gallery = {
     // on, off
-    destroy: destroy
+    destroy: destroy,
+    // get: () => {
+    //   return {
+    //     swiping,
+    //     occupy
+    //   }
+    // }
   };
 
   return gallery
@@ -621,11 +632,20 @@ function gallery (options) {
       css: true
     });
 
+    swiperInstance.on('move', function (index) {
+      // console.log('swipe.move')
+      swiping = true;
+      // occupy = 'swipe'
+    });
     swiperInstance.on('end', function (index) {
       wrap = cache[index].wrap;
       shape.init = cache[index].shape;
       swiping = false;
+      // occupy = ''
     });
+
+    swiping = false;
+    // occupy = 'idle'
 
     // // var gesture = opts.gesture = window.ges = gestureFactory(wrap)
     // var gesture = gestureFactory(wrap)
