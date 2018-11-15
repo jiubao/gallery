@@ -44,7 +44,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * gesture.on: support on an object
 * ~~remove swiper's !important~~
 * ~~gap between slides~~
-* disable swiper when gesture
+* ~~disable swiper when gesture~~
 * ~~disable gesture when swiper~~
 * ios / safari support
 * switch to landscape
