@@ -95,6 +95,15 @@ function gallery (options) {
   const stopSwiper = () => swiperInstance.stop()
   const startSwiper = () => swiperInstance.start()
 
+  const setShape = (target, key) => {
+    var rect = getRect(target)
+    shape[key].x = rect.x
+    shape[key].y = rect.y
+    shape[key].w = rect.width
+    shape[key].h = rect.height
+    shape[key].z = rect.width / shape.init.w
+  }
+
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
    * horizontal swipe: flick to next / previous
@@ -110,7 +119,64 @@ function gallery (options) {
 
   var zoom = ''
   var swiping = false
+  var animations = {
+    pan: 0
+  }
+  const clearAnimations = () => {
+    caf(animations.pan)
+  }
+  var callbackStack = []
+  const clearStack = () => {callbackStack.forEach(fn => fn()); callbackStack = []}
   // var occupy = 'idle' // idle, swipe, gesture
+
+  const panloop = (boundary, target, xx, yy, dx, dy, right, down) => {
+    // var xx = points.current[0].x - points.start[0].x + shape.start.x
+    // var yy = points.current[0].y - points.start[0].y + shape.start.y
+
+    // var dx = points.current[0].x - points.last[0].x
+    // var dy = points.current[0].y - points.last[0].y
+
+    // ga({dx, dy})
+    // ga('pan: ', {dx, dy, z: shape.start.z})
+    var {x1, x2, y1, y2} = boundary
+
+    dx = Math.abs(dx) * .9
+    dy = Math.abs(dy) * .9
+    if (dx <= 0.5) dx = 0
+    if (dy <= 0.5) dy = 0
+
+    xx += dx * right
+    yy += dy * down
+
+    var xout = xx < x1 || xx > x2
+    var yout = yy < y1 || yy > y2
+
+    if (xout) xx -= dx * right
+
+    if (yout) yy -= dy * down
+
+    if ((xout && yout) || (dx === 0 && dy === 0)) {
+      animations.pan = 0
+      setShape(target, 'current')
+      clearStack()
+      return
+    }
+
+    applyTranslateScale(wrap, xx, yy, shape.start.z)
+    // console.log(dx * right, dy * down)
+    animations.pan = raf(() => panloop(boundary, target, xx, yy, dx * right, dy * down, right, down))
+  }
+
+  const bounceBack = () => {
+    var current = shape.current
+    var {x, y} = limitxy(current)
+
+    if (x === current.x && y === current.y) return
+
+    enableTransition()
+    applyTranslateScale(wrap, x, y, current.z)
+    showHideComplete(() => disableTransition())
+  }
 
   const handlers = {
     single: (points, target) => {
@@ -209,7 +275,29 @@ function gallery (options) {
       }
     },
 
+    panend: (points, target, phase) => {
+      console.log('pan end...')
+		  // TODO: Avoid acceleration animation if speed is too low
+
+      // TODO: accelerate
+      var dx = points.current[0].x - points.last[0].x
+      var dy = points.current[0].y - points.last[0].y
+      console.log(dx, dy)
+      if (zoom === 'in' && (Math.abs(dx) >= 0.3 || Math.abs(dy) >= 0.3)) {
+        var xx = points.current[0].x - points.start[0].x + shape.start.x
+        var yy = points.current[0].y - points.start[0].y + shape.start.y
+
+        var right = dx > 0 ? 1 : -1
+        var down = dy > 0 ? 1 : -1
+        if (Math.abs(dx) > 40) dx = 40 * right
+        if (Math.abs(dy) > 40) dy = 40 * down
+
+        panloop(xyBoundary(shape.current), target, xx, yy, dx, dy, right, down)
+      }
+    },
+
     start: (points, target) => {
+      clearAnimations()
       var rect = getRect(target)
       shape.start.x = shape.last.x = shape.current.x = rect.x
       shape.start.y = shape.last.y = shape.current.y = rect.y
@@ -222,26 +310,29 @@ function gallery (options) {
 
     move: (points, target) => {
       // ga('index.onmove')
-      var rect = getRect(target)
-      shape.current.x = rect.x
-      shape.current.y = rect.y
-      shape.current.w = rect.width
-      shape.current.h = rect.height
-      shape.current.z = rect.width / shape.init.w
+      // var rect = getRect(target)
+      // shape.current.x = rect.x
+      // shape.current.y = rect.y
+      // shape.current.w = rect.width
+      // shape.current.h = rect.height
+      // shape.current.z = rect.width / shape.init.w
+      setShape(target, 'current')
     },
 
     end: (points, target, phase) => {
       if (phase.is('pan') || phase.is('pinch')) {
         if (zoom !== 'in') return
 
-        var current = shape.current
-        var {x, y} = limitxy(current)
-
-        if (x === current.x && y === current.y) return
-
-        enableTransition()
-        applyTranslateScale(wrap, x, y, current.z)
-        showHideComplete(() => disableTransition())
+        // var current = shape.current
+        // var {x, y} = limitxy(current)
+        //
+        // if (x === current.x && y === current.y) return
+        //
+        // enableTransition()
+        // applyTranslateScale(wrap, x, y, current.z)
+        // showHideComplete(() => disableTransition())
+        if (animations.pan) callbackStack.push(bounceBack)
+        else bounceBack()
       }
     }
 
@@ -425,6 +516,25 @@ function gallery (options) {
     else if (y < dh - h) y = dh - h
 
     return {x, y}
+  }
+
+  function xyBoundary (_shape) {
+    var {x, y, w, h} = _shape
+    var dw = doc_w(), dh = doc_h()
+    var x1,  x2, y1, y2
+    if (dw > w) {
+      x1 = x2 = (dw - w) / 2
+    } else {
+      x1 = dw - w
+      x2 = 0
+    }
+    if (dh > h) {
+      y1 = y2 = (dh - h) / 2
+    } else {
+      y1 = dh - h
+      y2 = 0
+    }
+    return {x1, x2, y1, y2}
   }
 }
 

@@ -1,5 +1,5 @@
 import supportPassive from '@jiubao/passive';
-import { raf } from '@jiubao/raf';
+import { raf, caf } from '@jiubao/raf';
 import swiper from 'swipe-core';
 
 var passive = supportPassive();
@@ -168,9 +168,10 @@ function gesture (elm) {
   var setTouchPoints = function (evt, item) {
     // if (!evt.touches || !evt.touches.length) return
     if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+    points[item] = [];
     if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
     if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
-    else { points[item].splice(1, 10); }
+    // else points[item].splice(1, 10)
   };
 
   var onstart = function (evt) {
@@ -242,7 +243,6 @@ function gesture (elm) {
     phase.rm('start', 'move').or('end');
 
     // ga('gesture.end')
-    trigger('end');
 
     phase.is('scroll') && trigger('scrollend');
     phase.is('pinch') && trigger('pinchend');
@@ -265,6 +265,8 @@ function gesture (elm) {
         else if (tapTimes === 2) { trigger('double'); }
       }
     }
+
+    trigger('end');
   };
 
   var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
@@ -385,6 +387,15 @@ function gallery (options) {
   var stopSwiper = function () { return swiperInstance.stop(); };
   var startSwiper = function () { return swiperInstance.start(); };
 
+  var setShape = function (target, key) {
+    var rect = getRect(target);
+    shape[key].x = rect.x;
+    shape[key].y = rect.y;
+    shape[key].w = rect.width;
+    shape[key].h = rect.height;
+    shape[key].z = rect.width / shape.init.w;
+  };
+
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
    * horizontal swipe: flick to next / previous
@@ -400,7 +411,69 @@ function gallery (options) {
 
   var zoom = '';
   var swiping = false;
+  var animations = {
+    pan: 0
+  };
+  var clearAnimations = function () {
+    caf(animations.pan);
+  };
+  var callbackStack = [];
+  var clearStack = function () {callbackStack.forEach(function (fn) { return fn(); }); callbackStack = [];};
   // var occupy = 'idle' // idle, swipe, gesture
+
+  var panloop = function (boundary, target, xx, yy, dx, dy, right, down) {
+    // var xx = points.current[0].x - points.start[0].x + shape.start.x
+    // var yy = points.current[0].y - points.start[0].y + shape.start.y
+
+    // var dx = points.current[0].x - points.last[0].x
+    // var dy = points.current[0].y - points.last[0].y
+
+    // ga({dx, dy})
+    // ga('pan: ', {dx, dy, z: shape.start.z})
+    var x1 = boundary.x1;
+    var x2 = boundary.x2;
+    var y1 = boundary.y1;
+    var y2 = boundary.y2;
+
+    dx = Math.abs(dx) * .9;
+    dy = Math.abs(dy) * .9;
+    if (dx <= 0.5) { dx = 0; }
+    if (dy <= 0.5) { dy = 0; }
+
+    xx += dx * right;
+    yy += dy * down;
+
+    var xout = xx < x1 || xx > x2;
+    var yout = yy < y1 || yy > y2;
+
+    if (xout) { xx -= dx * right; }
+
+    if (yout) { yy -= dy * down; }
+
+    if ((xout && yout) || (dx === 0 && dy === 0)) {
+      animations.pan = 0;
+      setShape(target, 'current');
+      clearStack();
+      return
+    }
+
+    applyTranslateScale(wrap, xx, yy, shape.start.z);
+    // console.log(dx * right, dy * down)
+    animations.pan = raf(function () { return panloop(boundary, target, xx, yy, dx * right, dy * down, right, down); });
+  };
+
+  var bounceBack = function () {
+    var current = shape.current;
+    var ref = limitxy(current);
+    var x = ref.x;
+    var y = ref.y;
+
+    if (x === current.x && y === current.y) { return }
+
+    enableTransition();
+    applyTranslateScale(wrap, x, y, current.z);
+    showHideComplete(function () { return disableTransition(); });
+  };
 
   var handlers = {
     single: function (points, target) {
@@ -501,7 +574,29 @@ function gallery (options) {
       }
     },
 
+    panend: function (points, target, phase) {
+      console.log('pan end...');
+		  // TODO: Avoid acceleration animation if speed is too low
+
+      // TODO: accelerate
+      var dx = points.current[0].x - points.last[0].x;
+      var dy = points.current[0].y - points.last[0].y;
+      console.log(dx, dy);
+      if (zoom === 'in' && (Math.abs(dx) >= 0.3 || Math.abs(dy) >= 0.3)) {
+        var xx = points.current[0].x - points.start[0].x + shape.start.x;
+        var yy = points.current[0].y - points.start[0].y + shape.start.y;
+
+        var right = dx > 0 ? 1 : -1;
+        var down = dy > 0 ? 1 : -1;
+        if (Math.abs(dx) > 40) { dx = 40 * right; }
+        if (Math.abs(dy) > 40) { dy = 40 * down; }
+
+        panloop(xyBoundary(shape.current), target, xx, yy, dx, dy, right, down);
+      }
+    },
+
     start: function (points, target) {
+      clearAnimations();
       var rect = getRect(target);
       shape.start.x = shape.last.x = shape.current.x = rect.x;
       shape.start.y = shape.last.y = shape.current.y = rect.y;
@@ -514,28 +609,29 @@ function gallery (options) {
 
     move: function (points, target) {
       // ga('index.onmove')
-      var rect = getRect(target);
-      shape.current.x = rect.x;
-      shape.current.y = rect.y;
-      shape.current.w = rect.width;
-      shape.current.h = rect.height;
-      shape.current.z = rect.width / shape.init.w;
+      // var rect = getRect(target)
+      // shape.current.x = rect.x
+      // shape.current.y = rect.y
+      // shape.current.w = rect.width
+      // shape.current.h = rect.height
+      // shape.current.z = rect.width / shape.init.w
+      setShape(target, 'current');
     },
 
     end: function (points, target, phase) {
       if (phase.is('pan') || phase.is('pinch')) {
         if (zoom !== 'in') { return }
 
-        var current = shape.current;
-        var ref = limitxy(current);
-        var x = ref.x;
-        var y = ref.y;
-
-        if (x === current.x && y === current.y) { return }
-
-        enableTransition();
-        applyTranslateScale(wrap, x, y, current.z);
-        showHideComplete(function () { return disableTransition(); });
+        // var current = shape.current
+        // var {x, y} = limitxy(current)
+        //
+        // if (x === current.x && y === current.y) return
+        //
+        // enableTransition()
+        // applyTranslateScale(wrap, x, y, current.z)
+        // showHideComplete(() => disableTransition())
+        if (animations.pan) { callbackStack.push(bounceBack); }
+        else { bounceBack(); }
       }
     }
 
@@ -725,6 +821,28 @@ function gallery (options) {
     else if (y < dh - h) { y = dh - h; }
 
     return {x: x, y: y}
+  }
+
+  function xyBoundary (_shape) {
+    var x = _shape.x;
+    var y = _shape.y;
+    var w = _shape.w;
+    var h = _shape.h;
+    var dw = doc_w(), dh = doc_h();
+    var x1,  x2, y1, y2;
+    if (dw > w) {
+      x1 = x2 = (dw - w) / 2;
+    } else {
+      x1 = dw - w;
+      x2 = 0;
+    }
+    if (dh > h) {
+      y1 = y2 = (dh - h) / 2;
+    } else {
+      y1 = dh - h;
+      y2 = 0;
+    }
+    return {x1: x1, x2: x2, y1: y1, y2: y2}
   }
 }
 

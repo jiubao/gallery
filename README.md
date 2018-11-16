@@ -40,15 +40,16 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## Todos
 * limit zoom in / out level
 * zoom out and zoom in: should not close
-* pan accelerate
+* pan accelerate & momentum
 * gesture.on: support on an object
 * ~~remove swiper's !important~~
 * ~~gap between slides~~
 * ~~disable swiper when gesture~~
 * ~~disable gesture when swiper~~
+* pinch & pan: pending issue
 * ios / safari support
-* switch to landscape
 * use js to simulate animation
+* switch to landscape
 * desktop
 
 

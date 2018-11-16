@@ -61,9 +61,10 @@ function gesture (elm) {
   const setTouchPoints = (evt, item) => {
     // if (!evt.touches || !evt.touches.length) return
     if (isArray(item)) return item.forEach(i => setTouchPoints(evt, i))
+    points[item] = []
     if (isString(item)) points[item][0] = touch2point(evt.touches[0])
     if (evt.touches.length > 1) points[item][1] = touch2point(evt.touches[1])
-    else points[item].splice(1, 10)
+    // else points[item].splice(1, 10)
   }
 
   const onstart = evt => {
@@ -135,7 +136,6 @@ function gesture (elm) {
     phase.rm('start', 'move').or('end')
 
     // ga('gesture.end')
-    trigger('end')
 
     phase.is('scroll') && trigger('scrollend')
     phase.is('pinch') && trigger('pinchend')
@@ -158,6 +158,8 @@ function gesture (elm) {
         else if (tapTimes === 2) trigger('double')
       }
     }
+
+    trigger('end')
   }
 
   const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)
