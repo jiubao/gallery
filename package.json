@@ -1,6 +1,6 @@
 {
   "name": "@jiubao/gallery",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "photo gallery",
   "main": "dist/gallery.es.js",
   "browser": "dist/gallery.umd.js",
