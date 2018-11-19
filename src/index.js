@@ -129,51 +129,188 @@ function gallery (options) {
   const clearStack = () => {callbackStack.forEach(fn => fn()); callbackStack = []}
   // var occupy = 'idle' // idle, swipe, gesture
 
-  const panxloop = (boundary, target, x, y, dx, dy, right, down) => {
-    var {x1, x2, y1, y2} = boundary
-    dx = Math.abs(dx) * .95
-    if (dx <= .5) dx = 0
-    dx = dx * right
-    x += dx
+  const cal_x = (axis, target, boundary, v, dist, direction) => {
+    var {tl, rb} = boundary
+    dist = dist * .95
+    if (dist <= .5) dist = 0
+    v += dist * direction
 
-    dy = Math.abs(dy) * .95
-    if (dy <= .5) dy = 0
-    dy = dy * down
-    y += dy
+    var rout = v >= rb[axis] && ~direction
+    var lout = v <= tl[axis] && !~direction
 
-    // var xout = x < x1 || x > x2
-    var xRout = x >= x2 && !!~right
-    var xLout = x <= x1 && !~right
+    if (rout) v = rb[axis]
+    else if (lout) v = tl[axis]
 
-    if (xRout) x = x2
-    else if (xLout) x = x1
+    if (rout || lout) dist = 0
 
-    if (xRout || xLout) dx = 0
+    return {v, dist}
+  }
 
-    var yTout = y <= y1 && !~down
-    var yBout = y >= y2 && !!~down
-
+  const postpan = (boundary, target, x, y, dx, dy, right, down) => {
     // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
 
-    if (yTout) y = y1
-    else if (yBout) y = y2
-
-    if (yTout || yBout) dy = 0
-
-    // if (xRout && x > x2 + 50) {
-    //   right = -right
+    // var {x1, x2, y1, y2} = boundary
+    //
+    // dx = dx * .95
+    // if (dx <= .5) dx = 0
+    // x += dx * right
+    //
+    // var xRout = x >= x2 && !!~right
+    // var xLout = x <= x1 && !~right
+    //
+    // if (xRout) x = x2
+    // else if (xLout) x = x1
+    //
+    // if (xRout || xLout) dx = 0
+    //
+    // dy = dy * .95
+    // if (dy <= .5) dy = 0
+    // y += dy * down
+    //
+    // var yTout = y <= y1 && !~down
+    // var yBout = y >= y2 && !!~down
+    //
+    // if (yTout) y = y1
+    // else if (yBout) y = y2
+    //
+    // if (yTout || yBout) dy = 0
+    //
+    // applyTranslateScale(wrap, x, y, shape.current.z)
+    //
+    // if (dx === 0 || dy === 0) {
+    //   animations.pan = 0
+    //   setShape(target, 'current')
+    //   // clearStack()
+    //   return
     // }
 
-    applyTranslateScale(wrap, x, y, shape.current.z)
+    var phase = {x: 'D', y: 'D'} // D: deceleration, O: outofboundary, B: debounce, Z: stop
 
-    if (dx === 0 || dy === 0) {
-      animations.pan = 0
-      setShape(target, 'current')
-      // clearStack()
-      return
+    var {x1, x2, y1, y2} = boundary
+
+    var xRout = false, xLout = false, yTout = false, yBout = false
+    var speedX = 0, speedY = 0
+
+  // function animate (elm, from, to, interval, onAnimation, callback) {
+  //   var start = Date.now()
+  //   function loop () {
+  //     var now = Date.now()
+  //     var during = now - start
+  //     if (during >= interval) x = to
+  //     isFunction(onAnimation) && onAnimation()
+  //     if (during >= interval) {
+  //       // moveX(elm, to)
+  //       moveEx(elm, to)
+  //       !phase.is(phaseEnum.cancel) && isFunction(callback) && callback()
+  //       phase.set(phaseEnum.idle)
+  //       // return onAnimationEnd(current.$index, current, main, elms)
+  //       return onEnd(current.$index, current, main, elms)
+  //     }
+  //     var distance = (to - from) * easing[ease](during / interval) + from
+  //     x = distance
+  //     // moveX(elm, distance)
+  //     moveEx(elm, x)
+  //     animations.main = raf(loop)
+  //   }
+  //   loop()
+  // }
+
+    // const animate (elm, from, to)
+
+    var start = 0, now = 0, interval = 0, from = 0, to = 0
+    const ease = k => --k * k * k + 1
+
+    const decelerationX = () => {
+      dx = dx * .95
+      if (dx <= .5) {
+        dx = 0
+        phase.x = 'Z'
+        return
+      }
+
+      x += dx * right
+
+      xRout = x >= x2 && !!~right
+      xLout = x <= x1 && !~right
+
+      if (xRout || xLout) {
+        phase.x = 'O'
+        speedX = dx
+      }
     }
 
-    animations.pan = raf(() => panxloop(boundary, target, x, y, dx, dy, right, down))
+    const decelerationY = () => {
+      dy = dy * .95
+      if (dy <= .5) {
+        dy = 0
+        phase.y = 'Z'
+      }
+
+      y += dy * down
+
+      yTout = y <= y1 && !~down
+      yBout = y >= y2 && !!~down
+
+      if (yTout || yBout) phase.y = 'O'
+    }
+
+    const outX = () => {
+      dx = dx * .7
+      if (dx <= .5) {
+        dx = speedX / 2
+        phase.x = 'B'
+        start = Date.now()
+        from = x
+        to = xRout ? x2 : x1
+        interval = Math.abs((to - from) / doc_w()) * 500
+        if (interval > 400) interval = 400
+        else if (interval < 150) interval = 150
+        console.log(interval)
+      } else {
+        x += dx * right
+      }
+    }
+
+    const outY = () => {}
+
+    const debounceX = () => {
+      // dx = dx
+      // x += dx * -right
+      // if (xRout && x <= x2) {
+      //   x = x2
+      //   phase.x = 'Z'
+      // } else if (xLout && x >= x1) {
+      //   x = x1
+      //   phase.x = 'Z'
+      // }
+      // console.log('z...')
+
+      now = Date.now()
+      var during = now - start
+      if (during >= interval) {
+        x = to
+        phase.x = 'Z'
+      }
+      x = (to - from) * ease(during / interval) + from
+    }
+
+    const debounceY = () => {}
+
+    const loop = () => {
+      if (phase.x === 'D') decelerationX()
+      else if (phase.x === 'O') outX()
+      else if (phase.x === 'B') debounceX()
+
+      if (phase.y === 'D') decelerationY()
+      else if (phase.y === 'O') outY()
+      else if (phase.y === 'B') debounceY()
+
+      applyTranslateScale(wrap, x, y, shape.current.z)
+
+      if (phase.x !== 'Z' || phase.y !== 'Z') animations.pan = raf(loop)
+    }
+
+    loop()
   }
 
   const panloop = (boundary, target, xx, yy, dx, dy, right, down) => {
@@ -321,18 +458,22 @@ function gallery (options) {
       // TODO: accelerate
       var dx = points.current[0].x - points.last[0].x
       var dy = points.current[0].y - points.last[0].y
-      console.log(dx, dy)
-      if (zoom === 'in' && (Math.abs(dx) >= 0.3 || Math.abs(dy) >= 0.3)) {
+
+      var right = dx > 0 ? 1 : -1
+      var down = dy > 0 ? 1 : -1
+
+      dx = Math.abs(dx)
+      dy = Math.abs(dy)
+
+      if (zoom === 'in' && (dx >= 0.3 || dy >= 0.3)) {
         var xx = points.current[0].x - points.start[0].x + shape.start.x
         var yy = points.current[0].y - points.start[0].y + shape.start.y
 
-        var right = dx > 0 ? 1 : -1
-        var down = dy > 0 ? 1 : -1
         // if (Math.abs(dx) > 40) dx = 40 * right
-        if (Math.abs(dy) > 40) dy = 40 * down
+        // if (Math.abs(dy) > 40) dy = 40 * down
 
         // console.log('boundary:', xyBoundary(shape.current))
-        panxloop(xyBoundary(shape.current), target, xx, yy, dx * 2.5, dy * 2.5, right, down)
+        postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2, right, down)
       }
     },
 
@@ -371,8 +512,9 @@ function gallery (options) {
         // enableTransition()
         // applyTranslateScale(wrap, x, y, current.z)
         // showHideComplete(() => disableTransition())
-        if (animations.pan) callbackStack.push(bounceBack)
-        else bounceBack()
+
+        // if (animations.pan) callbackStack.push(bounceBack)
+        // else bounceBack()
       }
     }
 

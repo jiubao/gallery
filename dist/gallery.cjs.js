@@ -421,70 +421,169 @@ function gallery (options) {
   var clearAnimations = function () {
     raf.caf(animations.pan);
   };
-  var callbackStack = [];
-  // var occupy = 'idle' // idle, swipe, gesture
 
-  var panxloop = function (boundary, target, x, y, dx, dy, right, down) {
+  var postpan = function (boundary, target, x, y, dx, dy, right, down) {
+    // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
+
+    // var {x1, x2, y1, y2} = boundary
+    //
+    // dx = dx * .95
+    // if (dx <= .5) dx = 0
+    // x += dx * right
+    //
+    // var xRout = x >= x2 && !!~right
+    // var xLout = x <= x1 && !~right
+    //
+    // if (xRout) x = x2
+    // else if (xLout) x = x1
+    //
+    // if (xRout || xLout) dx = 0
+    //
+    // dy = dy * .95
+    // if (dy <= .5) dy = 0
+    // y += dy * down
+    //
+    // var yTout = y <= y1 && !~down
+    // var yBout = y >= y2 && !!~down
+    //
+    // if (yTout) y = y1
+    // else if (yBout) y = y2
+    //
+    // if (yTout || yBout) dy = 0
+    //
+    // applyTranslateScale(wrap, x, y, shape.current.z)
+    //
+    // if (dx === 0 || dy === 0) {
+    //   animations.pan = 0
+    //   setShape(target, 'current')
+    //   // clearStack()
+    //   return
+    // }
+
+    var phase = {x: 'D', y: 'D'}; // D: deceleration, O: outofboundary, B: debounce, Z: stop
+
     var x1 = boundary.x1;
     var x2 = boundary.x2;
     var y1 = boundary.y1;
     var y2 = boundary.y2;
-    dx = Math.abs(dx) * .95;
-    if (dx <= .5) { dx = 0; }
-    dx = dx * right;
-    x += dx;
 
-    dy = Math.abs(dy) * .95;
-    if (dy <= .5) { dy = 0; }
-    dy = dy * down;
-    y += dy;
+    var xRout = false, xLout = false, yTout = false, yBout = false;
+    var speedX = 0;
 
-    // var xout = x < x1 || x > x2
-    var xRout = x >= x2 && !!~right;
-    var xLout = x <= x1 && !~right;
+  // function animate (elm, from, to, interval, onAnimation, callback) {
+  //   var start = Date.now()
+  //   function loop () {
+  //     var now = Date.now()
+  //     var during = now - start
+  //     if (during >= interval) x = to
+  //     isFunction(onAnimation) && onAnimation()
+  //     if (during >= interval) {
+  //       // moveX(elm, to)
+  //       moveEx(elm, to)
+  //       !phase.is(phaseEnum.cancel) && isFunction(callback) && callback()
+  //       phase.set(phaseEnum.idle)
+  //       // return onAnimationEnd(current.$index, current, main, elms)
+  //       return onEnd(current.$index, current, main, elms)
+  //     }
+  //     var distance = (to - from) * easing[ease](during / interval) + from
+  //     x = distance
+  //     // moveX(elm, distance)
+  //     moveEx(elm, x)
+  //     animations.main = raf(loop)
+  //   }
+  //   loop()
+  // }
 
-    if (xRout) { x = x2; }
-    else if (xLout) { x = x1; }
+    // const animate (elm, from, to)
 
-    if (xRout || xLout) { dx = 0; }
+    var start = 0, now = 0, interval = 0, from = 0, to = 0;
+    var ease = function (k) { return --k * k * k + 1; };
 
-    var yTout = y <= y1 && !~down;
-    var yBout = y >= y2 && !!~down;
+    var decelerationX = function () {
+      dx = dx * .95;
+      if (dx <= .5) {
+        dx = 0;
+        phase.x = 'Z';
+        return
+      }
 
-    // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
+      x += dx * right;
 
-    if (yTout) { y = y1; }
-    else if (yBout) { y = y2; }
+      xRout = x >= x2 && !!~right;
+      xLout = x <= x1 && !~right;
 
-    if (yTout || yBout) { dy = 0; }
+      if (xRout || xLout) {
+        phase.x = 'O';
+        speedX = dx;
+      }
+    };
 
-    // if (xRout && x > x2 + 50) {
-    //   right = -right
-    // }
+    var decelerationY = function () {
+      dy = dy * .95;
+      if (dy <= .5) {
+        dy = 0;
+        phase.y = 'Z';
+      }
 
-    applyTranslateScale(wrap, x, y, shape.current.z);
+      y += dy * down;
 
-    if (dx === 0 || dy === 0) {
-      animations.pan = 0;
-      setShape(target, 'current');
-      // clearStack()
-      return
-    }
+      yTout = y <= y1 && !~down;
+      yBout = y >= y2 && !!~down;
 
-    animations.pan = raf.raf(function () { return panxloop(boundary, target, x, y, dx, dy, right, down); });
-  };
+      if (yTout || yBout) { phase.y = 'O'; }
+    };
 
-  var bounceBack = function () {
-    var current = shape.current;
-    var ref = limitxy(current);
-    var x = ref.x;
-    var y = ref.y;
+    var outX = function () {
+      dx = dx * .7;
+      if (dx <= .5) {
+        dx = speedX / 2;
+        phase.x = 'B';
+        start = Date.now();
+        from = x;
+        to = xRout ? x2 : x1;
+        interval = Math.abs((to - from) / doc_w()) * 500;
+        if (interval > 400) { interval = 400; }
+        else if (interval < 150) { interval = 150; }
+        console.log(interval);
+      } else {
+        x += dx * right;
+      }
+    };
 
-    if (x === current.x && y === current.y) { return }
+    var debounceX = function () {
+      // dx = dx
+      // x += dx * -right
+      // if (xRout && x <= x2) {
+      //   x = x2
+      //   phase.x = 'Z'
+      // } else if (xLout && x >= x1) {
+      //   x = x1
+      //   phase.x = 'Z'
+      // }
+      // console.log('z...')
 
-    enableTransition();
-    applyTranslateScale(wrap, x, y, current.z);
-    showHideComplete(function () { return disableTransition(); });
+      now = Date.now();
+      var during = now - start;
+      if (during >= interval) {
+        x = to;
+        phase.x = 'Z';
+      }
+      x = (to - from) * ease(during / interval) + from;
+    };
+
+    var loop = function () {
+      if (phase.x === 'D') { decelerationX(); }
+      else if (phase.x === 'O') { outX(); }
+      else if (phase.x === 'B') { debounceX(); }
+
+      if (phase.y === 'D') { decelerationY(); }
+
+      applyTranslateScale(wrap, x, y, shape.current.z);
+
+      if (phase.x !== 'Z' || phase.y !== 'Z') { animations.pan = raf.raf(loop); }
+    };
+
+    loop();
   };
 
   var handlers = {
@@ -593,18 +692,22 @@ function gallery (options) {
       // TODO: accelerate
       var dx = points.current[0].x - points.last[0].x;
       var dy = points.current[0].y - points.last[0].y;
-      console.log(dx, dy);
-      if (zoom === 'in' && (Math.abs(dx) >= 0.3 || Math.abs(dy) >= 0.3)) {
+
+      var right = dx > 0 ? 1 : -1;
+      var down = dy > 0 ? 1 : -1;
+
+      dx = Math.abs(dx);
+      dy = Math.abs(dy);
+
+      if (zoom === 'in' && (dx >= 0.3 || dy >= 0.3)) {
         var xx = points.current[0].x - points.start[0].x + shape.start.x;
         var yy = points.current[0].y - points.start[0].y + shape.start.y;
 
-        var right = dx > 0 ? 1 : -1;
-        var down = dy > 0 ? 1 : -1;
         // if (Math.abs(dx) > 40) dx = 40 * right
-        if (Math.abs(dy) > 40) { dy = 40 * down; }
+        // if (Math.abs(dy) > 40) dy = 40 * down
 
         // console.log('boundary:', xyBoundary(shape.current))
-        panxloop(xyBoundary(shape.current), target, xx, yy, dx * 2.5, dy * 2.5, right, down);
+        postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2, right, down);
       }
     },
 
@@ -643,8 +746,9 @@ function gallery (options) {
         // enableTransition()
         // applyTranslateScale(wrap, x, y, current.z)
         // showHideComplete(() => disableTransition())
-        if (animations.pan) { callbackStack.push(bounceBack); }
-        else { bounceBack(); }
+
+        // if (animations.pan) callbackStack.push(bounceBack)
+        // else bounceBack()
       }
     }
 
