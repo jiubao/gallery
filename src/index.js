@@ -129,15 +129,54 @@ function gallery (options) {
   const clearStack = () => {callbackStack.forEach(fn => fn()); callbackStack = []}
   // var occupy = 'idle' // idle, swipe, gesture
 
+  const panxloop = (boundary, target, x, y, dx, dy, right, down) => {
+    var {x1, x2, y1, y2} = boundary
+    dx = Math.abs(dx) * .95
+    if (dx <= .5) dx = 0
+    dx = dx * right
+    x += dx
+
+    dy = Math.abs(dy) * .95
+    if (dy <= .5) dy = 0
+    dy = dy * down
+    y += dy
+
+    // var xout = x < x1 || x > x2
+    var xRout = x >= x2 && !!~right
+    var xLout = x <= x1 && !~right
+
+    if (xRout) x = x2
+    else if (xLout) x = x1
+
+    if (xRout || xLout) dx = 0
+
+    var yTout = y <= y1 && !~down
+    var yBout = y >= y2 && !!~down
+
+    // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
+
+    if (yTout) y = y1
+    else if (yBout) y = y2
+
+    if (yTout || yBout) dy = 0
+
+    // if (xRout && x > x2 + 50) {
+    //   right = -right
+    // }
+
+    applyTranslateScale(wrap, x, y, shape.current.z)
+
+    if (dx === 0 || dy === 0) {
+      animations.pan = 0
+      setShape(target, 'current')
+      // clearStack()
+      return
+    }
+
+    animations.pan = raf(() => panxloop(boundary, target, x, y, dx, dy, right, down))
+  }
+
   const panloop = (boundary, target, xx, yy, dx, dy, right, down) => {
-    // var xx = points.current[0].x - points.start[0].x + shape.start.x
-    // var yy = points.current[0].y - points.start[0].y + shape.start.y
-
-    // var dx = points.current[0].x - points.last[0].x
-    // var dy = points.current[0].y - points.last[0].y
-
-    // ga({dx, dy})
-    // ga('pan: ', {dx, dy, z: shape.start.z})
     var {x1, x2, y1, y2} = boundary
 
     dx = Math.abs(dx) * .9
@@ -289,10 +328,11 @@ function gallery (options) {
 
         var right = dx > 0 ? 1 : -1
         var down = dy > 0 ? 1 : -1
-        if (Math.abs(dx) > 40) dx = 40 * right
+        // if (Math.abs(dx) > 40) dx = 40 * right
         if (Math.abs(dy) > 40) dy = 40 * down
 
-        panloop(xyBoundary(shape.current), target, xx, yy, dx, dy, right, down)
+        // console.log('boundary:', xyBoundary(shape.current))
+        panxloop(xyBoundary(shape.current), target, xx, yy, dx * 2.5, dy * 2.5, right, down)
       }
     },
 

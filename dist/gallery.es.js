@@ -418,48 +418,56 @@ function gallery (options) {
     caf(animations.pan);
   };
   var callbackStack = [];
-  var clearStack = function () {callbackStack.forEach(function (fn) { return fn(); }); callbackStack = [];};
   // var occupy = 'idle' // idle, swipe, gesture
 
-  var panloop = function (boundary, target, xx, yy, dx, dy, right, down) {
-    // var xx = points.current[0].x - points.start[0].x + shape.start.x
-    // var yy = points.current[0].y - points.start[0].y + shape.start.y
-
-    // var dx = points.current[0].x - points.last[0].x
-    // var dy = points.current[0].y - points.last[0].y
-
-    // ga({dx, dy})
-    // ga('pan: ', {dx, dy, z: shape.start.z})
+  var panxloop = function (boundary, target, x, y, dx, dy, right, down) {
     var x1 = boundary.x1;
     var x2 = boundary.x2;
     var y1 = boundary.y1;
     var y2 = boundary.y2;
+    dx = Math.abs(dx) * .95;
+    if (dx <= .5) { dx = 0; }
+    dx = dx * right;
+    x += dx;
 
-    dx = Math.abs(dx) * .9;
-    dy = Math.abs(dy) * .9;
-    if (dx <= 0.5) { dx = 0; }
-    if (dy <= 0.5) { dy = 0; }
+    dy = Math.abs(dy) * .95;
+    if (dy <= .5) { dy = 0; }
+    dy = dy * down;
+    y += dy;
 
-    xx += dx * right;
-    yy += dy * down;
+    // var xout = x < x1 || x > x2
+    var xRout = x >= x2 && !!~right;
+    var xLout = x <= x1 && !~right;
 
-    var xout = xx < x1 || xx > x2;
-    var yout = yy < y1 || yy > y2;
+    if (xRout) { x = x2; }
+    else if (xLout) { x = x1; }
 
-    if (xout) { xx -= dx * right; }
+    if (xRout || xLout) { dx = 0; }
 
-    if (yout) { yy -= dy * down; }
+    var yTout = y <= y1 && !~down;
+    var yBout = y >= y2 && !!~down;
 
-    if ((xout && yout) || (dx === 0 && dy === 0)) {
+    // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
+
+    if (yTout) { y = y1; }
+    else if (yBout) { y = y2; }
+
+    if (yTout || yBout) { dy = 0; }
+
+    // if (xRout && x > x2 + 50) {
+    //   right = -right
+    // }
+
+    applyTranslateScale(wrap, x, y, shape.current.z);
+
+    if (dx === 0 || dy === 0) {
       animations.pan = 0;
       setShape(target, 'current');
-      clearStack();
+      // clearStack()
       return
     }
 
-    applyTranslateScale(wrap, xx, yy, shape.start.z);
-    // console.log(dx * right, dy * down)
-    animations.pan = raf(function () { return panloop(boundary, target, xx, yy, dx * right, dy * down, right, down); });
+    animations.pan = raf(function () { return panxloop(boundary, target, x, y, dx, dy, right, down); });
   };
 
   var bounceBack = function () {
@@ -588,10 +596,11 @@ function gallery (options) {
 
         var right = dx > 0 ? 1 : -1;
         var down = dy > 0 ? 1 : -1;
-        if (Math.abs(dx) > 40) { dx = 40 * right; }
+        // if (Math.abs(dx) > 40) dx = 40 * right
         if (Math.abs(dy) > 40) { dy = 40 * down; }
 
-        panloop(xyBoundary(shape.current), target, xx, yy, dx, dy, right, down);
+        // console.log('boundary:', xyBoundary(shape.current))
+        panxloop(xyBoundary(shape.current), target, xx, yy, dx * 2.5, dy * 2.5, right, down);
       }
     },
 
