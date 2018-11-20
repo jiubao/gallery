@@ -304,6 +304,13 @@ function gesture (elm) {
 }
 
 // console.log('the best gallery is coming...')
+var easing = {
+  'cubic': function (k) { return --k * k * k + 1; },
+  // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+  // quint: k => 1 - Math.pow(1 - k, 5),
+  // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+  'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+};
 
 var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
 var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
@@ -449,8 +456,6 @@ function gallery (options) {
       iz.dv *= .95;
       if (iz.dv <= .5) {
         iz.dv = 0;
-        iz.phase = 'Z';
-        return
       }
 
       iz.v += iz.dv * iz.r;
@@ -458,6 +463,7 @@ function gallery (options) {
       iz.oz = iz.v >= iz.bz && !!~iz.r;
 
       if (iz.oa || iz.oz) { iz.phase = 'O'; }
+      else if (iz.dv === 0) { iz.phase = 'Z'; }
     };
 
     var out = function (axis) {
@@ -522,12 +528,12 @@ function gallery (options) {
 
   var handlers = {
     single: function (points, target) {
-      ga('single');
       // TODO: trigger wrong
+      // ga('single')
       hide(target);
     },
     double: function (points, target) {
-      ga('double.zoom: ', zoom);
+      // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
         enableTransition();
         var init = shape.init;
@@ -601,41 +607,25 @@ function gallery (options) {
       }
     },
 
-    // TODO: fast pan should have a panend animation
     // TODO: 拖拽卡顿
     pan: function (points, target, phase) {
-      // ga(zoom)
-      // ga('onpan')
       if (zoom === 'in') {
         stopSwiper();
-        // ga('zzz')
-        // var zoomLevel = calculateZoomLevel(points) //* pinch.z
-        // ga(zoomLevel)
         var dx = points.current[0].x - points.start[0].x + shape.start.x;
         var dy = points.current[0].y - points.start[0].y + shape.start.y;
-        // ga({dx, dy})
-        // ga('pan: ', {dx, dy, z: shape.start.z})
         applyTranslateScale(wrap, dx, dy, shape.start.z);
       }
     },
 
     panend: function (points, target, phase) {
-      console.log('pan end...');
 		  // TODO: Avoid acceleration animation if speed is too low
 
-      // TODO: accelerate
       var dx = points.current[0].x - points.last[0].x;
       var dy = points.current[0].y - points.last[0].y;
 
-      var _dx = Math.abs(dx);
-      var _dy = Math.abs(dy);
-
-      if (zoom === 'in' && (_dx >= 0.3 || _dy >= 0.3)) {
+      if (zoom === 'in') {
         var xx = points.current[0].x - points.start[0].x + shape.start.x;
         var yy = points.current[0].y - points.start[0].y + shape.start.y;
-
-        // if (Math.abs(dx) > 40) dx = 40 * right
-        // if (Math.abs(dy) > 40) dy = 40 * down
 
         postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2);
       }
@@ -650,7 +640,6 @@ function gallery (options) {
       shape.start.h = shape.last.h = shape.current.h = rect.height;
       var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
-      // ga('onstart.shape: ', shape)
     },
 
     move: function (points, target) {
@@ -742,18 +731,31 @@ function gallery (options) {
     });
   }
 
-  function show (img, callback) {
-    // if (freeze) return
-    // freeze = true
-    enableTransition();
-    // var sizes = size(img)
+  function _animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+    var start = Date.now();
+    ~function loop () {
+      var next = function (from, to) { return (to - from) * easing[ease](during / interval) + from; };
 
-    applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
-    applyOpacity(background, 1);
-    showHideComplete(function () {
-      freeze = !!disableTransition();
-      callback && callback();
-    });
+      onAnimation && onAnimation();
+      var now = Date.now();
+      var during = now - start;
+      if (during >= interval) {
+        move(elm, to);
+        return onEnd && onEnd()
+      }
+      move(elm, fn ? fn(from, to, next) : next(from, to));
+      animations[type] = raf.raf(loop);
+    }();
+  }
+
+  function show (img, callback) {
+    var rect = getRect(img);
+    // animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, 333, 'cubic', null, callback)
+    _animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, function (from, to, next) { return ({
+      x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
+    }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', null, callback);
+
+    _animate('opacity', background, 0, 1, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', null, null);
   }
 
   function hide (img, callback) {

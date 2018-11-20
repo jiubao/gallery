@@ -6,6 +6,13 @@ import gestureFactory from './gesture.js'
 import swiper from 'swipe-core'
 
 // console.log('the best gallery is coming...')
+const easing = {
+  'cubic': k => --k * k * k + 1,
+  // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+  // quint: k => 1 - Math.pow(1 - k, 5),
+  // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+  'circ': k => Math.sqrt(1 - Math.pow(k - 1, 2))
+}
 
 const applyTranslateScale = (elm, x, y, scale) => elm.style.transform = `translate3d(${x}px,${y}px,0) scale(${scale})`
 const applyOpacity = (elm, opacity) => elm.style.opacity = opacity
@@ -153,8 +160,6 @@ function gallery (options) {
       iz.dv *= .95
       if (iz.dv <= .5) {
         iz.dv = 0
-        iz.phase = 'Z'
-        return
       }
 
       iz.v += iz.dv * iz.r
@@ -162,6 +167,7 @@ function gallery (options) {
       iz.oz = iz.v >= iz.bz && !!~iz.r
 
       if (iz.oa || iz.oz) iz.phase = 'O'
+      else if (iz.dv === 0) iz.phase = 'Z'
     }
 
     const out = axis => {
@@ -226,12 +232,12 @@ function gallery (options) {
 
   const handlers = {
     single: (points, target) => {
-      ga('single')
       // TODO: trigger wrong
+      // ga('single')
       hide(target)
     },
     double: (points, target) => {
-      ga('double.zoom: ', zoom)
+      // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
         enableTransition()
         var init = shape.init
@@ -303,29 +309,19 @@ function gallery (options) {
       }
     },
 
-    // TODO: fast pan should have a panend animation
     // TODO: 拖拽卡顿
     pan: (points, target, phase) => {
-      // ga(zoom)
-      // ga('onpan')
       if (zoom === 'in') {
         stopSwiper()
-        // ga('zzz')
-        // var zoomLevel = calculateZoomLevel(points) //* pinch.z
-        // ga(zoomLevel)
         var dx = points.current[0].x - points.start[0].x + shape.start.x
         var dy = points.current[0].y - points.start[0].y + shape.start.y
-        // ga({dx, dy})
-        // ga('pan: ', {dx, dy, z: shape.start.z})
         applyTranslateScale(wrap, dx, dy, shape.start.z)
       }
     },
 
     panend: (points, target, phase) => {
-      console.log('pan end...')
 		  // TODO: Avoid acceleration animation if speed is too low
 
-      // TODO: accelerate
       var dx = points.current[0].x - points.last[0].x
       var dy = points.current[0].y - points.last[0].y
 
@@ -335,12 +331,9 @@ function gallery (options) {
       var _dx = Math.abs(dx)
       var _dy = Math.abs(dy)
 
-      if (zoom === 'in' && (_dx >= 0.3 || _dy >= 0.3)) {
+      if (zoom === 'in') {
         var xx = points.current[0].x - points.start[0].x + shape.start.x
         var yy = points.current[0].y - points.start[0].y + shape.start.y
-
-        // if (Math.abs(dx) > 40) dx = 40 * right
-        // if (Math.abs(dy) > 40) dy = 40 * down
 
         postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2)
       }
@@ -355,7 +348,6 @@ function gallery (options) {
       shape.start.h = shape.last.h = shape.current.h = rect.height
       var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
-      // ga('onstart.shape: ', shape)
     },
 
     move: (points, target) => {
@@ -444,7 +436,65 @@ function gallery (options) {
     })
   }
 
+  function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
+    var start = Date.now()
+    var x = from.x, y = from.y, z = from.z
+
+    ~function loop () {
+      onAnimation && onAnimation()
+      var now = Date.now()
+      var during = now - start
+      if (during >= interval) {
+        applyTranslateScale(elm, to.x, to.y, to.z)
+        return onEnd && onEnd()
+      }
+
+      const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
+
+      x = cal('x')
+      y = cal('y')
+      z = cal('z')
+
+      applyTranslateScale(elm, x, y, z)
+      animations[type] = raf(loop)
+    }()
+  }
+
+  function _animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+    var start = Date.now()
+    ~function loop () {
+      const next = (from, to) => (to - from) * easing[ease](during / interval) + from
+
+      onAnimation && onAnimation()
+      var now = Date.now()
+      var during = now - start
+      if (during >= interval) {
+        move(elm, to)
+        return onEnd && onEnd()
+      }
+      move(elm, fn ? fn(from, to, next) : next(from, to))
+      animations[type] = raf(loop)
+    }()
+  }
+
   function show (img, callback) {
+    var rect = getRect(img)
+    // animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, 333, 'cubic', null, callback)
+    _animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, (from, to, next) => ({
+      x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
+    }), (elm, opts) => applyTranslateScale(elm, opts.x, opts.y, opts.z), 333, 'cubic', null, callback)
+
+    _animate('opacity', background, 0, 1, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', null, null)
+  }
+
+  // function hide (img, callback) {
+  //   var rect = getRect(img)
+  //
+  //   _animate('main', wrap, shape.)
+  //   _animate('opacity', background, 1, 0, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', null, null)
+  // }
+
+  function _show (img, callback) {
     // if (freeze) return
     // freeze = true
     enableTransition()

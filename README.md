@@ -50,6 +50,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * ios / safari support
 * use js to simulate animation
 * pinch trigger postpan
+* pan out of boundary stop issue
 * switch to landscape
 * desktop
 
