@@ -419,43 +419,6 @@ function gallery (options) {
   };
 
   var postpan = function (boundary, target, x, y, dx, dy, right, down) {
-    // console.log('R:', xRout, 'L:', xLout, 'T:', yTout, 'B:', yBout)
-
-    // var {x1, x2, y1, y2} = boundary
-    //
-    // dx = dx * .95
-    // if (dx <= .5) dx = 0
-    // x += dx * right
-    //
-    // var xRout = x >= x2 && !!~right
-    // var xLout = x <= x1 && !~right
-    //
-    // if (xRout) x = x2
-    // else if (xLout) x = x1
-    //
-    // if (xRout || xLout) dx = 0
-    //
-    // dy = dy * .95
-    // if (dy <= .5) dy = 0
-    // y += dy * down
-    //
-    // var yTout = y <= y1 && !~down
-    // var yBout = y >= y2 && !!~down
-    //
-    // if (yTout) y = y1
-    // else if (yBout) y = y2
-    //
-    // if (yTout || yBout) dy = 0
-    //
-    // applyTranslateScale(wrap, x, y, shape.current.z)
-    //
-    // if (dx === 0 || dy === 0) {
-    //   animations.pan = 0
-    //   setShape(target, 'current')
-    //   // clearStack()
-    //   return
-    // }
-
     var phase = {x: 'D', y: 'D'}; // D: deceleration, O: outofboundary, B: debounce, Z: stop
 
     var x1 = boundary.x1;
@@ -464,33 +427,6 @@ function gallery (options) {
     var y2 = boundary.y2;
 
     var xRout = false, xLout = false, yTout = false, yBout = false;
-    var speedX = 0;
-
-  // function animate (elm, from, to, interval, onAnimation, callback) {
-  //   var start = Date.now()
-  //   function loop () {
-  //     var now = Date.now()
-  //     var during = now - start
-  //     if (during >= interval) x = to
-  //     isFunction(onAnimation) && onAnimation()
-  //     if (during >= interval) {
-  //       // moveX(elm, to)
-  //       moveEx(elm, to)
-  //       !phase.is(phaseEnum.cancel) && isFunction(callback) && callback()
-  //       phase.set(phaseEnum.idle)
-  //       // return onAnimationEnd(current.$index, current, main, elms)
-  //       return onEnd(current.$index, current, main, elms)
-  //     }
-  //     var distance = (to - from) * easing[ease](during / interval) + from
-  //     x = distance
-  //     // moveX(elm, distance)
-  //     moveEx(elm, x)
-  //     animations.main = raf(loop)
-  //   }
-  //   loop()
-  // }
-
-    // const animate (elm, from, to)
 
     var start = 0, now = 0, interval = 0, from = 0, to = 0;
     var ease = function (k) { return --k * k * k + 1; };
@@ -510,7 +446,6 @@ function gallery (options) {
 
       if (xRout || xLout) {
         phase.x = 'O';
-        speedX = dx;
       }
     };
 
@@ -530,15 +465,14 @@ function gallery (options) {
     };
 
     var outX = function () {
-      dx = dx * .7;
+      dx = dx * .8;
       if (dx <= .5) {
-        dx = speedX / 2;
         phase.x = 'B';
         start = Date.now();
         from = x;
         to = xRout ? x2 : x1;
-        interval = Math.abs((to - from) / doc_w()) * 500;
-        if (interval > 400) { interval = 400; }
+        interval = Math.abs((to - from) / doc_w()) * 1000;
+        if (interval > 500) { interval = 500; }
         else if (interval < 150) { interval = 150; }
         console.log(interval);
       } else {
@@ -547,17 +481,6 @@ function gallery (options) {
     };
 
     var debounceX = function () {
-      // dx = dx
-      // x += dx * -right
-      // if (xRout && x <= x2) {
-      //   x = x2
-      //   phase.x = 'Z'
-      // } else if (xLout && x >= x1) {
-      //   x = x1
-      //   phase.x = 'Z'
-      // }
-      // console.log('z...')
-
       now = Date.now();
       var during = now - start;
       if (during >= interval) {
@@ -806,24 +729,6 @@ function gallery (options) {
       // offs(on(wrap, 'click', evt => hide(evt.target)))
 
       Object.keys(handlers).forEach(function (key) { return offs(gesture$$1.on(key, handlers[key])); });
-
-      // offs(gesture.on('single', handlers.onsingle))
-      // offs(gesture.on('double', handlers.ondouble))
-      //
-      // offs(gesture.on('scroll', handlers.onscroll))
-      // offs(gesture.on('scrollend', handlers.onscrollend))
-      //
-      // // offs(gesture.on('pinchstart', onpinchstart))
-      // offs(gesture.on('pinch', handlers.onpinch))
-      // offs(gesture.on('pinchend', handlers.onpinchend))
-      //
-      // // offs(gesture.on('panstart', onpanstart))
-      // offs(gesture.on('pan', handlers.onpan))
-      // // offs(gesture.on('panend', onpanend))
-      //
-      // offs(gesture.on('start', handlers.onstart))
-      // offs(gesture.on('move', handlers.onmove))
-      // offs(gesture.on('end', handlers.onend))
     });
 
     wrap = item.wrap;
@@ -851,30 +756,6 @@ function gallery (options) {
 
     swiping = false;
     // occupy = 'idle'
-
-    // // var gesture = opts.gesture = window.ges = gestureFactory(wrap)
-    // var gesture = gestureFactory(wrap)
-    //
-    // // TODO: tap to toggle controls, double tap to zoom in / out
-    // // offs(on(wrap, 'click', evt => hide(evt.target)))
-    //
-    // offs(gesture.on('single', onsingle))
-    // offs(gesture.on('double', ondouble))
-    //
-    // offs(gesture.on('scroll', onscroll))
-    // offs(gesture.on('scrollend', onscrollend))
-    //
-    // // offs(gesture.on('pinchstart', onpinchstart))
-    // offs(gesture.on('pinch', onpinch))
-    // offs(gesture.on('pinchend', onpinchend))
-    //
-    // // offs(gesture.on('panstart', onpanstart))
-    // offs(gesture.on('pan', onpan))
-    // // offs(gesture.on('panend', onpanend))
-    //
-    // offs(gesture.on('start', onstart))
-    // offs(gesture.on('move', onmove))
-    // offs(gesture.on('end', onend))
 
     gallery.style.display = 'block';
     raf(function () {
@@ -911,12 +792,6 @@ function gallery (options) {
       callback && callback();
     });
   }
-
-  // function _onstart (points, target) {}
-  //
-  // function onstartpinch (points, target) {
-  //   _onstart(points, target)
-  // }
 
   function limitxy (_shape) {
     var x = _shape.x;
