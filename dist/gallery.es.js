@@ -656,37 +656,8 @@ function gallery (options) {
     },
 
     move: function (points, target) {
-      // ga('index.onmove')
-      // var rect = getRect(target)
-      // shape.current.x = rect.x
-      // shape.current.y = rect.y
-      // shape.current.w = rect.width
-      // shape.current.h = rect.height
-      // shape.current.z = rect.width / shape.init.w
       setShape(target, 'current');
-    },
-
-    end: function (points, target, phase) {
-      if (phase.is('pan') || phase.is('pinch')) {
-        if (zoom !== 'in') { return }
-
-        // var current = shape.current
-        // var {x, y} = limitxy(current)
-        //
-        // if (x === current.x && y === current.y) return
-        //
-        // enableTransition()
-        // applyTranslateScale(wrap, x, y, current.z)
-        // showHideComplete(() => disableTransition())
-
-        // if (animations.pan) callbackStack.push(bounceBack)
-        // else bounceBack()
-      }
     }
-
-    // swipe: () => {
-    //   swiping = true
-    // }
   };
 
   Object.keys(handlers).forEach(function (key) {
@@ -695,9 +666,6 @@ function gallery (options) {
       var args = [], len = arguments.length;
       while ( len-- ) args[ len ] = arguments[ len ];
 
-      // console.log('event: ', key)
-      // console.log('swiping', swiping)
-      // if (!swiping || key === 'double') fn.apply(null, args)
       if (!swiping || key === 'double' || key === 'single') { fn.apply(null, args); }
     };
   });

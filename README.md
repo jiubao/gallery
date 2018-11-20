@@ -1,7 +1,7 @@
 [![npm][npm]][npm-url]
 
 # gallery
-* 8k before gzip
+* 17k before gzip
 
 ## Demo
 * https://jiubao.github.io/gallery/
@@ -49,6 +49,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * pinch & pan: pending issue
 * ios / safari support
 * use js to simulate animation
+* pinch trigger postpan
 * switch to landscape
 * desktop
 

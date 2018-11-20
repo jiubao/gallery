@@ -248,47 +248,6 @@ function gallery (options) {
     // }()
   }
 
-  const panloop = (boundary, target, xx, yy, dx, dy, right, down) => {
-    var {x1, x2, y1, y2} = boundary
-
-    dx = Math.abs(dx) * .9
-    dy = Math.abs(dy) * .9
-    if (dx <= 0.5) dx = 0
-    if (dy <= 0.5) dy = 0
-
-    xx += dx * right
-    yy += dy * down
-
-    var xout = xx < x1 || xx > x2
-    var yout = yy < y1 || yy > y2
-
-    if (xout) xx -= dx * right
-
-    if (yout) yy -= dy * down
-
-    if ((xout && yout) || (dx === 0 && dy === 0)) {
-      animations.pan = 0
-      setShape(target, 'current')
-      clearStack()
-      return
-    }
-
-    applyTranslateScale(wrap, xx, yy, shape.start.z)
-    // console.log(dx * right, dy * down)
-    animations.pan = raf(() => panloop(boundary, target, xx, yy, dx * right, dy * down, right, down))
-  }
-
-  const bounceBack = () => {
-    var current = shape.current
-    var {x, y} = limitxy(current)
-
-    if (x === current.x && y === current.y) return
-
-    enableTransition()
-    applyTranslateScale(wrap, x, y, current.z)
-    showHideComplete(() => disableTransition())
-  }
-
   const handlers = {
     single: (points, target) => {
       ga('single')
@@ -426,45 +385,13 @@ function gallery (options) {
     },
 
     move: (points, target) => {
-      // ga('index.onmove')
-      // var rect = getRect(target)
-      // shape.current.x = rect.x
-      // shape.current.y = rect.y
-      // shape.current.w = rect.width
-      // shape.current.h = rect.height
-      // shape.current.z = rect.width / shape.init.w
       setShape(target, 'current')
-    },
-
-    end: (points, target, phase) => {
-      if (phase.is('pan') || phase.is('pinch')) {
-        if (zoom !== 'in') return
-
-        // var current = shape.current
-        // var {x, y} = limitxy(current)
-        //
-        // if (x === current.x && y === current.y) return
-        //
-        // enableTransition()
-        // applyTranslateScale(wrap, x, y, current.z)
-        // showHideComplete(() => disableTransition())
-
-        // if (animations.pan) callbackStack.push(bounceBack)
-        // else bounceBack()
-      }
     }
-
-    // swipe: () => {
-    //   swiping = true
-    // }
   }
 
   Object.keys(handlers).forEach(key => {
     var fn = handlers[key]
     handlers[key] = (...args) => {
-      // console.log('event: ', key)
-      // console.log('swiping', swiping)
-      // if (!swiping || key === 'double') fn.apply(null, args)
       if (!swiping || key === 'double' || key === 'single') fn.apply(null, args)
     }
   })
