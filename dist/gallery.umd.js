@@ -821,6 +821,9 @@
     var opts = Object.assign({}, defaultOptions$1,
       options);
 
+    var selector = opts.selector;
+    var dataset = opts.dataset;
+
     var cache = [];
     var buildCache = function () {
       cache.splice(0, cache.length);
@@ -843,27 +846,18 @@
       var y = thin ? 0 : (docHeight - h) / 2;
 
       return {x: x, y: y, w: w, h: h, z: 1}
-
-      // shape.init = {x, y, w, h, z: 1}
-      // return shape.init
     };
-    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
 
-    // var x, y, w, h
+    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
 
     var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
 
-    // var gesture = gestureFactory()
-
-    var selector = opts.selector;
-    var dataset = opts.dataset;
     // the container
     var div = document.createElement('div');
     document.body.appendChild(div);
 
     var gallery, wrap, background, freeze = false;
     var swiperDom, swiperInstance;
-    // var offDocClick, offTouchStart, offTouchMove, offTouchEnd
     var offStach = [];
     var offs = function (fn) { return offStach.push(fn); };
 
@@ -916,6 +910,8 @@
     var clearAnimations = function () {
       caf(animations.pan);
     };
+
+    // var occupy = 'idle' // idle, swipe, gesture
 
     var postpan = function (boundary, target, x, y, dx, dy) {
       var runtime = {
@@ -1136,8 +1132,6 @@
           // if (Math.abs(dx) > 40) dx = 40 * right
           // if (Math.abs(dy) > 40) dy = 40 * down
 
-          // console.log('boundary:', xyBoundary(shape.current))
-          // postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2, right, down)
           postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2);
         }
       },
