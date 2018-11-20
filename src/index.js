@@ -146,94 +146,106 @@ function gallery (options) {
     return {v, dist}
   }
 
-  const postpan = (boundary, target, x, y, dx, dy, right, down) => {
-    var phase = {x: 'D', y: 'D'} // D: deceleration, O: outofboundary, B: debounce, Z: stop
+  const postpan = (boundary, target, x, y, dx, dy) => {
+    var runtime = {
+      phase: 'D', // D: deceleration, O: outofboundary, B: debounce, Z: stop
+      ba: 0, // lower limit boundary
+      bz: 0, // upper limit boundary
+      oa: false, // out of lower limit
+      oz: false, // out of upper limit
+      start: 0, // debounce start
+      now: 0, // debounce current
+      interval: 0, // debounce interval
+      from: 0, // debounce from
+      to: 0, // debounce to
 
-    var {x1, x2, y1, y2} = boundary
+      v: 0, // x | y
+      dv: 0, // dx | dy
+      r: 1 // right|down: 1, left|up: -1
+    }
 
-    var xRout = false, xLout = false, yTout = false, yBout = false
-
-    var start = 0, now = 0, interval = 0, from = 0, to = 0
+    var it = {
+      x: {...runtime, v: x, dv: Math.abs(dx), r: dx > 0 ? 1 : -1, ba: boundary.x1, bz :boundary.x2},
+      y: {...runtime, v: y, dv: Math.abs(dy), r: dy > 0 ? 1 : -1, ba: boundary.y1, bz: boundary.y2}
+    }
     const ease = k => --k * k * k + 1
 
-    const decelerationX = () => {
-      dx = dx * .95
-      if (dx <= .5) {
-        dx = 0
-        phase.x = 'Z'
+    const deceleration = axis => {
+      var iz = it[axis]
+      if (iz.phase !== 'D') return
+
+      iz.dv *= .95
+      if (iz.dv <= .5) {
+        iz.dv = 0
+        iz.phase = 'Z'
         return
       }
 
-      x += dx * right
+      iz.v += iz.dv * iz.r
+      iz.oa = iz.v <= iz.ba && !~iz.r
+      iz.oz = iz.v >= iz.bz && !!~iz.r
 
-      xRout = x >= x2 && !!~right
-      xLout = x <= x1 && !~right
-
-      if (xRout || xLout) {
-        phase.x = 'O'
-      }
+      if (iz.oa || iz.oz) iz.phase = 'O'
     }
 
-    const decelerationY = () => {
-      dy = dy * .95
-      if (dy <= .5) {
-        dy = 0
-        phase.y = 'Z'
-      }
+    const out = axis => {
+      var iz = it[axis]
+      if (iz.phase !== 'O') return
 
-      y += dy * down
-
-      yTout = y <= y1 && !~down
-      yBout = y >= y2 && !!~down
-
-      if (yTout || yBout) phase.y = 'O'
-    }
-
-    const outX = () => {
-      dx = dx * .8
-      if (dx <= .5) {
-        phase.x = 'B'
-        start = Date.now()
-        from = x
-        to = xRout ? x2 : x1
-        interval = Math.abs((to - from) / doc_w()) * 1000
+      iz.dv = iz.dv * .8
+      if (iz.dv <= .5) {
+        iz.phase = 'B'
+        iz.start = Date.now()
+        iz.from = iz.v
+        iz.to = iz.oz ? iz.bz : iz.ba
+        var interval = 1000 * Math.abs(iz.to - iz.from) / doc_w()
         if (interval > 500) interval = 500
         else if (interval < 150) interval = 150
-        console.log(interval)
+        iz.interval = interval
       } else {
-        x += dx * right
+        iz.v += iz.dv * iz.r
       }
     }
 
-    const outY = () => {}
+    const debounce = axis => {
+      var iz = it[axis]
+      if (iz.phase !== 'B') return
 
-    const debounceX = () => {
-      now = Date.now()
-      var during = now - start
-      if (during >= interval) {
-        x = to
-        phase.x = 'Z'
+      iz.now = Date.now()
+      var during = iz.now - iz.start
+      if (during >= iz.interval) {
+        iz.v = iz.to
+        iz.phase = 'Z'
       }
-      x = (to - from) * ease(during / interval) + from
+      iz.v = (iz.to - iz.from) * ease(during / iz.interval) + iz.from
     }
 
-    const debounceY = () => {}
+    ~function loop () {
+      deceleration('x')
+      deceleration('y')
+      out('x')
+      out('y')
+      debounce('x')
+      debounce('y')
+      applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z)
 
-    const loop = () => {
-      if (phase.x === 'D') decelerationX()
-      else if (phase.x === 'O') outX()
-      else if (phase.x === 'B') debounceX()
+      if (it.x.phase !== 'Z' || it.y.phase !== 'Z') raf(loop)
+    }()
 
-      if (phase.y === 'D') decelerationY()
-      else if (phase.y === 'O') outY()
-      else if (phase.y === 'B') debounceY()
-
-      applyTranslateScale(wrap, x, y, shape.current.z)
-
-      if (phase.x !== 'Z' || phase.y !== 'Z') animations.pan = raf(loop)
-    }
-
-    loop()
+    // const stack = [
+    //   () => deceleration('x'),
+    //   () => deceleration('y'),
+    //   () => out('x'),
+    //   () => out('y'),
+    //   () => debounce('x'),
+    //   () => debounce('y'),
+    //   () => applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z)
+    // ]
+    //
+    // ~function loop2 () {
+    //   animations.pan = raf(loop2)
+    //   stack.forEach(fn => fn())
+    // }()
   }
 
   const panloop = (boundary, target, xx, yy, dx, dy, right, down) => {
@@ -385,10 +397,10 @@ function gallery (options) {
       var right = dx > 0 ? 1 : -1
       var down = dy > 0 ? 1 : -1
 
-      dx = Math.abs(dx)
-      dy = Math.abs(dy)
+      var _dx = Math.abs(dx)
+      var _dy = Math.abs(dy)
 
-      if (zoom === 'in' && (dx >= 0.3 || dy >= 0.3)) {
+      if (zoom === 'in' && (_dx >= 0.3 || _dy >= 0.3)) {
         var xx = points.current[0].x - points.start[0].x + shape.start.x
         var yy = points.current[0].y - points.start[0].y + shape.start.y
 
@@ -396,7 +408,8 @@ function gallery (options) {
         // if (Math.abs(dy) > 40) dy = 40 * down
 
         // console.log('boundary:', xyBoundary(shape.current))
-        postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2, right, down)
+        // postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2, right, down)
+        postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2)
       }
     },
 

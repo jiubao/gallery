@@ -40,7 +40,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## Todos
 * limit zoom in / out level
 * zoom out and zoom in: should not close
-* pan accelerate & momentum
+* ~~pan accelerate & momentum~~
 * gesture.on: support on an object
 * ~~remove swiper's !important~~
 * ~~gap between slides~~
