@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass, doc_w, doc_h } from './utils'
+import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
@@ -25,6 +25,8 @@ const getCenterPoint = (p1, p2) => ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .
 const square = x => x * x
 const distance = (p1, p2) => Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y))
 const calculateZoomLevel = points => distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1])
+
+const preventDefault = prevent()
 
 var defaultOptions = {
   selector: 'data-gallery-item',
@@ -271,7 +273,7 @@ function gallery (options) {
     },
 
     pinch: (points, target) => {
-      // ga('onpinch')
+      // ga('pinch')
       stopSwiper()
 
       var zoomLevel = calculateZoomLevel(points) //* pinch.z
@@ -296,6 +298,7 @@ function gallery (options) {
 
     // TODO: 缩小露底问题
     pinchend: (points, target) => {
+      // ga('pinchend')
       if (zoom === 'out') {
         if (shape.start.z <= 1) hide(target, startSwiper)
         else show(target, startSwiper)
@@ -304,6 +307,7 @@ function gallery (options) {
 
     // TODO: 拖拽卡顿
     pan: (points, target, phase) => {
+      // ga('pan')
       if (zoom === 'in') {
         stopSwiper()
         var dx = points.current[0].x - points.start[0].x + shape.start.x
@@ -313,6 +317,7 @@ function gallery (options) {
     },
 
     panend: (points, target, phase) => {
+      // ga('panend')
 		  // TODO: Avoid acceleration animation if speed is too low
 
       var dx = points.current[0].x - points.last[0].x
@@ -373,10 +378,12 @@ function gallery (options) {
     // TODO: leave the first click which is the document click, should be included in the future
     // TODO: remove all events and dom elements in destroy
     offStach.splice(1, offStach.length).forEach(o => o())
+    preventDefault.off()
   }
 
   // TODO: reset all private variables
   function init (item) {
+    preventDefault.on()
     var img = item.elm
     gallery = div.childNodes[1]
     background = gallery.querySelector('.' + cls.bg)

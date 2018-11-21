@@ -43,23 +43,33 @@
   };
 
   var off = function (element, evt, handler, options) {
-  	if ( options === void 0 ) options = defaultEventOptions;
+    if ( options === void 0 ) options = defaultEventOptions;
 
-  	return element.removeEventListener(evt, handler, options);
+    return element.removeEventListener(evt, handler, options);
   };
   var isString = function (value) { return typeof value === 'string'; };
   var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
 
   var html = function (literalSections) {
-  	var subsets = [], len = arguments.length - 1;
-  	while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
+    var subsets = [], len = arguments.length - 1;
+    while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
 
-  	return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
+    return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
   };
 
   var dom = document.documentElement;
   var doc_h = function () { return dom.clientHeight; };
   var doc_w = function () { return dom.clientWidth; };
+
+  function prevent () {
+    var handler = function (e) { return e.preventDefault(); };
+    var opts = {passive: false};
+
+    return {
+      on: function () { return on(document, 'touchmove', handler, opts); },
+      off: function () { return off(document, 'touchmove', handler, opts); }
+    }
+  }
 
   var classes = {
   	gallery: "_src_style_css_gallery",
@@ -804,6 +814,8 @@
   var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
   var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
 
+  var preventDefault = prevent();
+
   var defaultOptions$1 = {
     selector: 'data-gallery-item',
     dataset: 'galleryItem'
@@ -1049,7 +1061,7 @@
       },
 
       pinch: function (points, target) {
-        // ga('onpinch')
+        // ga('pinch')
         stopSwiper();
 
         var zoomLevel = calculateZoomLevel(points); //* pinch.z
@@ -1074,6 +1086,7 @@
 
       // TODO: 缩小露底问题
       pinchend: function (points, target) {
+        // ga('pinchend')
         if (zoom === 'out') {
           if (shape.start.z <= 1) { hide(target, startSwiper); }
           else { show(target, startSwiper); }
@@ -1082,6 +1095,7 @@
 
       // TODO: 拖拽卡顿
       pan: function (points, target, phase) {
+        // ga('pan')
         if (zoom === 'in') {
           stopSwiper();
           var dx = points.current[0].x - points.start[0].x + shape.start.x;
@@ -1091,6 +1105,7 @@
       },
 
       panend: function (points, target, phase) {
+        // ga('panend')
   		  // TODO: Avoid acceleration animation if speed is too low
 
         var dx = points.current[0].x - points.last[0].x;
@@ -1148,10 +1163,12 @@
       // TODO: leave the first click which is the document click, should be included in the future
       // TODO: remove all events and dom elements in destroy
       offStach.splice(1, offStach.length).forEach(function (o) { return o(); });
+      preventDefault.off();
     }
 
     // TODO: reset all private variables
     function init (item) {
+      preventDefault.on();
       var img = item.elm;
       gallery = div.childNodes[1];
       background = gallery.querySelector('.' + classes.bg);

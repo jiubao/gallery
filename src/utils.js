@@ -29,3 +29,13 @@ export const removeClass = (elm, className) => {
 const dom = document.documentElement
 export const doc_h = () => dom.clientHeight
 export const doc_w = () => dom.clientWidth
+
+export function prevent () {
+  const handler = e => e.preventDefault()
+  const opts = {passive: false}
+
+  return {
+    on: () => on(document, 'touchmove', handler, opts),
+    off: () => off(document, 'touchmove', handler, opts)
+  }
+}
