@@ -72,7 +72,7 @@ function gallery (options) {
   var div = document.createElement('div')
   document.body.appendChild(div)
 
-  var gallery, wrap, background, freeze = false
+  var gallery, wrap, background, freeze = false, opacity = 0
   var swiperDom, swiperInstance
   var offStach = []
   var offs = fn => offStach.push(fn)
@@ -89,9 +89,6 @@ function gallery (options) {
       raf(() => init(item))
     }
   }))
-
-  const enableTransition = () => removeClass(gallery, cls.disableTransition)
-  const disableTransition = () => addClass(gallery, cls.disableTransition)
 
   const stopSwiper = () => swiperInstance.stop()
   const startSwiper = () => swiperInstance.start()
@@ -239,9 +236,8 @@ function gallery (options) {
     double: (points, target) => {
       // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
-        enableTransition()
         var init = shape.init
-        if (zoom === 'in') applyTranslateScale(wrap, init.x, init.y, 1)
+        if (zoom === 'in') animateTranslateScale(shape.current, init, null, startSwiper)
         else {
           var {x, y} = limitxy({
             x: init.x * 2 - points.start[0].x,
@@ -249,12 +245,8 @@ function gallery (options) {
             w: init.w * 2,
             h: init.h * 2
           })
-          applyTranslateScale(wrap, x, y, 2)
+          animateTranslateScale(init, {x, y, z: 2})
         }
-        showHideComplete(() => {
-          disableTransition()
-          zoom === 'in' && startSwiper()
-        })
       }
     },
 
@@ -264,7 +256,7 @@ function gallery (options) {
       if (zoom !== '') return
       var yy = points.current[0].y - points.start[0].y
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
-      var opacity = 1 - Math.abs(yy * 2 / doc_h())
+      opacity = 1 - Math.abs(yy * 2 / doc_h())
       applyOpacity(background, opacity > 0 ? opacity : 0)
     },
     scrollend: (points, target) => {
@@ -273,10 +265,8 @@ function gallery (options) {
 
       if (yy / doc_h() > 1/7) hide(target, startSwiper)
       else {
-        enableTransition()
-        applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
-        applyOpacity(background, 1)
-        showHideComplete(() => {disableTransition(); startSwiper()})
+        animateTranslateScale(shape.current, shape.init)
+        animateOpacity(opacity, 1, startSwiper)
       }
     },
 
@@ -297,7 +287,10 @@ function gallery (options) {
       if (zoom === 'out') {
         var rect = getRect(getCacheItem(target).elm)
         // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
-        shape.start.z <= 1 && applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width))
+        if (shape.start.z <= 1) {
+          opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width)
+          applyOpacity(background, opacity)
+        }
       }
     },
 
@@ -364,7 +357,8 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    destroy,
+    destroy
+    // get: () => opacity
     // get: () => {
     //   return {
     //     swiping,
@@ -389,7 +383,7 @@ function gallery (options) {
     swiperDom = gallery.querySelector('.' + cls.swiper)
 
     var rect = getRect(img)
-    disableTransition()
+    // disableTransition()
 
     cache.forEach(c => {
       c.wrap = gallery.querySelector(`.${cls.wrap} img[data-gallery-index="${c.i}"]`).parentElement
@@ -436,89 +430,71 @@ function gallery (options) {
     })
   }
 
-  function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
-    var start = Date.now()
-    var x = from.x, y = from.y, z = from.z
+  // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
+  //   var start = Date.now()
+  //   var x = from.x, y = from.y, z = from.z
+  //
+  //   ~function loop () {
+  //     onAnimation && onAnimation()
+  //     var now = Date.now()
+  //     var during = now - start
+  //     if (during >= interval) {
+  //       applyTranslateScale(elm, to.x, to.y, to.z)
+  //       return onEnd && onEnd()
+  //     }
+  //
+  //     const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
+  //
+  //     x = cal('x')
+  //     y = cal('y')
+  //     z = cal('z')
+  //
+  //     applyTranslateScale(elm, x, y, z)
+  //     animations[type] = raf(loop)
+  //   }()
+  // }
 
-    ~function loop () {
-      onAnimation && onAnimation()
-      var now = Date.now()
-      var during = now - start
-      if (during >= interval) {
-        applyTranslateScale(elm, to.x, to.y, to.z)
-        return onEnd && onEnd()
-      }
-
-      const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
-
-      x = cal('x')
-      y = cal('y')
-      z = cal('z')
-
-      applyTranslateScale(elm, x, y, z)
-      animations[type] = raf(loop)
-    }()
-  }
-
-  function _animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+  function animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
     var start = Date.now()
     ~function loop () {
       const next = (from, to) => (to - from) * easing[ease](during / interval) + from
 
-      onAnimation && onAnimation()
       var now = Date.now()
       var during = now - start
       if (during >= interval) {
         move(elm, to)
+        onAnimation && onAnimation(to)
         return onEnd && onEnd()
       }
-      move(elm, fn ? fn(from, to, next) : next(from, to))
+      var value = fn ? fn(from, to, next) : next(from, to)
+      onAnimation && onAnimation(value)
+      move(elm, value)
       animations[type] = raf(loop)
     }()
   }
 
-  function show (img, callback) {
-    var rect = getRect(img)
-    // animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, 333, 'cubic', null, callback)
-    _animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, (from, to, next) => ({
+  function animateTranslateScale (from, to, onAnimation, onEnd) {
+    animate('main', wrap, from, to, (from, to, next) => ({
       x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
-    }), (elm, opts) => applyTranslateScale(elm, opts.x, opts.y, opts.z), 333, 'cubic', null, callback)
-
-    _animate('opacity', background, 0, 1, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', null, null)
+    }), (elm, opts) => applyTranslateScale(elm, opts.x, opts.y, opts.z), 333, 'cubic', onAnimation, onEnd)
   }
 
-  // function hide (img, callback) {
-  //   var rect = getRect(img)
-  //
-  //   _animate('main', wrap, shape.)
-  //   _animate('opacity', background, 1, 0, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', null, null)
-  // }
+  function animateOpacity (from, to, onEnd) {
+    animate('opacity', background, from, to, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', v => opacity = v, onEnd)
+  }
 
-  function _show (img, callback) {
-    // if (freeze) return
-    // freeze = true
-    enableTransition()
-    // var sizes = size(img)
-
-    applyTranslateScale(wrap, shape.init.x, shape.init.y, 1)
-    applyOpacity(background, 1)
-    showHideComplete(() => {
-      freeze = !!disableTransition()
-      callback && callback()
-    })
+  function show (img, callback) {
+    var rect = getRect(img)
+    animateTranslateScale({x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init)
+    animateOpacity(opacity, 1, callback)
   }
 
   function hide (img, callback) {
-    if (freeze) return
-    freeze = true
-    enableTransition()
     var rect = getRect(getCacheItem(img).elm)
-    // ga('hide.rect', rect)
 
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w)
-    applyOpacity(background, 0)
-    showHideComplete(() => {
-      freeze = !(gallery.style.display = 'none')
+    animateTranslateScale(shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w})
+    animateOpacity(opacity, 0, () => {
+      gallery.style.display = 'none'
       destroy()
       callback && callback()
     })

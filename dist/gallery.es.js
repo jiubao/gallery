@@ -27,17 +27,6 @@ var html = function (literalSections) {
 	return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
 };
 
-var hasClass = function (elm, className) { return elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className); };
-var addClass = function (elm, className) {
-	if (!hasClass(elm, className)) {
-		elm.className += (elm.className ? ' ' : '') + className;
-	}
-};
-var removeClass = function (elm, className) {
-	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
-	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-};
-
 var dom = document.documentElement;
 var doc_h = function () { return dom.clientHeight; };
 var doc_w = function () { return dom.clientWidth; };
@@ -50,8 +39,7 @@ var classes = {
 	swiperItem: "_src_style_css_swiperItem",
 	swiperWrap: "_src_style_css_swiperWrap",
 	wrap: "_src_style_css_wrap",
-	center: "_src_style_css_center",
-	disableTransition: "_src_style_css_disableTransition"
+	center: "_src_style_css_center"
 };
 
 var templateObject$1 = Object.freeze(["\n      <div class=\"", "\" style=\"padding: 0 ", "px;\">\n        <div class=\"", "\" style=\"width: ", "px;\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
@@ -310,9 +298,6 @@ var easing = {
 
 var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
 var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
-
-var showHideAnimationDuration = 333;
-var showHideComplete = function (fn) { return setTimeout(fn, showHideAnimationDuration + 20); };
 var getRect = function (elm) { return elm.getBoundingClientRect(); };
 
 var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
@@ -364,7 +349,7 @@ function gallery (options) {
   var div = document.createElement('div');
   document.body.appendChild(div);
 
-  var gallery, wrap, background, freeze = false;
+  var gallery, wrap, background, opacity = 0;
   var swiperDom, swiperInstance;
   var offStach = [];
   var offs = function (fn) { return offStach.push(fn); };
@@ -381,9 +366,6 @@ function gallery (options) {
       raf(function () { return init(item); });
     }
   }));
-
-  var enableTransition = function () { return removeClass(gallery, classes.disableTransition); };
-  var disableTransition = function () { return addClass(gallery, classes.disableTransition); };
 
   var stopSwiper = function () { return swiperInstance.stop(); };
   var startSwiper = function () { return swiperInstance.start(); };
@@ -531,9 +513,8 @@ function gallery (options) {
     double: function (points, target) {
       // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
-        enableTransition();
         var init = shape.init;
-        if (zoom === 'in') { applyTranslateScale(wrap, init.x, init.y, 1); }
+        if (zoom === 'in') { animateTranslateScale(shape.current, init, null, startSwiper); }
         else {
           var ref = limitxy({
             x: init.x * 2 - points.start[0].x,
@@ -543,12 +524,8 @@ function gallery (options) {
           });
           var x = ref.x;
           var y = ref.y;
-          applyTranslateScale(wrap, x, y, 2);
+          animateTranslateScale(init, {x: x, y: y, z: 2});
         }
-        showHideComplete(function () {
-          disableTransition();
-          zoom === 'in' && startSwiper();
-        });
       }
     },
 
@@ -558,7 +535,7 @@ function gallery (options) {
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
-      var opacity = 1 - Math.abs(yy * 2 / doc_h());
+      opacity = 1 - Math.abs(yy * 2 / doc_h());
       applyOpacity(background, opacity > 0 ? opacity : 0);
     },
     scrollend: function (points, target) {
@@ -567,10 +544,8 @@ function gallery (options) {
 
       if (yy / doc_h() > 1/7) { hide(target, startSwiper); }
       else {
-        enableTransition();
-        applyTranslateScale(wrap, shape.init.x, shape.init.y, 1);
-        applyOpacity(background, 1);
-        showHideComplete(function () {disableTransition(); startSwiper();});
+        animateTranslateScale(shape.current, shape.init);
+        animateOpacity(opacity, 1, startSwiper);
       }
     },
 
@@ -591,7 +566,10 @@ function gallery (options) {
       if (zoom === 'out') {
         var rect = getRect(getCacheItem(target).elm);
         // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
-        shape.start.z <= 1 && applyOpacity(background, (shape.current.w - rect.width) / (shape.init.w - rect.width));
+        if (shape.start.z <= 1) {
+          opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width);
+          applyOpacity(background, opacity);
+        }
       }
     },
 
@@ -655,7 +633,8 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    destroy: destroy,
+    destroy: destroy
+    // get: () => opacity
     // get: () => {
     //   return {
     //     swiping,
@@ -680,7 +659,7 @@ function gallery (options) {
     swiperDom = gallery.querySelector('.' + classes.swiper);
 
     var rect = getRect(img);
-    disableTransition();
+    // disableTransition()
 
     cache.forEach(function (c) {
       c.wrap = gallery.querySelector(("." + (classes.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
@@ -727,44 +706,71 @@ function gallery (options) {
     });
   }
 
-  function _animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+  // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
+  //   var start = Date.now()
+  //   var x = from.x, y = from.y, z = from.z
+  //
+  //   ~function loop () {
+  //     onAnimation && onAnimation()
+  //     var now = Date.now()
+  //     var during = now - start
+  //     if (during >= interval) {
+  //       applyTranslateScale(elm, to.x, to.y, to.z)
+  //       return onEnd && onEnd()
+  //     }
+  //
+  //     const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
+  //
+  //     x = cal('x')
+  //     y = cal('y')
+  //     z = cal('z')
+  //
+  //     applyTranslateScale(elm, x, y, z)
+  //     animations[type] = raf(loop)
+  //   }()
+  // }
+
+  function animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
     var start = Date.now();
     ~function loop () {
       var next = function (from, to) { return (to - from) * easing[ease](during / interval) + from; };
 
-      onAnimation && onAnimation();
       var now = Date.now();
       var during = now - start;
       if (during >= interval) {
         move(elm, to);
+        onAnimation && onAnimation(to);
         return onEnd && onEnd()
       }
-      move(elm, fn ? fn(from, to, next) : next(from, to));
+      var value = fn ? fn(from, to, next) : next(from, to);
+      onAnimation && onAnimation(value);
+      move(elm, value);
       animations[type] = raf(loop);
     }();
   }
 
+  function animateTranslateScale (from, to, onAnimation, onEnd) {
+    animate('main', wrap, from, to, function (from, to, next) { return ({
+      x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
+    }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', onAnimation, onEnd);
+  }
+
+  function animateOpacity (from, to, onEnd) {
+    animate('opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
+  }
+
   function show (img, callback) {
     var rect = getRect(img);
-    // animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, 333, 'cubic', null, callback)
-    _animate('main', wrap, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, function (from, to, next) { return ({
-      x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
-    }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', null, callback);
-
-    _animate('opacity', background, 0, 1, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', null, null);
+    animateTranslateScale({x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init);
+    animateOpacity(opacity, 1, callback);
   }
 
   function hide (img, callback) {
-    if (freeze) { return }
-    freeze = true;
-    enableTransition();
     var rect = getRect(getCacheItem(img).elm);
-    // ga('hide.rect', rect)
 
-    applyTranslateScale(wrap, rect.left, rect.top, rect.width / shape.init.w);
-    applyOpacity(background, 0);
-    showHideComplete(function () {
-      freeze = !(gallery.style.display = 'none');
+    animateTranslateScale(shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
+    animateOpacity(opacity, 0, function () {
+      gallery.style.display = 'none';
       destroy();
       callback && callback();
     });
@@ -824,7 +830,7 @@ export default gallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [4,0,6,0,5,0,7,0,30,10,1,4,0,6,0,5,0,7,0,25,10,1,4,0,6,0,5,0,7,0,37,10,1,4,0,6,0,5,0,7,0,55,10,1,4,0,6,0,5,0,7,0,54,10,1,4,0,6,0,5,0,7,0,53,13,23,3,19,2,24,3,19,2,34,3,33,11,2,63,3,33,11,2,40,8,56,3,67,8,40,2,12,9,4,0,6,0,5,0,7,0,30,10,1,4,0,6,0,5,0,7,0,25,10,1,4,0,6,0,5,0,7,0,22,10,1,4,0,6,0,5,0,7,0,37,13,57,3,62,2,12,9,4,0,6,0,5,0,7,0,30,13,66,3,14,2,16,3,65,2,48,8,60,3,69,2,58,3,14,2,28,8,32,3,14,2,26,8,29,3,14,2,12,9,4,0,6,0,5,0,7,0,25,13,16,3,18,2,68,3,71,70,2,27,3,35,1,42,36,1,39,8,41,21,44,10,1,19,10,1,45,10,1,43,20,2,35,3,19,2,12,9,4,0,6,0,5,0,7,0,22,13,16,3,18,2,17,8,59,3,24,1,23,2,27,3,17,1,42,36,1,39,8,41,21,44,10,1,19,10,1,45,10,1,43,20,2,28,8,32,3,14,2,26,8,29,3,14,2,12,9,4,0,6,0,5,0,7,0,22,1,61,13,34,3,33,11,2,28,8,32,3,14,2,26,8,29,3,14,2,12,9,4,0,6,0,5,0,7,0,31,13,16,3,18,2,24,3,15,11,2,23,3,15,11,2,17,3,52,21,8,15,11,10,1,8,15,11,20,2,12,46,47,1,4,31,8,64,1,13,9,1,1,16,3,1,18,2,9,1,1,24,3,1,15,11,2,9,1,1,17,3,1,51,21,8,15,11,20,2,9,12,9,9,4,31,8,49,1,13,9,1,1,16,3,1,18,2,9,1,1,23,3,1,15,11,2,9,1,1,17,3,1,50,21,8,15,11,20,2,9,12,1,47,46,9,4,0,6,0,5,0,7,0,38,1,4,0,6,0,5,0,7,0,25,10,1,4,0,6,0,5,0,7,0,38,1,4,0,6,0,5,0,7,0,22,13,27,3,14,2,12],
-    ["_"," ",";",":",".","style","src","css","-","\n",",","%","}","{","none","50","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","/","*","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],
+    [4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16],
+    ["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));
