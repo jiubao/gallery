@@ -26,9 +26,8 @@ export const removeClass = (elm, className) => {
 	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
 }
 
-const dom = document.documentElement
-export const doc_h = () => dom.clientHeight
-export const doc_w = () => dom.clientWidth
+export const doc_h = () => window.innerHeight
+export const doc_w = () => window.innerWidth
 
 export function prevent () {
   const handler = e => e.preventDefault()

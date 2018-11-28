@@ -57,9 +57,8 @@
     return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
   };
 
-  var dom = document.documentElement;
-  var doc_h = function () { return dom.clientHeight; };
-  var doc_w = function () { return dom.clientWidth; };
+  var doc_h = function () { return window.innerHeight; };
+  var doc_w = function () { return window.innerWidth; };
 
   function prevent () {
     var handler = function (e) { return e.preventDefault(); };
