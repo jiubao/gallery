@@ -39,15 +39,16 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * pinch trigger postpan
+* quick pinch: strange behaviors (bounce back, move far away ...)
+* pan does not stop post pan animation
 * switch to landscape
-* ~~phone & scroll: not in middle issue~~
-* after scroll pinch break
 * pan trigger swipe
 * limit zoom in / out level
 * zoom out and zoom in: should not close
-* pinch & pan: pending issue
-* pan out of boundary stop issue
 * transparent issue
+* ~~pan out of boundary stop issue~~
+* ~~phone & scroll: not in middle issue~~
+* ~~after scroll pinch break~~
 * ~~pan accelerate & momentum~~
 * ~~remove swiper's !important~~
 * ~~gap between slides~~
@@ -58,6 +59,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * gesture.on: support on an object
 * out of screen close animation
 * desktop
+* pinch & pan: pending issue
 
 
 [npm]: https://img.shields.io/npm/v/@jiubao/gallery.svg

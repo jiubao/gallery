@@ -809,6 +809,7 @@
   var getRect = function (elm) { return elm.getBoundingClientRect(); };
 
   var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
+  var getCenter = function (ps) { return function (type) { return getCenterPoint(ps[type][0], ps[type][1]); }; };
   var square = function (x) { return x * x; };
   var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
   var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
@@ -928,12 +929,14 @@
 
         v: 0, // x | y
         dv: 0, // dx | dy
-        r: 1 // right|down: 1, left|up: -1
+        r: 1 // right|down: 1, left|up: -1, freeze: 0
       };
 
+      var _dx = Math.abs(dx), _dy = Math.abs(dy);
+
       var it = {
-        x: Object.assign({}, runtime, {v: x, dv: Math.abs(dx), r: dx > 0 ? 1 : -1, ba: boundary.x1, bz :boundary.x2}),
-        y: Object.assign({}, runtime, {v: y, dv: Math.abs(dy), r: dy > 0 ? 1 : -1, ba: boundary.y1, bz: boundary.y2})
+        x: Object.assign({}, runtime, {v: x, dv: _dx, r: !dx ? dx : dx / _dx, ba: boundary.x1, bz :boundary.x2}),
+        y: Object.assign({}, runtime, {v: y, dv: _dy, r: !dy ? dy : dy / _dy, ba: boundary.y1, bz: boundary.y2})
       };
       var ease = function (k) { return --k * k * k + 1; };
 
@@ -947,8 +950,14 @@
         }
 
         iz.v += iz.dv * iz.r;
-        iz.oa = iz.v <= iz.ba && !~iz.r;
-        iz.oz = iz.v >= iz.bz && !!~iz.r;
+
+        iz.oa = iz.v <= iz.ba;
+        iz.oz = iz.v >= iz.bz;
+
+        if (iz.dv > 0) {
+          iz.oa = iz.oa && iz.r <= 0;
+          iz.oz = iz.oz && iz.r >= 0;
+        }
 
         if (iz.oa || iz.oz) { iz.phase = 'O'; }
         else if (iz.dv === 0) { iz.phase = 'Z'; }
@@ -1018,7 +1027,7 @@
       single: function (points, target) {
         // TODO: trigger wrong
         // ga('single')
-        hide(target);
+        // hide(target)
       },
       double: function (points, target) {
         // ga('double.zoom: ', zoom)
@@ -1089,6 +1098,16 @@
         if (zoom === 'out') {
           if (shape.start.z <= 1) { hide(target, startSwiper); }
           else { show(target, startSwiper); }
+        } else {
+          console.log('pinchend.in');
+          var start = getCenter(points)('start');
+          var last = getCenter(points)('last');
+          var current = getCenter(points)('current');
+
+          var dx = current.x - last.x;
+          var dy = current.y - last.y;
+
+          postpan(xyBoundary(shape.current), target, shape.current.x, shape.current.y, dx * 2, dy * 2);
         }
       },
 
@@ -1107,14 +1126,15 @@
         // ga('panend')
   		  // TODO: Avoid acceleration animation if speed is too low
 
-        var dx = points.current[0].x - points.last[0].x;
-        var dy = points.current[0].y - points.last[0].y;
-
         if (zoom === 'in') {
           var xx = points.current[0].x - points.start[0].x + shape.start.x;
           var yy = points.current[0].y - points.start[0].y + shape.start.y;
 
+          var dx = points.current[0].x - points.last[0].x;
+          var dy = points.current[0].y - points.last[0].y;
+
           postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2);
+          // postpan(xyBoundary(shape.current), target, points.current[0].x, points.current[0].y, dx * 2, dy * 2)
         }
       },
 
