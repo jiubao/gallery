@@ -5,7 +5,7 @@ import enumFactory from './enum'
 const html = document.documentElement
 const doc_h = () => html.clientHeight
 const doc_w = () => html.clientWidth
-const touch2point = touch => ({x: touch.pageX, y: touch.pageY})
+const touch2point = touch => ({x: touch.clientX, y: touch.clientY})
 
 function gesture (elm) {
   /*

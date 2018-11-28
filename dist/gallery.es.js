@@ -110,7 +110,7 @@ function enumFactory () {
 }
 
 var html$1 = document.documentElement;
-var touch2point = function (touch) { return ({x: touch.pageX, y: touch.pageY}); };
+var touch2point = function (touch) { return ({x: touch.clientX, y: touch.clientY}); };
 
 function gesture (elm) {
   /*
