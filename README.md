@@ -38,14 +38,15 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## element interface
 
 ## Todos
-* pinch trigger postpan
 * quick pinch: strange behaviors (bounce back, move far away ...)
-* pan does not stop post pan animation
 * switch to landscape
 * pan trigger swipe
 * limit zoom in / out level
 * zoom out and zoom in: should not close
 * transparent issue
+* manage animations
+* ~~pinch trigger postpan~~
+* ~~pan does not stop post pan animation~~
 * ~~pan out of boundary stop issue~~
 * ~~phone & scroll: not in middle issue~~
 * ~~after scroll pinch break~~
@@ -56,6 +57,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * ~~disable gesture when swiper~~
 * ~~ios / safari support~~
 * ~~use js to simulate animation~~
+* recover postpinch (current use postpan)
 * gesture.on: support on an object
 * out of screen close animation
 * desktop

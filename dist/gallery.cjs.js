@@ -410,16 +410,17 @@ function gallery (options) {
 
   var zoom = '';
   var swiping = false;
-  var animations = {
-    pan: 0
-  };
+  var animations = { postpan: 0, main: 0, opacity: 0 };
   var clearAnimations = function () {
-    raf.caf(animations.pan);
+    Object.keys(animations).forEach(function (key) {
+      raf.caf(animations[key]);
+      animations[key] = 0;
+    });
   };
 
   // var occupy = 'idle' // idle, swipe, gesture
 
-  var postpan = function (boundary, target, x, y, dx, dy) {
+  var animateDeceleration = function (boundary, target, x, y, dx, dy) {
     var runtime = {
       phase: 'D', // D: deceleration, O: outofboundary, B: debounce, Z: stop
       ba: 0, // lower limit boundary
@@ -509,7 +510,7 @@ function gallery (options) {
       debounce('y');
       applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z);
 
-      if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { raf.raf(loop); }
+      if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { animations.postpan = raf.raf(loop); }
     }();
 
     // const stack = [
@@ -527,6 +528,10 @@ function gallery (options) {
     //   stack.forEach(fn => fn())
     // }()
   };
+
+  function postpan (target, current, last) {
+    animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2);
+  }
 
   var handlers = {
     single: function (points, target) {
@@ -604,15 +609,9 @@ function gallery (options) {
         if (shape.start.z <= 1) { hide(target, startSwiper); }
         else { show(target, startSwiper); }
       } else {
-        console.log('pinchend.in');
-        var start = getCenter(points)('start');
         var last = getCenter(points)('last');
         var current = getCenter(points)('current');
-
-        var dx = current.x - last.x;
-        var dy = current.y - last.y;
-
-        postpan(xyBoundary(shape.current), target, shape.current.x, shape.current.y, dx * 2, dy * 2);
+        postpan(target, current, last);
       }
     },
 
@@ -627,19 +626,11 @@ function gallery (options) {
       }
     },
 
-    panend: function (points, target, phase) {
+    panend: function (points, target) {
       // ga('panend')
 		  // TODO: Avoid acceleration animation if speed is too low
-
       if (zoom === 'in') {
-        var xx = points.current[0].x - points.start[0].x + shape.start.x;
-        var yy = points.current[0].y - points.start[0].y + shape.start.y;
-
-        var dx = points.current[0].x - points.last[0].x;
-        var dy = points.current[0].y - points.last[0].y;
-
-        postpan(xyBoundary(shape.current), target, xx, yy, dx * 2, dy * 2);
-        // postpan(xyBoundary(shape.current), target, points.current[0].x, points.current[0].y, dx * 2, dy * 2)
+        postpan(target, points.current[0], points.last[0]);
       }
     },
 
@@ -652,6 +643,11 @@ function gallery (options) {
       shape.start.h = shape.last.h = shape.current.h = rect.height;
       var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+    },
+
+    end: function (points, target) {
+      // TODO: tap the img during postpan will stop the animation, as a result we need recover postpan again onend. currently only recover postpan, should recover postpinch also.
+      if (zoom === 'in' && !animations.postpan) { postpan(target, points.current[0], points.last[0]); }
     },
 
     move: function (points, target) {
