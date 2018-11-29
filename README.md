@@ -39,11 +39,12 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * quick pinch: strange behaviors (bounce back, move far away ...)
+* transparent issue
+* zoom out and zoom in: should not close
 * switch to landscape
 * pan trigger swipe
 * limit zoom in / out level
-* zoom out and zoom in: should not close
-* transparent issue
+* pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow
 * manage animations
 * ~~pinch trigger postpan~~
 * ~~pan does not stop post pan animation~~
