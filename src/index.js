@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent } from './utils'
+import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent, isArray } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
@@ -102,17 +102,24 @@ function gallery (options) {
     }
   }))
 
-  const stopSwiper = () => swiperInstance.stop()
+  const stopSwiper = () => {swiping = false; swiperInstance.stop()}
   const startSwiper = () => swiperInstance.start()
 
   const setShape = (target, key) => {
     var rect = getRect(target)
-    shape[key].x = rect.x
-    shape[key].y = rect.y
-    shape[key].w = rect.width
-    shape[key].h = rect.height
-    shape[key].z = rect.width / shape.init.w
+
+    var setByKey = key => {
+      shape[key].x = rect.x
+      shape[key].y = rect.y
+      shape[key].w = rect.width
+      shape[key].h = rect.height
+      shape[key].z = rect.width / shape.init.w
+    }
+
+    isArray(key) ? key.forEach(key => setByKey(key)) : setByKey(key)
   }
+
+  const setShape3 = target => setShape(target, ['start', 'current', 'last'])
 
   /*
    * events (pan | pinch | press | rotate | swipe | tap)
@@ -265,19 +272,21 @@ function gallery (options) {
     double: (points, target) => {
       // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
-        // stopSwiper()
+        stopSwiper()
         disableGesture()
         var init = shape.init
-        // if (zoom === 'in') animateTranslateScale(false, shape.current, init, null, () => {startSwiper();enableGesture()})
-        if (zoom === 'in') show(target)
-        else {
+        if (zoom === 'in') {
+          zoom = ''
+          show(target)
+        } else {
           var {x, y} = limitxy({
             x: init.x * 2 - points.start[0].x,
             y: init.y * 2 - points.start[0].y,
             w: init.w * 2,
             h: init.h * 2
           })
-          animateTranslateScale(false, init, {x, y, z: 2}, null, enableGesture)
+          animateTranslateScale(false, init, {x, y, z: 2}, null, () => {setShape3(target); enableGesture()})
+          zoom = 'in'
         }
       }
     },
@@ -357,13 +366,9 @@ function gallery (options) {
 
     start: (points, target) => {
       clearAnimations()
-      var rect = getRect(target)
-      shape.start.x = shape.last.x = shape.current.x = rect.x
-      shape.start.y = shape.last.y = shape.current.y = rect.y
-      shape.start.w = shape.last.w = shape.current.w = rect.width
-      shape.start.h = shape.last.h = shape.current.h = rect.height
-      var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w
-      zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
+      setShape3(target)
+      var z = shape.start.z
+      zoom = z > 1 ? 'in' : (z < 1 ? 'out' : '')
     },
 
     end: (points, target) => {
@@ -445,6 +450,7 @@ function gallery (options) {
       // occupy = 'swipe'
     })
     swiperInstance.on('end', index => {
+      // console.log('swipe.end')
       wrap = cache[index].wrap
       shape.init = cache[index].shape
       swiping = false
@@ -521,8 +527,13 @@ function gallery (options) {
   function show (img) {
     disableGesture()
     var rect = getRect(img)
-    animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, enableGesture)
-    animateOpacity(false, opacity, 1, startSwiper)
+    animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, null)
+    animateOpacity(false, opacity, 1, () => {
+      // callback && callback();
+      setShape3(img)
+      startSwiper()
+      enableGesture()
+    })
   }
 
   function hide (img) {

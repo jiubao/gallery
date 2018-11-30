@@ -43,11 +43,12 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * zoom out and zoom in: should not close
 * switch to landscape
 * pan trigger swipe
-* double and quickly swipe issue
-* startSwiper | stopSwiper
 * limit zoom in / out level
 * pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow
 * manage animations
+* startSwiper | stopSwiper
+* ~~double and quickly swipe issue~~
+* ~~triple tap~~
 * ~~pinch trigger postpan~~
 * ~~pan does not stop post pan animation~~
 * ~~pan out of boundary stop issue~~
