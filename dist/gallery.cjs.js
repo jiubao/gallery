@@ -394,6 +394,15 @@ function gallery (options) {
     }
   }));
 
+  // TODO: remove animation for resize, add to off list for destroy
+  on(window, 'resize', function (evt) {
+    buildCache();
+    var item = getCacheItem(wrap.firstElementChild);
+    shape.init = item.shape;
+    div.innerHTML = tpls.main(cache);
+    raf.raf(function () { return init(item); });
+  });
+
   var stopSwiper = function () {swiping = false; swiperInstance.stop();};
   var startSwiper = function () { return swiperInstance.start(); };
 
@@ -689,6 +698,7 @@ function gallery (options) {
   var gallery = {
     // on, off
     destroy: destroy
+    // wrap: () => wrap
     // shape: () => shape,
     // cache: () => cache
     // get: () => opacity

@@ -102,6 +102,15 @@ function gallery (options) {
     }
   }))
 
+  // TODO: remove animation for resize, add to off list for destroy
+  on(window, 'resize', evt => {
+    buildCache()
+    var item = getCacheItem(wrap.firstElementChild)
+    shape.init = item.shape
+    div.innerHTML = tpls.main(cache)
+    raf(() => init(item))
+  })
+
   const stopSwiper = () => {swiping = false; swiperInstance.stop()}
   const startSwiper = () => swiperInstance.start()
 
@@ -392,6 +401,7 @@ function gallery (options) {
   var gallery = {
     // on, off
     destroy
+    // wrap: () => wrap
     // shape: () => shape,
     // cache: () => cache
     // get: () => opacity
