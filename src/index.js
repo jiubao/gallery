@@ -324,12 +324,12 @@ function gallery (options) {
       applyTranslateScale(wrap, dx, dy, _zoom)
       if (zoom === 'out') {
         var rect = getRect(getCacheItem(target).elm)
-        // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
-        if (shape.start.z <= 1) {
-          opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width)
-          applyOpacity(background, opacity)
-        }
+        if (shape.start.z <= 1) opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width)
       }
+
+      if (shape.current.z >= 1) opacity = 1
+
+      applyOpacity(background, opacity)
     },
 
     // TODO: 缩小露底问题
