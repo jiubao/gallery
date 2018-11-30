@@ -5,6 +5,15 @@ import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
 import swiper from 'swipe-core'
 
+/*
+ * animations
+ *    1. show / hide
+ *    2. post pan / pinch
+ *    3. double tap
+ *    4. opacity
+ *    5. scroll end
+ */
+
 // console.log('the best gallery is coming...')
 const easing = {
   'cubic': k => --k * k * k + 1,
@@ -243,6 +252,10 @@ function gallery (options) {
     animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2)
   }
 
+  var gestureEnabled = false
+  const enableGesture = () => gestureEnabled = true
+  const disableGesture = () => gestureEnabled = false
+
   const handlers = {
     single: (points, target) => {
       // TODO: trigger wrong
@@ -252,8 +265,11 @@ function gallery (options) {
     double: (points, target) => {
       // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
+        // stopSwiper()
+        disableGesture()
         var init = shape.init
-        if (zoom === 'in') animateTranslateScale(shape.current, init, null, startSwiper)
+        // if (zoom === 'in') animateTranslateScale(false, shape.current, init, null, () => {startSwiper();enableGesture()})
+        if (zoom === 'in') show(target)
         else {
           var {x, y} = limitxy({
             x: init.x * 2 - points.start[0].x,
@@ -261,7 +277,7 @@ function gallery (options) {
             w: init.w * 2,
             h: init.h * 2
           })
-          animateTranslateScale(init, {x, y, z: 2})
+          animateTranslateScale(false, init, {x, y, z: 2}, null, enableGesture)
         }
       }
     },
@@ -279,11 +295,8 @@ function gallery (options) {
       if (zoom !== '') return
       var yy = Math.abs(points.current[0].y - points.start[0].y)
 
-      if (yy / doc_h() > 1/7) hide(target, startSwiper)
-      else {
-        animateTranslateScale(shape.current, shape.init)
-        animateOpacity(opacity, 1, startSwiper)
-      }
+      if (yy / doc_h() > 1/7) hide(target)
+      else show(target)
     },
 
     pinch: (points, target) => {
@@ -314,8 +327,8 @@ function gallery (options) {
     pinchend: (points, target) => {
       // ga('pinchend')
       if (zoom === 'out') {
-        if (shape.start.z <= 1) hide(target, startSwiper)
-        else show(target, startSwiper)
+        if (shape.start.z <= 1) hide(target)
+        else show(target)
       } else {
         var last = getCenter(points)('last')
         var current = getCenter(points)('current')
@@ -366,7 +379,7 @@ function gallery (options) {
   Object.keys(handlers).forEach(key => {
     var fn = handlers[key]
     handlers[key] = (...args) => {
-      if (!swiping || key === 'double' || key === 'single') fn.apply(null, args)
+      if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) fn.apply(null, args)
     }
   })
 
@@ -471,7 +484,10 @@ function gallery (options) {
   //   }()
   // }
 
-  function animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+  /*
+   * interruptable: true | false
+   */
+  function animate (interruptable, type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
     var start = Date.now()
     ~function loop () {
       const next = (from, to) => (to - from) * easing[ease](during / interval) + from
@@ -486,34 +502,38 @@ function gallery (options) {
       var value = fn ? fn(from, to, next) : next(from, to)
       onAnimation && onAnimation(value)
       move(elm, value)
-      animations[type] = raf(loop)
+      var timer = raf(loop)
+      if (interruptable) animations[type] = timer
+      // animations[type] = raf(loop)
     }()
   }
 
-  function animateTranslateScale (from, to, onAnimation, onEnd) {
-    animate('main', wrap, from, to, (from, to, next) => ({
+  function animateTranslateScale (interruptable, from, to, onAnimation, onEnd) {
+    animate(interruptable, 'main', wrap, from, to, (from, to, next) => ({
       x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
     }), (elm, opts) => applyTranslateScale(elm, opts.x, opts.y, opts.z), 333, 'cubic', onAnimation, onEnd)
   }
 
-  function animateOpacity (from, to, onEnd) {
-    animate('opacity', background, from, to, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', v => opacity = v, onEnd)
+  function animateOpacity (interruptable, from, to, onEnd) {
+    animate(interruptable, 'opacity', background, from, to, null, (elm, opts) => applyOpacity(elm, opts), 333, 'cubic', v => opacity = v, onEnd)
   }
 
-  function show (img, callback) {
+  function show (img) {
+    disableGesture()
     var rect = getRect(img)
-    animateTranslateScale({x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init)
-    animateOpacity(opacity, 1, callback)
+    animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, enableGesture)
+    animateOpacity(false, opacity, 1, startSwiper)
   }
 
-  function hide (img, callback) {
+  function hide (img) {
+    disableGesture()
+    stopSwiper()
     var rect = getRect(getCacheItem(img).elm)
 
-    animateTranslateScale(shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w})
-    animateOpacity(opacity, 0, () => {
+    animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w})
+    animateOpacity(false, opacity, 0, () => {
       gallery.style.display = 'none'
       destroy()
-      callback && callback()
     })
   }
 

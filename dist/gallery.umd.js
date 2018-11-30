@@ -1,1 +1,1389 @@
-!function(t,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):t.gallery=n()}(this,function(){"use strict";var t=["webkit","moz","ms","o"],K=t.reduce(function(t,n){return t||window[n+"RequestAnimationFrame"]},window.requestAnimationFrame).bind(window),Q=t.reduce(function(t,n){return t||window[n+"CancelAnimationFrame"]},window.cancelAnimationFrame).bind(window);if(!K||!Q){var e=0;K=function(t){var n=+new Date;return e=Math.max(n,e+16),setTimeout(t,e-n)},Q=clearTimeout}function n(t){var n=!1;function e(){}var r=Object.defineProperty({},"passive",{get:function(){n=!0}});return window.addEventListener("testPassive",e,r),window.removeEventListener("testPassive",e,r),n}var i=!!n()&&{capture:!1,passive:!0},D=function(t,n,e,r){return void 0===r&&(r=i),t.addEventListener(n,e,r),function(){return x(t,n,e,r)}},x=function(t,n,e,r){return void 0===r&&(r=i),t.removeEventListener(n,e,r)},k=function(r){for(var t=[],n=arguments.length-1;0<n--;)t[n]=arguments[n+1];return t.reduce(function(t,n,e){return t+n+r[e+1]},r[0])},H=function(){return window.innerHeight},A=function(){return window.innerWidth},L="_src_style_css_bg",q="_src_style_css_swiper",C="_src_style_css_wrap",T=Object.freeze(['\n      <div class="','" style="padding: 0 ','px;">\n        <div class="','" style="width: ','px;">\n          <img data-gallery-index="','" src="','" style="width: ',"px; height: ",'px;"/>\n        </div>\n      </div>\n    ']),I=Object.freeze(['\n<div class="','">\n  <div class="','"></div>\n  <div class="','" style="margin-left: -',"px; width: ",'px;">\n    <div class="','">\n    ',"\n    </div>\n  </div>\n</div>\n"]),R=~~(A()/15);document.documentElement;var m=function(t){return{x:t.clientX,y:t.clientY}};function N(e){var r,n,i,o,t,a,u=window.phase=(r=0,n=1,i={idle:0},o=function(t){return"number"==typeof t?t:i[t]},t=function(e,t){return function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return t.forEach(function(t){return e(t)}),a}},a={v:function(){return r},or:t(function(t){return r|=o(t)}),rm:t(function(t){return r&=~o(t)}),add:t(function(t){i[t]=n,n<<=1}),is:function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return t.reduce(function(t,n){return t&&!!(r&o(n))},!0)},set:function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];return r=t.reduce(function(t,n){return t|o(n)},0),a}},a).add("start","move","end","scroll","pinch","pan","swipe"),c=!1,s=0,l=-1,f=-1,d={tap:[],single:[],double:[],start:[],move:[],end:[],scroll:[],scrollend:[],pan:[],panstart:[],panend:[],pinch:[],pinchstart:[],pinchend:[],swipe:[]},h={},p={start:[],last:[],current:[]},v=function(t){return d[t].forEach(function(t){return t(p,h,u)})},y=function(){c&&(K(y),v("move"),u.is("scroll")&&v("scroll"),u.is("swipe")&&v("swipe"),u.is("pinch")&&v("pinch"),u.is("pan")&&v("pan"))},w=function(n,t){if(e=t,Array.isArray(e)||e instanceof Array)return t.forEach(function(t){return w(n,t)});var e;p[t]=[],"string"==typeof t&&(p[t][0]=m(n.touches[0])),1<n.touches.length&&(p[t][1]=m(n.touches[1]))};return D(e,"touchstart",function(t){w(t,["start","last","current"]),h=t.target,u.set("start"),1<t.touches.length&&u.or("pinch"),v("start"),u.is("pinch")?v("pinchstart"):v("panstart"),u.is("pinch")||(l=Date.now())}),D(e,"touchmove",function(t){p.last=p.current,w(t,"current"),1<t.touches.length?u.rm("pan").or("pinch"):(u.is("pinch")&&(w(t,"start"),v("start")),u.rm("pinch").or("pan")),u.is("start")&&!u.is("pinch")&&Math.abs(p.current[0].x-p.start[0].x)<Math.abs(p.current[0].y-p.start[0].y)&&u.or("scroll"),u.is("pan")&&!u.is("scroll")&&u.or("swipe"),u.rm("start").or("move"),c||(c=!0,y())}),D(e,"touchend",function(t){if(u.rm("start","move").or("end"),u.is("scroll")&&v("scrollend"),u.is("pinch")&&v("pinchend"),u.is("pan")&&v("panend"),c=!1,!u.is("pinch")&&!u.is("pan")){var n=Date.now();n-l<=200&&(v("tap"),s=n-f<=300?s+1:1,f=n,1===s?setTimeout(function(){return 1===s&&v("single")},300):2===s&&v("double"))}v("end")}),{on:function(t,n){return d[t].push(n),function(){return x(e,t,n)}},off:function(t,n){return d[t].splice(d[t].indexOf(n),1)},phase:function(){return u}}}function tt(t){var n=this;t.forEach(function(t){return n.append(t)})}tt.prototype.append=function(t){var n=t.$next=t.$prev=t;return this.$tail?(n.$prev=this.$tail,n.$next=this.$tail.$next,(this.$tail.$next=n).$next.$prev=n,this.$tail=n):this.$head=this.$tail=n};var o=!!n()&&{capture:!1,passive:!0},nt=function(t,n,e,r){void 0===r&&(r=o),t.addEventListener(n,e,r)},et=function(t,n,e,r){void 0===r&&(r=o),t.removeEventListener(n,e,r)},rt=function(t){return"function"==typeof t},it=function(t){var n=t.getBoundingClientRect();return n.top<window.innerHeight&&0<n.bottom&&n.left<window.innerWidth&&0<n.right},ot={cubic:function(t){return--t*t*t+1},circ:function(t){return Math.sqrt(1-Math.pow(t-1,2))}},at="touchstart",ut="touchmove",ct="touchend",st=function(t,n){return window.getComputedStyle(t,null).getPropertyValue(n)};function lt(){this.value=0}lt.prototype={is:function(t){return this.value&t},or:function(t){return this.value=this.value|t,this},rm:function(t){return this.value=this.value&~t,this},set:function(t){return this.value=t,this}};var ft={root:null,rootMargin:"0px",threshold:[0,.01]},dt=!!window.IntersectionObserver,ht={auto:!1,cycle:!0,expose:!1,root:null,elms:[],index:0,width:window.screen.width,height:200,css:!1,ease:"cubic",plugins:[],initHandlers:[],startHandlers:[],moveHandlers:[],endHandlers:[],animationEndHandlers:[]},pt=document.createElement("div");function B(t){var a=Object.assign({},ht,t),u=a.index,c=a.root,l=a.elms,s=a.width,f=a.height,d=a.cycle,h=(a.expose,a.auto),p=a.css,v=a.ease;a.plugins.forEach(function(n){return Object.keys(n).forEach(function(t){return a[t+"Handlers"].push(n[t])})});var n=function(r){return function(){for(var t=arguments,n=[],e=arguments.length;e--;)n[e]=t[e];return a[r+"Handlers"].forEach(function(t){return t.apply(null,n)})}},y=n("init"),e=n("start"),i=n("move"),w=n("end");if(c){p&&(s=Number(st(c,"width").slice(0,-2)),f=Number(st(c,"height").slice(0,-2)));var x=c.children[0],m={main:-1,auto:-1},b=s/3,g={idle:0,start:1,drag:2,animate:4,scroll:8,auto:16,cancel:32},$=new lt,r=0,z=0,o=0,E=0,_=0,M=0,O=0,j=0,D=[],k=!1;h=d&&h;var H=l[u],A=function(t,n){var e,r;t.x=n,r=n,(e=t)&&(e.style.transition=e.style.webkitTransition="",e.style.transform=e.style.webkitTransform="translate3d("+r+"px, 0, 0)",i(H.$index,H,x,l))},L=function(t){return pt.appendChild(t)},q=function(t){return x.appendChild(t)},C=function(t){return!d&&M<O&&H===D.$head},T=function(t){return!d&&O<=M&&H===D.$tail},I=function(t){return clearTimeout(m.auto)},R=function(t){return I($.set(g.cancel))},N=function(t){I(),Q(m.main)},B=!0;return function(){if(0===l.length)return y(-1);c.style.position="relative",p||(c.style.width=s+"px",c.style.height=f+"px");var t=2===l.length&&d;t&&(l.push(l[0].cloneNode(!0)),q(l[2]),l.push(l[1].cloneNode(!0)),q(l[3]),l[0].$index=l[2].$index=0,l[1].$index=l[3].$index=1);var n=1===l.length;if(k=2===l.length,D=new tt(l),t||l.forEach(function(t,n){return t.$index=n}),A(H,0),n||k||A(H.$prev,-s),n||A(H.$next,s),l.forEach(function(t){t.style.position="absolute",p||(t.style.width=s+"px",t.style.height=f+"px"),k||n||t===H||t===H.$prev||t===H.$next||L(t)}),n)return y(H.$index,H,x,l);if(k||d||0!==u||L(H.$prev),k||d||u!==l.length-1||L(H.$next),J(),nt(c,at,S),nt(c,ut,W),nt(c,ct,G),h){if(dt)K(function(){a.unobserve=function(t,n){if(!dt)return n();var e=new IntersectionObserver(n,ft);return e.observe(t),function(){e.unobserve(t)}}(c,function(t){t&&0===t[0].intersectionRatio?R():Z()})});else{var e=function(){return it(c)?U():R()};nt(window,"touchmove",function(){return it(c)||R()}),nt(window,"touchend",e),e()}var r=["webkit","moz","ms","-"].reduce(function(t,n){return void 0!==document[t[0]]?t:[n+"Hidden",n+"visibilitychange"]},["hidden","visibilitychange"]),i=r[0],o=r[1];"-"!==i[0]&&document.addEventListener(o,function(){return document[i]?R():U()},!1)}x.x=0,y(H.$index,H,x,l)}(),{destroy:J,index:function(t){return H.$index},on:function(t,n){var e=a[t+"Handlers"];return e.push(n),function(){return e.splice(e.indexOf(n),1)}},stop:function(){return B=!1},start:function(){return B=!0}}}function S(t){if(B){N(),$.or(g.start).rm(g.scroll),o=0;var n=t.touches[0];_=Date.now(),z=O=M=n.pageX,j=n.clientY,e(H.$index,H,x,l)}}function W(t){if(B&&!$.is(g.scroll)){var n=t.touches[0],e=n.pageX-O;if($.is(g.start)&&2*Math.abs(e)<Math.abs(n.clientY-j))$.or(g.scroll).rm(g.start);else{var r=0<e?1:-1;o!==r&&(z=O,_=Date.now(),o=r),$.set(g.drag),O=n.pageX,A(x,E+=e)}}}function X(){k||L(H.$next),H=H.$prev,C()||(A(H.$prev,H.x-s),q(H.$prev))}function F(){k||L(H.$prev),H=H.$next,T()||(A(H.$next,H.x+s),q(H.$next))}function P(){0===r&&-H.x-E>s/2&&(r=1,F())}function U(){I(),m.auto=setTimeout(function(){B&&Y()},3e3)}function Y(){r=0,$.set(g.auto),e(H.$index,H,x,l),V(x,E,-H.x-s,2e3/3,P,U)}function Z(){3<Math.abs(E+H.x)?Y():U()}function G(t){if(B){if($.is(g.scroll)&&!$.is(g.animate)&&!$.is(g.auto))return h&&Z();$.set(g.animate);var n=z<O,e=Date.now()-_<120;if(!C()&&!T()){var r=H.x+E;e?n&&0<r?X():!n&&r<0&&F():b<r?X():r<-b&&F()}var i=-1*H.x,o=Math.min(Math.max(1e3*Math.abs(i-E)/s,250),2e3/3);V(x,E,i,e?250:o,null,h?function(){return Z()}:null)}}function V(r,i,o,a,u,c){var s=Date.now();!function t(){var n=Date.now()-s;if(a<=n&&(E=o),rt(u)&&u(),a<=n)return A(r,o),!$.is(g.cancel)&&rt(c)&&c(),$.set(g.idle),w(H.$index,H,x,l);var e=(o-i)*ot[v](n/a)+i;A(r,E=e),m.main=K(t)}()}function J(){N(),rt(a.unobserve)&&a.unobserve(),et(c,at,S),et(c,ut,W),et(c,ct,G)}}pt.style.display="none",document.body.appendChild(pt);var r,a,S={cubic:function(t){return--t*t*t+1},circ:function(t){return Math.sqrt(1-Math.pow(t-1,2))}},W=function(t,n,e,r){return t.style.transform="translate3d("+n+"px,"+e+"px,0) scale("+r+")"},X=function(t,n){return t.style.opacity=n},F=function(t){return t.getBoundingClientRect()},P=function(t,n){return{x:.5*(t.x+n.x),y:.5*(t.y+n.y)}},U=function(n){return function(t){return P(n[t][0],n[t][1])}},u=function(t){return t*t},Y=function(t,n){return Math.sqrt(u(t.x-n.x)+u(t.y-n.y))},Z=(a={passive:(r=function(t){return t.preventDefault()},!1)},{on:function(){return D(document,"touchmove",r,a)},off:function(){return x(document,"touchmove",r,a)}}),G={selector:"data-gallery-item",dataset:"galleryItem"};return function(t){var n=Object.assign({},G,t),i=n.selector,o=n.dataset,l=[],f=function(t){return l[Number(t.dataset.galleryIndex)]},v={init:{x:0,y:0,z:1,w:0,h:0},start:{x:0,y:0,z:1,w:0,h:0},last:{x:0,y:0,z:1,w:0,h:0},current:{x:0,y:0,z:1,w:0,h:0}},a=document.createElement("div");document.body.appendChild(a);var y,d,u,c,h=0,e=[],s=function(t){return e.push(t)};s(D(document,"click",function(t){var n,e=t.target;if("IMG"===e.tagName&&o in e.dataset){l.splice(0,l.length),document.querySelectorAll("img["+i+"]").forEach(function(t,n){t.dataset.galleryIndex=n;var e,r,i,o,a,u,c=t.naturalWidth,s=t.naturalHeight;l[n]={elm:t,w:c,h:s,r:c/s,src:t.src,i:n},l[n].shape=(e=f(t),r=A(),i=H(),o=r/i>e.r,a=o?i*e.r:r,u=o?i:r/e.r,{x:o?(r-a)/2:0,y:o?0:(i-u)/2,w:a,h:u,z:1})});var r=f(e);v.init=r.shape,a.innerHTML=k(I,"_src_style_css_gallery",L,q,R,(n=l)[0].shape.w+2*R,"_src_style_css_swiperWrap",n.map(function(t){return k(T,"_src_style_css_swiperItem",R,C,t.shape.w,t.i,t.src,t.shape.w,t.shape.h)}).join("")),K(function(){return function(e){Z.on();var t=e.elm;g=a.childNodes[1],d=g.querySelector("."+L),u=g.querySelector("."+q);var r=F(t);l.forEach(function(t){t.wrap=g.querySelector("."+C+' img[data-gallery-index="'+t.i+'"]').parentElement,t.i===e.i?W(t.wrap,r.left,r.top,r.width/v.init.w):W(t.wrap,t.shape.x,t.shape.y,1);var n=N(t.wrap);Object.keys($).forEach(function(t){return s(n.on(t,$[t]))})}),y=e.wrap,(c=B({root:u,elms:Array.prototype.slice.apply(u.children[0].children),auto:!1,index:e.i,expose:!0,css:!0})).on("move",function(t){m=!0}),c.on("end",function(t){y=l[t].wrap,v.init=l[t].shape,m=!1}),m=!1,g.style.display="block",K(function(){O(t)})}(r)})}}));var p=function(){return c.stop()},w=function(){return c.start()},x="",m=!1,b={postpan:0,main:0,opacity:0};function r(t,n,e){var r,i,o,a,u,c,s,l,f,d,h,p;r=function(t){t.x,t.y;var n,e,r,i,o=t.w,a=t.h,u=A(),c=H();return o<u?n=e=(u-o)/2:(n=u-o,e=0),a<c?r=i=(c-a)/2:(r=c-a,i=0),{x1:n,x2:e,y1:r,y2:i}}(v.current),i=v.current.x,o=v.current.y,a=2*(n.x-e.x),u=2*(n.y-e.y),c={phase:"D",ba:0,bz:0,oa:!1,oz:!1,start:0,now:0,interval:0,from:0,to:0,v:0,dv:0,r:1},s=Math.abs(a),l=Math.abs(u),f={x:Object.assign({},c,{v:i,dv:s,r:a?a/s:a,ba:r.x1,bz:r.x2}),y:Object.assign({},c,{v:o,dv:l,r:u?u/l:u,ba:r.y1,bz:r.y2})},d=function(t){var n=f[t];"D"===n.phase&&(n.dv*=.95,n.dv<=.5&&(n.dv=0),n.v+=n.dv*n.r,n.oa=n.v<=n.ba,n.oz=n.v>=n.bz,0<n.dv&&(n.oa=n.oa&&n.r<=0,n.oz=n.oz&&0<=n.r),n.oa||n.oz?n.phase="O":0===n.dv&&(n.phase="Z"))},h=function(t){var n=f[t];if("O"===n.phase)if(n.dv=.8*n.dv,n.dv<=.5){n.phase="B",n.start=Date.now(),n.from=n.v,n.to=n.oz?n.bz:n.ba;var e=1e3*Math.abs(n.to-n.from)/A();500<e?e=500:e<150&&(e=150),n.interval=e}else n.v+=n.dv*n.r},p=function(t){var n=f[t];if("B"===n.phase){n.now=Date.now();var e,r=n.now-n.start;r>=n.interval&&(n.v=n.to,n.phase="Z"),n.v=(n.to-n.from)*(e=r/n.interval,--e*e*e+1)+n.from}},function t(){d("x"),d("y"),h("x"),h("y"),p("x"),p("y"),W(y,f.x.v,f.y.v,v.current.z),"Z"===f.x.phase&&"Z"===f.y.phase||(b.postpan=K(t))}()}var g,$={single:function(t,n){},double:function(t,n){if("out"!==x){var e=v.init;if("in"===x)_(v.current,e,null,w);else{var r=(o=(i={x:2*e.x-t.start[0].x,y:2*e.y-t.start[0].y,w:2*e.w,h:2*e.h}).x,a=i.y,c=i.h,(u=i.w)<(s=A())?o=(s-u)/2:0<o?o=0:o<s-u&&(o=s-u),c<(l=H())?a=(l-c)/2:0<a?a=0:a<l-c&&(a=l-c),{x:o,y:a});_(e,{x:r.x,y:r.y,z:2})}}var i,o,a,u,c,s,l},scroll:function(t,n){if(p(),""===x){var e=t.current[0].y-t.start[0].y;W(y,v.init.x,v.init.y+e,1),h=1-Math.abs(2*e/H()),X(d,0<h?h:0)}},scrollend:function(t,n){""===x&&(Math.abs(t.current[0].y-t.start[0].y)/H()>1/7?j(n,w):(_(v.current,v.init),M(h,1,w)))},pinch:function(t,n){p();var e,r=Y((e=t).current[0],e.current[1])/Y(e.start[0],e.start[1]),i=P(t.start[0],t.start[1]),o=P(t.current[0],t.current[1]),a=o.x-(i.x-v.start.x)*r,u=o.y-(i.y-v.start.y)*r,c=r*v.start.z;if(x=1<c?"in":c<1?"out":"",W(y,a,u,c),"out"===x){var s=F(f(n).elm);v.start.z<=1&&(h=(v.current.w-s.width)/(v.init.w-s.width),X(d,h))}},pinchend:function(t,n){if("out"===x)v.start.z<=1?j(n,w):O(n,w);else{var e=U(t)("last");r(0,U(t)("current"),e)}},pan:function(t,n,e){if("in"===x){p();var r=t.current[0].x-t.start[0].x+v.start.x,i=t.current[0].y-t.start[0].y+v.start.y;W(y,r,i,v.start.z)}},panend:function(t,n){"in"===x&&r(0,t.current[0],t.last[0])},start:function(t,n){Object.keys(b).forEach(function(t){Q(b[t]),b[t]=0});var e=F(n);v.start.x=v.last.x=v.current.x=e.x,v.start.y=v.last.y=v.current.y=e.y,v.start.w=v.last.w=v.current.w=e.width,v.start.h=v.last.h=v.current.h=e.height;var r=v.start.z=v.last.z=v.current.z=e.width/v.init.w;x=1<r?"in":r<1?"out":""},end:function(t,n){"in"!==x||b.postpan||r(0,t.current[0],t.last[0])},move:function(t,n){var e,r;e="current",r=F(n),v[e].x=r.x,v[e].y=r.y,v[e].w=r.width,v[e].h=r.height,v[e].z=r.width/v.init.w}};return Object.keys($).forEach(function(e){var r=$[e];$[e]=function(){for(var t=[],n=arguments.length;n--;)t[n]=arguments[n];m&&"double"!==e&&"single"!==e||r.apply(null,t)}}),g={destroy:z};function z(){e.splice(1,e.length).forEach(function(t){return t()}),Z.off()}function E(i,o,a,u,c,s,l,f,d,h){var p=Date.now();!function t(){var n=function(t,n){return(n-t)*S[f](e/l)+t},e=Date.now()-p;if(l<=e)return s(o,u),d&&d(u),h&&h();var r=c?c(a,u,n):n(a,u);d&&d(r),s(o,r),b[i]=K(t)}()}function _(t,n,e,r){E("main",y,t,n,function(t,n,e){return{x:e(t.x,n.x),y:e(t.y,n.y),z:e(t.z,n.z)}},function(t,n){return W(t,n.x,n.y,n.z)},333,"cubic",e,r)}function M(t,n,e){E("opacity",d,t,n,null,function(t,n){return X(t,n)},333,"cubic",function(t){return h=t},e)}function O(t,n){var e=F(t);_({x:e.x,y:e.y,z:e.width/v.init.w},v.init),M(h,1,n)}function j(t,n){var e=F(f(t).elm);_(v.current,{x:e.x,y:e.y,z:e.width/v.init.w}),M(h,0,function(){g.style.display="none",z(),n&&n()})}}}),function(t,n,e){e.setAttribute("rel","stylesheet"),e.setAttribute("href",URL.createObjectURL(new Blob([4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16].map(function(t){return n[t]}),{type:"text/css"}))),URL.revokeObjectURL(e.getAttribute("href"))}(0,["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],document.head.appendChild(document.createElement("link")));
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.gallery = factory());
+}(this, (function () { 'use strict';
+
+  // for a 60Hz monitor, requestAnimationFrame will trigger the callback every 16.67ms (1000 / 60 == 16.66...)
+  var vendorPrefixes = ['webkit','moz','ms','o'];
+  var raf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "RequestAnimationFrame")]; }, window.requestAnimationFrame).bind(window);
+  var caf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "CancelAnimationFrame")]; }, window.cancelAnimationFrame).bind(window);
+  if (!raf || !caf) {
+    var last = 0;
+    raf = function (fn) {
+      var now = +new Date();
+      last = Math.max(now, last + 16);
+      return setTimeout(fn, last - now)
+    };
+    caf = clearTimeout;
+  }
+
+  function index (_) {
+    var passive = false;
+
+    function noop () {}
+
+    var options = Object.defineProperty({}, 'passive', {
+      get: function get () { passive = true; }
+    });
+
+    window.addEventListener('testPassive', noop, options);
+    window.removeEventListener('testPassive', noop, options);
+    return passive
+  }
+
+  var passive = index();
+  var defaultEventOptions = passive ? {capture: false, passive: true} : false;
+
+  var on = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off(element, evt, handler, options); }
+  };
+
+  var off = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    return element.removeEventListener(evt, handler, options);
+  };
+  var isString = function (value) { return typeof value === 'string'; };
+  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
+
+  var html = function (literalSections) {
+    var subsets = [], len = arguments.length - 1;
+    while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
+
+    return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
+  };
+
+  var doc_h = function () { return window.innerHeight; };
+  var doc_w = function () { return window.innerWidth; };
+
+  function prevent () {
+    var handler = function (e) { return e.preventDefault(); };
+    var opts = {passive: false};
+
+    return {
+      on: function () { return on(document, 'touchmove', handler, opts); },
+      off: function () { return off(document, 'touchmove', handler, opts); }
+    }
+  }
+
+  var classes = {
+  	gallery: "_src_style_css_gallery",
+  	bg: "_src_style_css_bg",
+  	full: "_src_style_css_full",
+  	swiper: "_src_style_css_swiper",
+  	swiperItem: "_src_style_css_swiperItem",
+  	swiperWrap: "_src_style_css_swiperWrap",
+  	wrap: "_src_style_css_wrap",
+  	center: "_src_style_css_center"
+  };
+
+  var templateObject$1 = Object.freeze(["\n      <div class=\"", "\" style=\"padding: 0 ", "px;\">\n        <div class=\"", "\" style=\"width: ", "px;\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
+  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\" style=\"margin-left: -", "px; width: ", "px;\">\n    <div class=\"", "\">\n    ", "\n    </div>\n  </div>\n</div>\n"]);
+  // function htmlEscape(str) {
+  //     return str.replace(/&/g, '&amp;') // first!
+  //               .replace(/>/g, '&gt;')
+  //               .replace(/</g, '&lt;')
+  //               .replace(/"/g, '&quot;')
+  //               .replace(/'/g, '&#39;')
+  //               .replace(/`/g, '&#96;');
+  // }
+
+      // <img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" />
+          // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
+        // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
+
+  var half = ~~(doc_w() / 15);
+
+  var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, imgs[0].shape.w + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
+
+  var tpls = {main: main};
+
+  function enumFactory () {
+    // TODO: should rm idle
+    var value = 0, next = 1, enums = {'idle': 0};
+
+    var get = function (v) { return typeof v === 'number' ? v : enums[v]; };
+    var is = function (v) { return !!(value & get(v)); };
+    var or = function (v) { return value = value | get(v); };
+    var rm = function (v) { return value = value & ~get(v); };
+    // const set = v => { value = get(v); return bit }
+    var add = function (name) { enums[name] = next; next = next << 1; };
+    var spread = function (fn, value) { return function () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+   args.forEach(function (arg) { return fn(arg); }); return bit }; };
+
+    var bit = {
+      v: function () { return value; },
+      or: spread(or),
+      rm: spread(rm),
+      add: spread(add),
+      is: function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        return args.reduce(function (result, arg) { return result && is(arg); }, true);
+    },
+      set: function () {
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+   value = args.reduce(function (r, v) { return r | get(v); }, 0); return bit }
+      // get,
+      // enums
+    };
+
+    return bit
+  }
+
+  var html$1 = document.documentElement;
+  var touch2point = function (touch) { return ({x: touch.clientX, y: touch.clientY}); };
+
+  function gesture (elm) {
+    /*
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: swipe
+     * 0000 0100: vertical scrolling
+     * 0000 1000: pinch (two fingers)
+     * 0001 0000: pan (one fingers move)
+     */
+    // var phase = 0
+    // TODO: rm window.phase
+    var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan', 'swipe');
+    var ismoving = false;
+    var tapTimes = 0, tapStart = -1, tapLast = -1;
+
+    var handlers = {
+      // 'swipe': [],
+      'tap': [],
+      'single': [],
+      'double': [],
+
+      'start': [],
+      'move': [],
+      'end': [],
+
+      'scroll': [],
+      'scrollend': [],
+
+      'pan': [],
+      'panstart': [],
+      'panend': [],
+
+      'pinch': [],
+      'pinchstart': [],
+      'pinchend': [],
+
+      'swipe': []
+    };
+
+    var target = {};
+    var points = {
+      start: [],
+      last: [],
+      current: []
+    };
+    // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
+    var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase); }); };
+
+    var loop = function () { if (ismoving) { raf(loop); render(); }};
+
+    var setTouchPoints = function (evt, item) {
+      // if (!evt.touches || !evt.touches.length) return
+      if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+      points[item] = [];
+      if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
+      if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
+      // else points[item].splice(1, 10)
+    };
+
+    var onstart = function (evt) {
+      // if (freeze) return
+      // ga('gesture.start')
+      setTouchPoints(evt, ['start', 'last', 'current']);
+      // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
+      // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
+
+      target = evt.target;
+
+      // phase = evt.touches.length > 1 ? 8 : 1
+      phase.set('start');
+      if (evt.touches.length > 1) { phase.or('pinch'); }
+
+      // ismoving = true
+
+      trigger('start');
+      if (phase.is('pinch')) { trigger('pinchstart'); }
+      else { trigger('panstart'); } // one touch point trigger pan
+
+      // loop()
+      if (!phase.is('pinch')) { tapStart = Date.now(); }
+    };
+
+    /// TODO: check pinch every time, if one point, switch behavior
+    /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
+    var onmove = function (evt) {
+      // if (freeze) return
+      // ga('gesture.onmove')
+
+      points.last = points.current;
+      setTouchPoints(evt, 'current');
+
+      // evt.touches.length === 1 && phase.rm('pinch')
+      // evt.touches.length > 1 && phase.or('pinch')
+      if (evt.touches.length > 1) { phase.rm('pan').or('pinch'); }
+      else {
+        if (phase.is('pinch')) {
+          setTouchPoints(evt, 'start');
+          // ga('move.trigger.start')
+          trigger('start');
+        }
+        phase.rm('pinch').or('pan');
+        // ga('xxxxxxxxxxx: ', phase.is('pan'))
+      }
+      // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
+
+      if (phase.is('start') && !phase.is('pinch')) {
+        Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll');
+        // phase.or('pan')
+      }
+
+      if (phase.is('pan') && !phase.is('scroll')) { phase.or('swipe'); }
+
+      phase.rm('start').or('move');
+      //
+      // if (evt.touches.length === 1) phase = 16
+
+      if (!ismoving) {
+        // TODO: change from two points to one points
+        ismoving = true;
+        loop();
+      }
+    };
+
+    var onend = function (evt) {
+      // if (freeze) return
+      phase.rm('start', 'move').or('end');
+
+      // ga('gesture.end')
+
+      phase.is('scroll') && trigger('scrollend');
+      phase.is('pinch') && trigger('pinchend');
+      phase.is('pan') && trigger('panend');
+      ismoving = false;
+      // phase.set(0)
+
+      // TODO: learn single / double logic
+      if (!phase.is('pinch') && !phase.is('pan')) {
+        var now = Date.now();
+        if (now - tapStart <= 200) {
+          trigger('tap');
+          // if (now - tapLastTimestamp <= 200) tapTimes++
+          // else tapTimes = 0
+
+          tapTimes = now - tapLast <= 300 ? tapTimes + 1 : 1;
+          tapLast = now;
+
+          if (tapTimes === 1) { setTimeout(function () { return tapTimes === 1 && trigger('single'); }, 300); }
+          else if (tapTimes === 2) { trigger('double'); }
+        }
+      }
+
+      trigger('end');
+    };
+
+    var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
+    var _on = function (evt, fn) {
+      handlers[evt].push(fn);
+      return function () { return off(elm, evt, fn); }
+    };
+
+    on(elm, 'touchstart', onstart);
+    on(elm, 'touchmove', onmove);
+    on(elm, 'touchend', onend);
+
+    return {
+      on: _on, off: _off, phase: function () { return phase; }
+      // destroy: () => {}
+    }
+
+    function render () {
+      trigger('move');
+
+      // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
+      // ga(phase)
+
+      phase.is('scroll') && trigger('scroll');
+      phase.is('swipe') && trigger('swipe');
+      phase.is('pinch') && trigger('pinch');
+      phase.is('pan') && trigger('pan');
+
+      // (phase.is('pan') && !phase.is('scroll')) && trigger('swipe')
+    }
+  }
+
+  function Link (arr) {
+    var this$1 = this;
+
+    arr.forEach(function (item) { return this$1.append(item); });
+  }
+
+  Link.prototype.append = function (item) {
+    var node = item.$next = item.$prev = item;
+    if (!this.$tail) { return this.$head = this.$tail = node }
+    node.$prev = this.$tail;
+    node.$next = this.$tail.$next;
+    this.$tail.$next = node;
+    node.$next.$prev = node;
+    return this.$tail = node
+  };
+
+  var passive$1 = index();
+  var defaultEventOptions$1 = passive$1 ? {capture: false, passive: true} : false;
+
+  var on$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.addEventListener(evt, handler, options);
+  };
+
+  var off$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.removeEventListener(evt, handler, options);
+  };
+
+  var isFunction$1 = function (value) {
+    return typeof value === 'function'
+  };
+
+  var inViewport = function (item) {
+    var rect = item.getBoundingClientRect();
+    return (rect.top < window.innerHeight && rect.bottom > 0) &&
+      (rect.left < window.innerWidth && rect.right > 0)
+  };
+
+  var easing = {
+    'cubic': function (k) { return --k * k * k + 1; },
+    // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+    // quint: k => 1 - Math.pow(1 - k, 5),
+    // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+    'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+  };
+
+  // TODO: desktop support, mouse / pointer events
+  // var touch = 'ontouchstart' in window
+  // export var pointerdown = touch ? 'touchstart' : 'mousedown'
+  // export var pointermove = touch ? 'touchmove' : 'mousemove'
+  // export var pointerup = touch ? 'touchend' : 'mouseup'
+  var pointerdown = 'touchstart';
+  var pointermove = 'touchmove';
+  var pointerup = 'touchend';
+
+  var computedProp = function (el, prop) { return window.getComputedStyle(el, null).getPropertyValue(prop); };
+
+  // export const requestFrame = fn => {
+  //   var ticking = false
+  //   return () => {
+  //     if (!ticking) {
+  //       raf(() => {
+  //         fn()
+  //         ticking = false
+  //       })
+  //       ticking = true
+  //     }
+  //   }
+  // }
+
+  function bitEnum () {
+    this.value = 0;
+  }
+  bitEnum.prototype = {
+    is: function (v) {
+      return this.value & v
+    },
+    or: function (v) {
+      this.value = this.value | v;
+      return this
+    },
+    rm: function (v) {
+      this.value = this.value & ~v;
+      return this
+    },
+    set: function (v) {
+      this.value = v;
+      return this
+    }
+  };
+
+  var options = { 'root': null, 'rootMargin': '0px', 'threshold': [0, 0.01] };
+
+  var observable = !!window['IntersectionObserver'];
+
+  var observe = function (el, fn) {
+    if (!observable) { return fn() }
+    var observer = new IntersectionObserver (fn, options);
+    observer.observe(el);
+    return function () { observer.unobserve(el); }
+  };
+
+  var FAST_THRESHOLD = 120; // threshold to identify fast swipe
+  var FAST_INTERVAL = 250; // swipe duration in fast mode
+  var MAX_INTERVAL = 1000; // total swipe duration
+  var MAX_PART = MAX_INTERVAL * 2 / 3;
+  var AUTO_TIMEOUT = 3000; // auto swipe interval
+
+  // quote property name to pervent mangling
+  var defaultOptions = {
+    'auto': false,
+    'cycle': true,
+    'expose': false,
+    'root': null, // required
+    'elms': [], // required
+    'index': 0,
+    'width': window.screen.width, // if css is false, need width & height
+    'height': 200,
+    'css': false,
+    'ease': 'cubic',
+    'plugins': [],
+    'initHandlers': [],
+    'startHandlers': [],
+    'moveHandlers': [],
+    'endHandlers': [],
+    'animationEndHandlers': []
+  };
+
+  // hidden div to store swipe elements which are out of current three
+  var hides = document.createElement('div');
+  hides.style.display = 'none';
+  document.body.appendChild(hides);
+
+  function swipeIt (options) {
+    var opts = Object.assign({}, defaultOptions,
+      options);
+
+    var index$$1 = opts.index;
+    var root = opts.root;
+    var elms = opts.elms;
+    var width = opts.width;
+    var height = opts.height;
+    var cycle = opts.cycle;
+    var expose = opts.expose;
+    var auto = opts.auto;
+    var css = opts.css;
+    var ease = opts.ease;
+    var plugins = opts.plugins;
+
+    plugins.forEach(function (p) { return Object.keys(p).forEach(function (action) { return opts[action + 'Handlers'].push(p[action]); }); });
+
+    var onFn = function (action) { return function () {
+      var arguments$1 = arguments;
+
+      var args = [], len = arguments.length;
+      while ( len-- ) { args[ len ] = arguments$1[ len ]; }
+
+      return opts[action + 'Handlers'].forEach(function (f) { return f.apply(null, args); });
+   }    };
+    var onInit = onFn('init');
+    var onStart = onFn('start');
+    var onMove = onFn('move');
+    var onEnd = onFn('end');
+    // var onAnimationEnd = onFn('animationEnd')
+
+    if (!root) { return }
+
+    if (css) {
+      width = Number(computedProp(root, 'width').slice(0, -2));
+      height = Number(computedProp(root, 'height').slice(0, -2));
+    }
+    var main = root.children[0], animations = {main: -1, auto: -1}, threshold = width / 3;
+
+    /* phase
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: dragging
+     * 0000 0100: animating
+     * 0000 1000: vertical scrolling
+     * 0001 0000: auto animating
+     * 0010 0000: cancel auto animating
+     */
+
+    var phaseEnum = {
+      idle:     0,
+      start:    1,
+      drag:     2,
+      animate:  4,
+      scroll:   8,
+      auto:     16,
+      cancel:   32
+    };
+    var phase = new bitEnum();
+
+    /* autoPhase
+     * 0: distance <= width / 2
+     * 1: distance > width / 2
+     */
+    var autoPhase = 0;
+    var restartX = 0, direction = 0; // -1: left, 0: na, 1: right
+    var x = 0, startTime = 0, startX = 0, currentX = 0, startY = 0, slides = [];
+    var two = false;
+    auto = cycle && auto;
+
+    var current = elms[index$$1];
+
+    // const moveE = el => moveX(el, el.x)
+    var moveEx = function (el, x) { el.x = x; moveX(el, x); };
+    var hide = function (el) { return hides.appendChild(el); };
+
+    var show = function (el) { return main.appendChild(el); };
+    var stopR = function (_) { return !cycle && currentX > startX && current === slides.$head; };
+    var stopL = function (_) { return !cycle && currentX <= startX && current === slides.$tail; };
+
+    var clearAuto = function (_) { return clearTimeout(animations.auto); };
+    var clearAndCancel = function (_) { return clearAuto(phase.set(phaseEnum.cancel)); };
+    var clearMain = function (_) { return caf(animations.main); };
+    var clearAnimations = function (_) {clearAuto(); clearMain();};
+
+    var running = true;
+
+    init();
+
+    return {
+      'destroy': destroy,
+      'index': function (_) { return current.$index; },
+      'on': function (evt, callback) {
+        var fns = opts[evt + 'Handlers'];
+        fns.push(callback);
+        return function () { return fns.splice(fns.indexOf(callback), 1); }
+      },
+      stop: function () { return running = false; },
+      start: function () { return running = true; }
+    }
+
+    function moveX (el, x) {
+      if (!el) { return }
+      el.style.transition = el.style.webkitTransition = '';
+      el.style.transform = el.style.webkitTransform = "translate3d(" + x + "px, 0, 0)";
+      onMove(current.$index, current, main, elms);
+    }
+
+    function onTouchStart (evt) {
+      if (!running) { return }
+      clearAnimations();
+      phase.or(phaseEnum.start).rm(phaseEnum.scroll);
+      direction = 0;
+
+      var touch = evt.touches[0];
+      startTime = Date.now();
+      restartX = currentX = startX = touch.pageX;
+      startY = touch.clientY;
+      onStart(current.$index, current, main, elms);
+    }
+
+    function onTouchMove (evt) {
+      if (!running) { return }
+      if (phase.is(phaseEnum.scroll)) { return }
+
+      var touch = evt.touches[0];
+      var gap = touch.pageX - currentX;
+
+      // identify vertical scrolling
+      if (phase.is(phaseEnum.start) && Math.abs(gap) * 2 < Math.abs(touch.clientY - startY)) {
+        phase.or(phaseEnum.scroll).rm(phaseEnum.start);
+        return
+      }
+
+      var _d = gap > 0 ? 1 : -1;
+      if (direction !== _d) {
+        restartX = currentX;
+        startTime = Date.now();
+        direction = _d;
+      }
+
+      phase.set(phaseEnum.drag);
+      currentX = touch.pageX;
+
+      x = x + gap;
+      // moveX(main, x)
+      moveEx(main, x);
+
+      // evt.preventDefault();
+    }
+
+    function moveRight () {
+      two || hide(current.$next);
+      current = current.$prev;
+      if (!stopR()) {
+        moveEx(current.$prev, current.x - width);
+        show(current.$prev);
+      }
+    }
+
+    function moveLeft () {
+      two || hide(current.$prev);
+      current = current.$next;
+      if (!stopL()) {
+        moveEx(current.$next, current.x + width);
+        show(current.$next);
+      }
+    }
+
+    function onAutoAnimation () {
+      if (autoPhase === 0 && -current.x - x > width / 2) {
+        autoPhase = 1;
+        moveLeft();
+      }
+    }
+
+    function autoSwipePostpone () {
+      clearAuto();
+      animations.auto = setTimeout(function () {
+        if (!running) { return }
+        autoSwipeImmediate();
+      }, AUTO_TIMEOUT);
+    }
+
+    function autoSwipeImmediate () {
+      autoPhase = 0;
+      phase.set(phaseEnum.auto);
+      onStart(current.$index, current, main, elms);
+      animate(main, x, -current.x - width, MAX_PART, onAutoAnimation, autoSwipePostpone);
+      // animate(main, x, x - width, MAX_INTERVAL, onAutoAnimation, autoCallback)
+      // onEnd(current.$next.$index, current.$next, main, elms)
+    }
+
+    function autoSwipe() {
+      if (Math.abs(x + current.x) > 3) { autoSwipeImmediate(); }
+      else { autoSwipePostpone(); }
+    }
+
+    function onTouchEnd (evt) {
+      if (!running) { return }
+      // auto && autoCallback()
+      if (phase.is(phaseEnum.scroll) && !phase.is(phaseEnum.animate) && !phase.is(phaseEnum.auto)) { return auto && autoSwipe(); }
+      phase.set(phaseEnum.animate);
+      var right = currentX > restartX;
+      var fast = (Date.now() - startTime) < FAST_THRESHOLD;
+
+      if (!stopR() && !stopL()) {
+        var cx = current.x + x;
+        if (fast) {
+          if (right && cx > 0) { moveRight(); }
+          else if (!right && cx < 0) { moveLeft(); }
+        } else if (cx > threshold) { moveRight(); }
+        else if (cx < -threshold) { moveLeft(); }
+      }
+
+      var to = current.x * -1;
+
+      var t = Math.min(Math.max(MAX_INTERVAL * Math.abs(to - x) / width, FAST_INTERVAL), MAX_PART);
+      animate(main, x, to, fast ? FAST_INTERVAL : t, null, auto ? function () { return autoSwipe(); } : null);
+      // animate(main, x, to, fast ? FAST_INTERVAL : t)
+
+      // onEnd(current.$index, current, main, elms)
+    }
+
+    function animate (elm, from, to, interval, onAnimation, callback) {
+      var start = Date.now();
+      function loop () {
+        var now = Date.now();
+        var during = now - start;
+        if (during >= interval) { x = to; }
+        isFunction$1(onAnimation) && onAnimation();
+        if (during >= interval) {
+          // moveX(elm, to)
+          moveEx(elm, to);
+          !phase.is(phaseEnum.cancel) && isFunction$1(callback) && callback();
+          phase.set(phaseEnum.idle);
+          // return onAnimationEnd(current.$index, current, main, elms)
+          return onEnd(current.$index, current, main, elms)
+        }
+        var distance = (to - from) * easing[ease](during / interval) + from;
+        x = distance;
+        // moveX(elm, distance)
+        moveEx(elm, x);
+        animations.main = raf(loop);
+      }
+      loop();
+    }
+
+    function init () {
+      if (elms.length === 0) { return onInit(-1) }
+      // if (!expose) root.style.overflow = 'hidden'
+      root.style.position = 'relative';
+      if (!css) {
+        root.style.width = width + 'px';
+        root.style.height = height + 'px';
+      }
+      var needClone = elms.length === 2 && cycle;
+      if (needClone) {
+        elms.push(elms[0].cloneNode(true));
+        show(elms[2]);
+        elms.push(elms[1].cloneNode(true));
+        show(elms[3]);
+        elms[0].$index = elms[2].$index = 0;
+        elms[1].$index = elms[3].$index = 1;
+      }
+      var one = elms.length === 1;
+      two = elms.length === 2;
+      // slides = new Link(elms, needClone ? '0101' : null)
+      slides = new Link(elms);
+      needClone || elms.forEach(function (e, i) { return e.$index = i; });
+
+      moveEx(current, 0);
+      one || two || moveEx(current.$prev, -width);
+      one || moveEx(current.$next, width);
+      elms.forEach(function (el) {
+        el.style.position = 'absolute';
+        if (!css) {
+          el.style.width = width + 'px';
+          el.style.height = height + 'px';
+        }
+        // el.style.overflow = 'hidden'
+        if (!two && !one && el !== current && el !== current.$prev && el !== current.$next) { hide(el); }
+      });
+
+      if (one) { return onInit(current.$index, current, main, elms) }
+
+      if (!two && !cycle && index$$1 === 0) { hide(current.$prev); }
+      if (!two && !cycle && index$$1 === elms.length - 1) { hide(current.$next); }
+
+      destroy();
+      on$1(root, pointerdown, onTouchStart);
+      on$1(root, pointermove, onTouchMove);
+      on$1(root, pointerup, onTouchEnd);
+
+      if (auto) {
+        // stop auto swipe when out of screen
+        if (observable) {
+          raf(function () {
+            opts.unobserve = observe(root, function (entries) {
+              if (entries && entries[0].intersectionRatio === 0) { clearAndCancel(); }
+              else { autoSwipe(); }
+            });
+          });
+        } else {
+          var toggleSwiper = function () { return inViewport(root) ? autoSwipePostpone() : clearAndCancel(); };
+          on$1(window, 'touchmove', function () { return inViewport(root) || clearAndCancel(); });
+          on$1(window, 'touchend', toggleSwiper);
+          toggleSwiper();
+        }
+
+        // stop auto swipe when invisible
+        // Set the name of the hidden property and the change event for visibility
+        var ref = ['webkit', 'moz', 'ms', '-'].reduce(function (result, current) { return typeof document[result[0]] !== 'undefined' ? result : [current + 'Hidden', current + 'visibilitychange']; }, ['hidden', 'visibilitychange']);
+        var hidden = ref[0];
+        var visibilitychange = ref[1];
+        // Handle page visibility change
+        hidden[0] !== '-' && document.addEventListener(visibilitychange, function () { return document[hidden] ? clearAndCancel() : autoSwipePostpone(); }, false);
+      }
+
+      main.x = 0;
+      onInit(current.$index, current, main, elms);
+    }
+
+    function destroy () {
+      clearAnimations();
+      isFunction$1(opts.unobserve) && opts.unobserve();
+      off$1(root, pointerdown, onTouchStart);
+      off$1(root, pointermove, onTouchMove);
+      off$1(root, pointerup, onTouchEnd);
+    }
+  }
+
+  /*
+   * animations
+   *    1. show / hide
+   *    2. post pan / pinch
+   *    3. double tap
+   *    4. opacity
+   *    5. scroll end
+   */
+
+  // console.log('the best gallery is coming...')
+  var easing$1 = {
+    'cubic': function (k) { return --k * k * k + 1; },
+    // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+    // quint: k => 1 - Math.pow(1 - k, 5),
+    // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+    'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+  };
+
+  var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
+  var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
+  var getRect = function (elm) { return elm.getBoundingClientRect(); };
+
+  var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
+  var getCenter = function (ps) { return function (type) { return getCenterPoint(ps[type][0], ps[type][1]); }; };
+  var square = function (x) { return x * x; };
+  var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
+  var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
+
+  var preventDefault = prevent();
+
+  var defaultOptions$1 = {
+    selector: 'data-gallery-item',
+    dataset: 'galleryItem'
+  };
+
+  function gallery (options) {
+    var opts = Object.assign({}, defaultOptions$1,
+      options);
+
+    var selector = opts.selector;
+    var dataset = opts.dataset;
+
+    var cache = [];
+    var buildCache = function () {
+      cache.splice(0, cache.length);
+      document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
+        img.dataset.galleryIndex = index;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
+        cache[index].shape = getInitShape(img);
+      });
+    };
+    var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
+
+    var getInitShape = function (img) {
+      var item = getCacheItem(img);
+      var docWidth = doc_w(), docHeight = doc_h();
+      var thin = (docWidth / docHeight) > item.r;
+      var w = thin ? docHeight * item.r : docWidth;
+      var h = thin ? docHeight : docWidth / item.r;
+      var x = thin ? (docWidth - w) / 2 : 0;
+      var y = thin ? 0 : (docHeight - h) / 2;
+
+      return {x: x, y: y, w: w, h: h, z: 1}
+    };
+
+    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
+
+    var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
+
+    // the container
+    var div = document.createElement('div');
+    document.body.appendChild(div);
+
+    var gallery, wrap, background, opacity = 0;
+    var swiperDom, swiperInstance;
+    var offStach = [];
+    var offs = function (fn) { return offStach.push(fn); };
+
+    // click document
+    offs(on(document, 'click', function (evt) {
+      var target = evt.target;
+      if (target.tagName === 'IMG' && dataset in target.dataset) {
+        buildCache();
+        // var sizes = setInitShape(target)
+        var item = getCacheItem(target);
+        shape.init = item.shape;
+        div.innerHTML = tpls.main(cache);
+        raf(function () { return init(item); });
+      }
+    }));
+
+    var stopSwiper = function () { return swiperInstance.stop(); };
+    var startSwiper = function () { return swiperInstance.start(); };
+
+    var setShape = function (target, key) {
+      var rect = getRect(target);
+      shape[key].x = rect.x;
+      shape[key].y = rect.y;
+      shape[key].w = rect.width;
+      shape[key].h = rect.height;
+      shape[key].z = rect.width / shape.init.w;
+    };
+
+    /*
+     * events (pan | pinch | press | rotate | swipe | tap)
+     * horizontal swipe: flick to next / previous
+     * vertical swipe: close gallery
+     * spread: zoom in
+     * pinch: zoom out and close gallery
+     * double tap: zoom in / zoom out based on tap point
+     * pan: drag to pan
+     * tap: toggle controls
+     */
+    // var on = () => {}
+    // var off = () => {}
+
+    var zoom = '';
+    var swiping = false;
+    var animations = { postpan: 0, main: 0, opacity: 0 };
+    var clearAnimations = function () {
+      Object.keys(animations).forEach(function (key) {
+        caf(animations[key]);
+        animations[key] = 0;
+      });
+    };
+
+    // var occupy = 'idle' // idle, swipe, gesture
+
+    var animateDeceleration = function (boundary, target, x, y, dx, dy) {
+      var runtime = {
+        phase: 'D', // D: deceleration, O: outofboundary, B: debounce, Z: stop
+        ba: 0, // lower limit boundary
+        bz: 0, // upper limit boundary
+        oa: false, // out of lower limit
+        oz: false, // out of upper limit
+        start: 0, // debounce start
+        now: 0, // debounce current
+        interval: 0, // debounce interval
+        from: 0, // debounce from
+        to: 0, // debounce to
+
+        v: 0, // x | y
+        dv: 0, // dx | dy
+        r: 1 // right|down: 1, left|up: -1, freeze: 0
+      };
+
+      var _dx = Math.abs(dx), _dy = Math.abs(dy);
+
+      var it = {
+        x: Object.assign({}, runtime, {v: x, dv: _dx, r: !dx ? dx : dx / _dx, ba: boundary.x1, bz :boundary.x2}),
+        y: Object.assign({}, runtime, {v: y, dv: _dy, r: !dy ? dy : dy / _dy, ba: boundary.y1, bz: boundary.y2})
+      };
+      var ease = function (k) { return --k * k * k + 1; };
+
+      var deceleration = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'D') { return }
+
+        iz.dv *= .95;
+        if (iz.dv <= .5) {
+          iz.dv = 0;
+        }
+
+        iz.v += iz.dv * iz.r;
+
+        iz.oa = iz.v <= iz.ba;
+        iz.oz = iz.v >= iz.bz;
+
+        if (iz.dv > 0) {
+          iz.oa = iz.oa && iz.r <= 0;
+          iz.oz = iz.oz && iz.r >= 0;
+        }
+
+        if (iz.oa || iz.oz) { iz.phase = 'O'; }
+        else if (iz.dv === 0) { iz.phase = 'Z'; }
+      };
+
+      var out = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'O') { return }
+
+        iz.dv = iz.dv * .8;
+        if (iz.dv <= .5) {
+          iz.phase = 'B';
+          iz.start = Date.now();
+          iz.from = iz.v;
+          iz.to = iz.oz ? iz.bz : iz.ba;
+          var interval = 1000 * Math.abs(iz.to - iz.from) / doc_w();
+          if (interval > 500) { interval = 500; }
+          else if (interval < 150) { interval = 150; }
+          iz.interval = interval;
+        } else {
+          iz.v += iz.dv * iz.r;
+        }
+      };
+
+      var debounce = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'B') { return }
+
+        iz.now = Date.now();
+        var during = iz.now - iz.start;
+        if (during >= iz.interval) {
+          iz.v = iz.to;
+          iz.phase = 'Z';
+        }
+        iz.v = (iz.to - iz.from) * ease(during / iz.interval) + iz.from;
+      };
+
+      ~function loop () {
+        deceleration('x');
+        deceleration('y');
+        out('x');
+        out('y');
+        debounce('x');
+        debounce('y');
+        applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z);
+
+        if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { animations.postpan = raf(loop); }
+      }();
+
+      // const stack = [
+      //   () => deceleration('x'),
+      //   () => deceleration('y'),
+      //   () => out('x'),
+      //   () => out('y'),
+      //   () => debounce('x'),
+      //   () => debounce('y'),
+      //   () => applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z)
+      // ]
+      //
+      // ~function loop2 () {
+      //   animations.pan = raf(loop2)
+      //   stack.forEach(fn => fn())
+      // }()
+    };
+
+    function postpan (target, current, last) {
+      animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2);
+    }
+
+    var gestureEnabled = false;
+    var enableGesture = function () { return gestureEnabled = true; };
+    var disableGesture = function () { return gestureEnabled = false; };
+
+    var handlers = {
+      single: function (points, target) {
+        // TODO: trigger wrong
+        // ga('single')
+        // hide(target)
+      },
+      double: function (points, target) {
+        // ga('double.zoom: ', zoom)
+        if (zoom !== 'out') {
+          // stopSwiper()
+          disableGesture();
+          var init = shape.init;
+          // if (zoom === 'in') animateTranslateScale(false, shape.current, init, null, () => {startSwiper();enableGesture()})
+          if (zoom === 'in') { show(target); }
+          else {
+            var ref = limitxy({
+              x: init.x * 2 - points.start[0].x,
+              y: init.y * 2 - points.start[0].y,
+              w: init.w * 2,
+              h: init.h * 2
+            });
+            var x = ref.x;
+            var y = ref.y;
+            animateTranslateScale(false, init, {x: x, y: y, z: 2}, null, enableGesture);
+          }
+        }
+      },
+
+      scroll: function (points, target) {
+        // ga('onscroll')
+        stopSwiper();
+        if (zoom !== '') { return }
+        var yy = points.current[0].y - points.start[0].y;
+        applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
+        opacity = 1 - Math.abs(yy * 2 / doc_h());
+        applyOpacity(background, opacity > 0 ? opacity : 0);
+      },
+      scrollend: function (points, target) {
+        if (zoom !== '') { return }
+        var yy = Math.abs(points.current[0].y - points.start[0].y);
+
+        if (yy / doc_h() > 1/7) { hide(target); }
+        else { show(target); }
+      },
+
+      pinch: function (points, target) {
+        // ga('pinch')
+        stopSwiper();
+
+        var zoomLevel = calculateZoomLevel(points); //* pinch.z
+        var center1 = getCenterPoint(points.start[0], points.start[1]);
+        var center2 = getCenterPoint(points.current[0], points.current[1]);
+
+        var dx = center2.x - (center1.x - shape.start.x) * zoomLevel;
+        var dy = center2.y - (center1.y - shape.start.y) * zoomLevel;
+
+        var _zoom = zoomLevel * shape.start.z;
+        zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+        applyTranslateScale(wrap, dx, dy, _zoom);
+        if (zoom === 'out') {
+          var rect = getRect(getCacheItem(target).elm);
+          // ga((shape.current.w - rect.width) / (shape.init.w - rect.width))
+          if (shape.start.z <= 1) {
+            opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width);
+            applyOpacity(background, opacity);
+          }
+        }
+      },
+
+      // TODO: 缩小露底问题
+      pinchend: function (points, target) {
+        // ga('pinchend')
+        if (zoom === 'out') {
+          if (shape.start.z <= 1) { hide(target); }
+          else { show(target); }
+        } else {
+          var last = getCenter(points)('last');
+          var current = getCenter(points)('current');
+          postpan(target, current, last);
+        }
+      },
+
+      // TODO: 拖拽卡顿
+      pan: function (points, target, phase) {
+        // ga('pan')
+        if (zoom === 'in') {
+          stopSwiper();
+          var dx = points.current[0].x - points.start[0].x + shape.start.x;
+          var dy = points.current[0].y - points.start[0].y + shape.start.y;
+          applyTranslateScale(wrap, dx, dy, shape.start.z);
+        }
+      },
+
+      panend: function (points, target) {
+        // ga('panend')
+  		  // TODO: Avoid acceleration animation if speed is too low
+        if (zoom === 'in') {
+          postpan(target, points.current[0], points.last[0]);
+        }
+      },
+
+      start: function (points, target) {
+        clearAnimations();
+        var rect = getRect(target);
+        shape.start.x = shape.last.x = shape.current.x = rect.x;
+        shape.start.y = shape.last.y = shape.current.y = rect.y;
+        shape.start.w = shape.last.w = shape.current.w = rect.width;
+        shape.start.h = shape.last.h = shape.current.h = rect.height;
+        var _zoom = shape.start.z = shape.last.z = shape.current.z = rect.width / shape.init.w;
+        zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+      },
+
+      end: function (points, target) {
+        // TODO: tap the img during postpan will stop the animation, as a result we need recover postpan again onend. currently only recover postpan, should recover postpinch also.
+        if (zoom === 'in' && !animations.postpan) { postpan(target, points.current[0], points.last[0]); }
+      },
+
+      move: function (points, target) {
+        setShape(target, 'current');
+      }
+    };
+
+    Object.keys(handlers).forEach(function (key) {
+      var fn = handlers[key];
+      handlers[key] = function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) { fn.apply(null, args); }
+      };
+    });
+
+    var gallery = {
+      // on, off
+      destroy: destroy
+      // get: () => opacity
+      // get: () => {
+      //   return {
+      //     swiping,
+      //     occupy
+      //   }
+      // }
+    };
+
+    return gallery
+
+    function destroy () {
+      // TODO: leave the first click which is the document click, should be included in the future
+      // TODO: remove all events and dom elements in destroy
+      offStach.splice(1, offStach.length).forEach(function (o) { return o(); });
+      preventDefault.off();
+    }
+
+    // TODO: reset all private variables
+    function init (item) {
+      preventDefault.on();
+      var img = item.elm;
+      gallery = div.childNodes[1];
+      background = gallery.querySelector('.' + classes.bg);
+      swiperDom = gallery.querySelector('.' + classes.swiper);
+
+      var rect = getRect(img);
+      // disableTransition()
+
+      cache.forEach(function (c) {
+        c.wrap = gallery.querySelector(("." + (classes.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
+        if (c.i === item.i) { applyTranslateScale(c.wrap, rect.left, rect.top, rect.width / shape.init.w); }
+        else { applyTranslateScale(c.wrap, c.shape.x, c.shape.y, 1); }
+
+        var gesture$$1 = gesture(c.wrap);
+
+        // TODO: tap to toggle controls, double tap to zoom in / out
+        // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+        Object.keys(handlers).forEach(function (key) { return offs(gesture$$1.on(key, handlers[key])); });
+      });
+
+      wrap = item.wrap;
+
+      swiperInstance = swipeIt({
+        root: swiperDom,
+        elms: Array.prototype.slice.apply(swiperDom.children[0].children),
+        auto: false,
+        index: item.i,
+        expose: true,
+        css: true
+      });
+
+      swiperInstance.on('move', function (index) {
+        // console.log('swipe.move')
+        swiping = true;
+        // occupy = 'swipe'
+      });
+      swiperInstance.on('end', function (index) {
+        wrap = cache[index].wrap;
+        shape.init = cache[index].shape;
+        swiping = false;
+        // occupy = ''
+      });
+
+      swiping = false;
+      // occupy = 'idle'
+
+      gallery.style.display = 'block';
+      raf(function () {
+        show(img);
+      });
+    }
+
+    // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
+    //   var start = Date.now()
+    //   var x = from.x, y = from.y, z = from.z
+    //
+    //   ~function loop () {
+    //     onAnimation && onAnimation()
+    //     var now = Date.now()
+    //     var during = now - start
+    //     if (during >= interval) {
+    //       applyTranslateScale(elm, to.x, to.y, to.z)
+    //       return onEnd && onEnd()
+    //     }
+    //
+    //     const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
+    //
+    //     x = cal('x')
+    //     y = cal('y')
+    //     z = cal('z')
+    //
+    //     applyTranslateScale(elm, x, y, z)
+    //     animations[type] = raf(loop)
+    //   }()
+    // }
+
+    /*
+     * interruptable: true | false
+     */
+    function animate (interruptable, type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+      var start = Date.now();
+      ~function loop () {
+        var next = function (from, to) { return (to - from) * easing$1[ease](during / interval) + from; };
+
+        var now = Date.now();
+        var during = now - start;
+        if (during >= interval) {
+          move(elm, to);
+          onAnimation && onAnimation(to);
+          return onEnd && onEnd()
+        }
+        var value = fn ? fn(from, to, next) : next(from, to);
+        onAnimation && onAnimation(value);
+        move(elm, value);
+        var timer = raf(loop);
+        if (interruptable) { animations[type] = timer; }
+        // animations[type] = raf(loop)
+      }();
+    }
+
+    function animateTranslateScale (interruptable, from, to, onAnimation, onEnd) {
+      animate(interruptable, 'main', wrap, from, to, function (from, to, next) { return ({
+        x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
+      }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', onAnimation, onEnd);
+    }
+
+    function animateOpacity (interruptable, from, to, onEnd) {
+      animate(interruptable, 'opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
+    }
+
+    function show (img) {
+      disableGesture();
+      var rect = getRect(img);
+      animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, enableGesture);
+      animateOpacity(false, opacity, 1, startSwiper);
+    }
+
+    function hide (img) {
+      disableGesture();
+      stopSwiper();
+      var rect = getRect(getCacheItem(img).elm);
+
+      animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
+      animateOpacity(false, opacity, 0, function () {
+        gallery.style.display = 'none';
+        destroy();
+      });
+    }
+
+    function limitxy (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
+      var dw = doc_w(), dh = doc_h();
+
+      if (dw > w) { x = (dw - w) / 2; }
+      else if (x > 0) { x = 0; }
+      else if (x < dw - w) { x = dw - w; }
+
+      if (dh > h) { y = (dh - h) / 2; }
+      else if (y > 0) { y = 0; }
+      else if (y < dh - h) { y = dh - h; }
+
+      return {x: x, y: y}
+    }
+
+    function xyBoundary (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
+      var dw = doc_w(), dh = doc_h();
+      var x1,  x2, y1, y2;
+      if (dw > w) {
+        x1 = x2 = (dw - w) / 2;
+      } else {
+        x1 = dw - w;
+        x2 = 0;
+      }
+      if (dh > h) {
+        y1 = y2 = (dh - h) / 2;
+      } else {
+        y1 = dh - h;
+        y2 = 0;
+      }
+      return {x1: x1, x2: x2, y1: y1, y2: y2}
+    }
+  }
+
+  return gallery;
+
+})));
+(function (encoded, words, link) {
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', URL.createObjectURL(
+        new Blob(
+            encoded.map(function (index) {
+                return words[index];
+            }),
+            {type: 'text/css'}
+        )
+    ));
+    URL.revokeObjectURL(link.getAttribute('href'));
+}(
+    [4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16],
+    ["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],
+    document.head.appendChild(document.createElement('link'))
+));

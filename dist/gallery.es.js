@@ -296,6 +296,15 @@ function gesture (elm) {
   }
 }
 
+/*
+ * animations
+ *    1. show / hide
+ *    2. post pan / pinch
+ *    3. double tap
+ *    4. opacity
+ *    5. scroll end
+ */
+
 // console.log('the best gallery is coming...')
 var easing = {
   'cubic': function (k) { return --k * k * k + 1; },
@@ -529,6 +538,10 @@ function gallery (options) {
     animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2);
   }
 
+  var gestureEnabled = false;
+  var enableGesture = function () { return gestureEnabled = true; };
+  var disableGesture = function () { return gestureEnabled = false; };
+
   var handlers = {
     single: function (points, target) {
       // TODO: trigger wrong
@@ -538,8 +551,11 @@ function gallery (options) {
     double: function (points, target) {
       // ga('double.zoom: ', zoom)
       if (zoom !== 'out') {
+        // stopSwiper()
+        disableGesture();
         var init = shape.init;
-        if (zoom === 'in') { animateTranslateScale(shape.current, init, null, startSwiper); }
+        // if (zoom === 'in') animateTranslateScale(false, shape.current, init, null, () => {startSwiper();enableGesture()})
+        if (zoom === 'in') { show(target); }
         else {
           var ref = limitxy({
             x: init.x * 2 - points.start[0].x,
@@ -549,7 +565,7 @@ function gallery (options) {
           });
           var x = ref.x;
           var y = ref.y;
-          animateTranslateScale(init, {x: x, y: y, z: 2});
+          animateTranslateScale(false, init, {x: x, y: y, z: 2}, null, enableGesture);
         }
       }
     },
@@ -567,11 +583,8 @@ function gallery (options) {
       if (zoom !== '') { return }
       var yy = Math.abs(points.current[0].y - points.start[0].y);
 
-      if (yy / doc_h() > 1/7) { hide(target, startSwiper); }
-      else {
-        animateTranslateScale(shape.current, shape.init);
-        animateOpacity(opacity, 1, startSwiper);
-      }
+      if (yy / doc_h() > 1/7) { hide(target); }
+      else { show(target); }
     },
 
     pinch: function (points, target) {
@@ -602,8 +615,8 @@ function gallery (options) {
     pinchend: function (points, target) {
       // ga('pinchend')
       if (zoom === 'out') {
-        if (shape.start.z <= 1) { hide(target, startSwiper); }
-        else { show(target, startSwiper); }
+        if (shape.start.z <= 1) { hide(target); }
+        else { show(target); }
       } else {
         var last = getCenter(points)('last');
         var current = getCenter(points)('current');
@@ -657,7 +670,7 @@ function gallery (options) {
       var args = [], len = arguments.length;
       while ( len-- ) args[ len ] = arguments[ len ];
 
-      if (!swiping || key === 'double' || key === 'single') { fn.apply(null, args); }
+      if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) { fn.apply(null, args); }
     };
   });
 
@@ -762,7 +775,10 @@ function gallery (options) {
   //   }()
   // }
 
-  function animate (type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+  /*
+   * interruptable: true | false
+   */
+  function animate (interruptable, type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
     var start = Date.now();
     ~function loop () {
       var next = function (from, to) { return (to - from) * easing[ease](during / interval) + from; };
@@ -777,34 +793,38 @@ function gallery (options) {
       var value = fn ? fn(from, to, next) : next(from, to);
       onAnimation && onAnimation(value);
       move(elm, value);
-      animations[type] = raf(loop);
+      var timer = raf(loop);
+      if (interruptable) { animations[type] = timer; }
+      // animations[type] = raf(loop)
     }();
   }
 
-  function animateTranslateScale (from, to, onAnimation, onEnd) {
-    animate('main', wrap, from, to, function (from, to, next) { return ({
+  function animateTranslateScale (interruptable, from, to, onAnimation, onEnd) {
+    animate(interruptable, 'main', wrap, from, to, function (from, to, next) { return ({
       x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
     }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', onAnimation, onEnd);
   }
 
-  function animateOpacity (from, to, onEnd) {
-    animate('opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
+  function animateOpacity (interruptable, from, to, onEnd) {
+    animate(interruptable, 'opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
   }
 
-  function show (img, callback) {
+  function show (img) {
+    disableGesture();
     var rect = getRect(img);
-    animateTranslateScale({x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init);
-    animateOpacity(opacity, 1, callback);
+    animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, enableGesture);
+    animateOpacity(false, opacity, 1, startSwiper);
   }
 
-  function hide (img, callback) {
+  function hide (img) {
+    disableGesture();
+    stopSwiper();
     var rect = getRect(getCacheItem(img).elm);
 
-    animateTranslateScale(shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
-    animateOpacity(opacity, 0, function () {
+    animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
+    animateOpacity(false, opacity, 0, function () {
       gallery.style.display = 'none';
       destroy();
-      callback && callback();
     });
   }
 
