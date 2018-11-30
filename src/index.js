@@ -62,7 +62,6 @@ function gallery (options) {
     })
   }
   const getCacheItem = img => cache[Number(img.dataset.galleryIndex)]
-  var thin = false
 
   var getInitShape = img => {
     var item = getCacheItem(img)
@@ -73,12 +72,13 @@ function gallery (options) {
     var x = thin ? (docWidth - w) / 2 : 0
     var y = thin ? 0 : (docHeight - h) / 2
 
-    return {x, y, w, h, z: 1}
+    return {x, y, w, h, z: 1, t: thin}
   }
 
   const emptyshape = () => ({x: 0, y: 0, z: 1, w: 0, h: 0})
 
   var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()}
+  const thin = () => shape.init.t
 
   // the container
   var div = document.createElement('div')
@@ -113,7 +113,7 @@ function gallery (options) {
       shape[key].y = rect.y
       shape[key].w = rect.width
       shape[key].h = rect.height
-      shape[key].z = rect.width / shape.init.w
+      shape[key].z = rect[thin() ? 'height' : 'width'] / shape.init[thin() ? 'h' : 'w']
     }
 
     isArray(key) ? key.forEach(key => setByKey(key)) : setByKey(key)
@@ -392,6 +392,8 @@ function gallery (options) {
   var gallery = {
     // on, off
     destroy
+    // shape: () => shape,
+    // cache: () => cache
     // get: () => opacity
     // get: () => {
     //   return {
@@ -446,25 +448,18 @@ function gallery (options) {
     })
 
     swiperInstance.on('move', index => {
-      // console.log('swipe.move')
       swiping = true
-      // occupy = 'swipe'
     })
     swiperInstance.on('end', index => {
-      // console.log('swipe.end')
       wrap = cache[index].wrap
       shape.init = cache[index].shape
       swiping = false
-      // occupy = ''
     })
 
     swiping = false
-    // occupy = 'idle'
 
     gallery.style.display = 'block'
-    raf(() => {
-      show(img)
-    })
+    raf(() => show(img))
   }
 
   // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {

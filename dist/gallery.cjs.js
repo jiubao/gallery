@@ -201,6 +201,7 @@ function gesture (elm) {
   /// TODO: check pinch every time, if one point, switch behavior
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   var onmove = function (evt) {
+    // console.log('gesture.onmove')
     // if (freeze) return
     // ga('gesture.onmove')
 
@@ -363,12 +364,13 @@ function gallery (options) {
     var x = thin ? (docWidth - w) / 2 : 0;
     var y = thin ? 0 : (docHeight - h) / 2;
 
-    return {x: x, y: y, w: w, h: h, z: 1}
+    return {x: x, y: y, w: w, h: h, z: 1, t: thin}
   };
 
   var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
 
   var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
+  var thin = function () { return shape.init.t; };
 
   // the container
   var div = document.createElement('div');
@@ -403,7 +405,7 @@ function gallery (options) {
       shape[key].y = rect.y;
       shape[key].w = rect.width;
       shape[key].h = rect.height;
-      shape[key].z = rect.width / shape.init.w;
+      shape[key].z = rect[thin() ? 'height' : 'width'] / shape.init[thin() ? 'h' : 'w'];
     };
 
     isArray(key) ? key.forEach(function (key) { return setByKey(key); }) : setByKey(key);
@@ -687,6 +689,8 @@ function gallery (options) {
   var gallery = {
     // on, off
     destroy: destroy
+    // shape: () => shape,
+    // cache: () => cache
     // get: () => opacity
     // get: () => {
     //   return {
@@ -741,25 +745,18 @@ function gallery (options) {
     });
 
     swiperInstance.on('move', function (index) {
-      // console.log('swipe.move')
       swiping = true;
-      // occupy = 'swipe'
     });
     swiperInstance.on('end', function (index) {
-      // console.log('swipe.end')
       wrap = cache[index].wrap;
       shape.init = cache[index].shape;
       swiping = false;
-      // occupy = ''
     });
 
     swiping = false;
-    // occupy = 'idle'
 
     gallery.style.display = 'block';
-    raf.raf(function () {
-      show(img);
-    });
+    raf.raf(function () { return show(img); });
   }
 
   // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {

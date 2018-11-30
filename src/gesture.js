@@ -93,6 +93,7 @@ function gesture (elm) {
   /// TODO: check pinch every time, if one point, switch behavior
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   const onmove = evt => {
+    // console.log('gesture.onmove')
     // if (freeze) return
     // ga('gesture.onmove')
 
