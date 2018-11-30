@@ -39,12 +39,12 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * quick pinch: strange behaviors (bounce back, move far away ...)
-* support landscape
-* manage zoom
-* manage shape
+* ~~support landscape~~
 * switch to landscape
 * pan trigger swipe
 * pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow
+* manage zoom
+* manage shape
 * manage animations
 * startSwiper | stopSwiper
 * limit zoom in / out level

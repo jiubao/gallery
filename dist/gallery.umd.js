@@ -98,7 +98,7 @@
 
   var half = ~~(doc_w() / 15);
 
-  var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, imgs[0].shape.w + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
+  var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
 
   var tpls = {main: main};
 

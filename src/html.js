@@ -18,7 +18,7 @@ var half = ~~(doc_w() / 15)
 var main = imgs => html`
 <div class="${cls.gallery}">
   <div class="${cls.bg}"></div>
-  <div class="${cls.swiper}" style="margin-left: -${half}px; width: ${imgs[0].shape.w + half * 2}px;">
+  <div class="${cls.swiper}" style="margin-left: -${half}px; width: ${doc_w() + half * 2}px;">
     <div class="${cls.swiperWrap}">
     ${imgs.map(img => html`
       <div class="${cls.swiperItem}" style="padding: 0 ${half}px;">
