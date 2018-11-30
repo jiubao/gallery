@@ -1123,7 +1123,7 @@
       pinchend: function (points, target) {
         // ga('pinchend')
         if (zoom === 'out') {
-          if (shape.start.z <= 1) { hide(target); }
+          if (shape.start.z <= 1 && shape.last.z > shape.current.z) { hide(target); }
           else { show(target); }
         } else {
           var last = getCenter(points)('last');
@@ -1164,6 +1164,7 @@
       },
 
       move: function (points, target) {
+        shape.last = Object.assign({}, shape.current);
         setShape(target, 'current');
       }
     };
