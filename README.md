@@ -39,7 +39,6 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * quick pinch: strange behaviors (bounce back, move far away ...)
-* transparent issue
 * zoom out and zoom in: should not close
 * switch to landscape
 * pan trigger swipe
@@ -47,6 +46,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow
 * manage animations
 * startSwiper | stopSwiper
+* ~~transparent issue~~
 * ~~double and quickly swipe issue~~
 * ~~triple tap~~
 * ~~pinch trigger postpan~~
