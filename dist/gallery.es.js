@@ -473,11 +473,18 @@ function gallery (options) {
       iz.oa = iz.v <= iz.ba;
       iz.oz = iz.v >= iz.bz;
 
-      if (iz.dv > 0) {
-        iz.oa = iz.oa && iz.r <= 0;
-        iz.oz = iz.oz && iz.r >= 0;
-      }
+      // TODO: why write this login
+      // if (iz.dv > 0) {
+      //   iz.oa = iz.oa && iz.r <= 0
+      //   iz.oz = iz.oz && iz.r >= 0
+      // }
 
+      // console.log('axiz:', axis)
+      // console.log('oa:', iz.oa)
+      // console.log('oz:', iz.oz)
+      // console.log('r:', iz.r)
+      // console.log('out:', (iz.oa && iz.r === 1) || (iz.oz && iz.r === -1))
+      if ((iz.oa && iz.r === 1) || (iz.oz && iz.r === -1)) { iz.dv = 0; }
       if (iz.oa || iz.oz) { iz.phase = 'O'; }
       else if (iz.dv === 0) { iz.phase = 'Z'; }
     };
