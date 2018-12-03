@@ -687,7 +687,7 @@ function gallery (options) {
     destroy: function () {
       release();
       moreStack.forEach(function (m) { return m(); });
-      document.body.removeChild(div);
+      div.parentNode && div.parentNode.removeChild(div);
     }
     // offs: () => offStack
     // wrap: () => wrap

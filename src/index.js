@@ -396,7 +396,7 @@ function gallery (options) {
     destroy: () => {
       release()
       moreStack.forEach(m => m())
-      document.body.removeChild(div)
+      div.parentNode && div.parentNode.removeChild(div)
     }
     // offs: () => offStack
     // wrap: () => wrap
