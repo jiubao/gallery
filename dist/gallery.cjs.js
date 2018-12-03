@@ -277,13 +277,11 @@ function gesture (elm) {
     return function () { return off(elm, evt, fn); }
   };
 
-  on(elm, 'touchstart', onstart);
-  on(elm, 'touchmove', onmove);
-  on(elm, 'touchend', onend);
+  var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
 
   return {
-    on: _on, off: _off, phase: function () { return phase; }
-    // destroy: () => {}
+    on: _on, off: _off, phase: function () { return phase; },
+    destroy: function () { return offs.forEach(function (h) { return h(); }); }
   }
 
   function render () {
@@ -378,11 +376,12 @@ function gallery (options) {
 
   var gallery, wrap, background, opacity = 0;
   var swiperDom, swiperInstance;
-  var offStach = [];
-  var offs = function (fn) { return offStach.push(fn); };
+  var offStack = [];
+  var moreStack = [];
+  var offs = function (fn) { return offStack.push(fn); };
 
   // click document
-  offs(on(document, 'click', function (evt) {
+  moreStack.push(on(document, 'click', function (evt) {
     var target = evt.target;
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       buildCache();
@@ -393,15 +392,6 @@ function gallery (options) {
       raf.raf(function () { return init(item); });
     }
   }));
-
-  // TODO: remove animation for resize, add to off list for destroy
-  on(window, 'resize', function (evt) {
-    buildCache();
-    var item = getCacheItem(wrap.firstElementChild);
-    shape.init = item.shape;
-    div.innerHTML = tpls.main(cache);
-    raf.raf(function () { return init(item); });
-  });
 
   var stopSwiper = function () {swiping = false; swiperInstance.stop();};
   var startSwiper = function () { return swiperInstance.start(); };
@@ -564,6 +554,7 @@ function gallery (options) {
   var enableGesture = function () { return gestureEnabled = true; };
   var disableGesture = function () { return gestureEnabled = false; };
 
+  var gestures = [];
   var handlers = {
     single: function (points, target) {
       // TODO: trigger wrong
@@ -635,7 +626,6 @@ function gallery (options) {
       applyOpacity(background, opacity);
     },
 
-    // TODO: 缩小露底问题
     pinchend: function (points, target) {
       // ga('pinchend')
       if (zoom === 'out') {
@@ -697,7 +687,13 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    destroy: destroy
+    release: release,
+    destroy: function () {
+      release();
+      moreStack.forEach(function (m) { return m(); });
+      document.body.removeChild(div);
+    }
+    // offs: () => offStack
     // wrap: () => wrap
     // shape: () => shape,
     // cache: () => cache
@@ -712,15 +708,18 @@ function gallery (options) {
 
   return gallery
 
-  function destroy () {
-    // TODO: leave the first click which is the document click, should be included in the future
+  function release () {
     // TODO: remove all events and dom elements in destroy
-    offStach.splice(1, offStach.length).forEach(function (o) { return o(); });
+    // offStack.splice(1, offStack.length).forEach(o => o())
+    offStack.forEach(function (o) { return o(); });
     preventDefault.off();
+    gestures.forEach(function (g) { return g.destroy(); });
+    swiperInstance.destroy();
+    // div.innerHTML = ''
   }
 
   // TODO: reset all private variables
-  function init (item) {
+  function init (item, resize) {
     preventDefault.on();
     var img = item.elm;
     gallery = div.childNodes[1];
@@ -741,6 +740,7 @@ function gallery (options) {
       // offs(on(wrap, 'click', evt => hide(evt.target)))
 
       Object.keys(handlers).forEach(function (key) { return offs(gesture$$1.on(key, handlers[key])); });
+      gestures.push(gesture$$1);
     });
 
     wrap = item.wrap;
@@ -766,7 +766,22 @@ function gallery (options) {
     swiping = false;
 
     gallery.style.display = 'block';
-    raf.raf(function () { return show(img); });
+    raf.raf(function () {
+      if (resize) {
+        var s = shape.init;
+        applyTranslateScale(wrap, s.x, s.y, s.z);
+        applyOpacity(background, 1);
+      } else { show(img); }
+    });
+
+    offs(on(window, 'resize', function (evt) {
+      release();
+      buildCache();
+      var item = getCacheItem(wrap.firstElementChild);
+      shape.init = item.shape;
+      div.innerHTML = tpls.main(cache);
+      raf.raf(function () { return init(item, true); });
+    }));
   }
 
   // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
@@ -847,7 +862,7 @@ function gallery (options) {
     animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
     animateOpacity(false, opacity, 0, function () {
       gallery.style.display = 'none';
-      destroy();
+      release();
     });
   }
 

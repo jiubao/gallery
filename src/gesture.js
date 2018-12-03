@@ -169,13 +169,11 @@ function gesture (elm) {
     return () => off(elm, evt, fn)
   }
 
-  on(elm, 'touchstart', onstart)
-  on(elm, 'touchmove', onmove)
-  on(elm, 'touchend', onend)
+  var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ]
 
   return {
-    on: _on, off: _off, phase: () => phase
-    // destroy: () => {}
+    on: _on, off: _off, phase: () => phase,
+    destroy: () => offs.forEach(h => h())
   }
 
   function render () {

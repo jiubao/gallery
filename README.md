@@ -41,9 +41,11 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * quick pinch: strange behaviors (bounce back, move far away ...)
 * ~~support landscape~~
 * switch to landscape
-* multi events on document
-* manage events
-* manage destroy
+* ~~multi events on document~~
+* ~~destroy & release~~
+* destroy swiper (events, elements)
+* ~~manage events~~
+* ~~manage destroy~~
 * pan trigger swipe
 * pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow
 * manage zoom

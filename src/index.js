@@ -86,11 +86,12 @@ function gallery (options) {
 
   var gallery, wrap, background, freeze = false, opacity = 0
   var swiperDom, swiperInstance
-  var offStach = []
-  var offs = fn => offStach.push(fn)
+  var offStack = []
+  var moreStack = []
+  var offs = fn => offStack.push(fn)
 
   // click document
-  offs(on(document, 'click', evt => {
+  moreStack.push(on(document, 'click', evt => {
     var target = evt.target
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       buildCache()
@@ -101,15 +102,6 @@ function gallery (options) {
       raf(() => init(item))
     }
   }))
-
-  // TODO: remove animation for resize, add to off list for destroy
-  on(window, 'resize', evt => {
-    buildCache()
-    var item = getCacheItem(wrap.firstElementChild)
-    shape.init = item.shape
-    div.innerHTML = tpls.main(cache)
-    raf(() => init(item))
-  })
 
   const stopSwiper = () => {swiping = false; swiperInstance.stop()}
   const startSwiper = () => swiperInstance.start()
@@ -272,6 +264,7 @@ function gallery (options) {
   const enableGesture = () => gestureEnabled = true
   const disableGesture = () => gestureEnabled = false
 
+  var gestures = []
   const handlers = {
     single: (points, target) => {
       // TODO: trigger wrong
@@ -341,7 +334,6 @@ function gallery (options) {
       applyOpacity(background, opacity)
     },
 
-    // TODO: 缩小露底问题
     pinchend: (points, target) => {
       // ga('pinchend')
       if (zoom === 'out') {
@@ -400,7 +392,13 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    destroy
+    release,
+    destroy: () => {
+      release()
+      moreStack.forEach(m => m())
+      document.body.removeChild(div)
+    }
+    // offs: () => offStack
     // wrap: () => wrap
     // shape: () => shape,
     // cache: () => cache
@@ -415,15 +413,18 @@ function gallery (options) {
 
   return gallery
 
-  function destroy () {
-    // TODO: leave the first click which is the document click, should be included in the future
+  function release () {
     // TODO: remove all events and dom elements in destroy
-    offStach.splice(1, offStach.length).forEach(o => o())
+    // offStack.splice(1, offStack.length).forEach(o => o())
+    offStack.forEach(o => o())
     preventDefault.off()
+    gestures.forEach(g => g.destroy())
+    swiperInstance.destroy()
+    // div.innerHTML = ''
   }
 
   // TODO: reset all private variables
-  function init (item) {
+  function init (item, resize) {
     preventDefault.on()
     var img = item.elm
     gallery = div.childNodes[1]
@@ -444,6 +445,7 @@ function gallery (options) {
       // offs(on(wrap, 'click', evt => hide(evt.target)))
 
       Object.keys(handlers).forEach(key => offs(gesture.on(key, handlers[key])))
+      gestures.push(gesture)
     })
 
     wrap = item.wrap
@@ -469,7 +471,22 @@ function gallery (options) {
     swiping = false
 
     gallery.style.display = 'block'
-    raf(() => show(img))
+    raf(() => {
+      if (resize) {
+        var s = shape.init
+        applyTranslateScale(wrap, s.x, s.y, s.z)
+        applyOpacity(background, 1)
+      } else show(img)
+    })
+
+    offs(on(window, 'resize', evt => {
+      release()
+      buildCache()
+      var item = getCacheItem(wrap.firstElementChild)
+      shape.init = item.shape
+      div.innerHTML = tpls.main(cache)
+      raf(() => init(item, true))
+    }))
   }
 
   // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
@@ -550,7 +567,7 @@ function gallery (options) {
     animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w})
     animateOpacity(false, opacity, 0, () => {
       gallery.style.display = 'none'
-      destroy()
+      release()
     })
   }
 
