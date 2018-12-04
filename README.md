@@ -40,12 +40,12 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## Todos
 * quick pinch: strange behaviors (bounce back, move far away ...)
 * pan trigger swipe
-* pan right () -> postpan -> tap (out) -> pan left -> post pan: a little slow
 * manage zoom
 * manage shape
 * manage animations
 * startSwiper | stopSwiper
 * limit zoom in / out level
+* ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: a little slow~~
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow~~
 * ~~destroy swiper (events, elements)~~
 * ~~manage events~~
