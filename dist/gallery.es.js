@@ -433,7 +433,10 @@ function gallery (options) {
 
   // var occupy = 'idle' // idle, swipe, gesture
 
-  var animateDeceleration = function (boundary, target, x, y, dx, dy) {
+  var animateDeceleration = function (boundary, target, current, last) {
+    var dx = (current.x - last.x) * 2;
+    var dy = (current.y - last.y) * 2;
+    // console.log('dx:', dx)
     var runtime = {
       phase: 'D', // D: deceleration, O: outofboundary, B: debounce, Z: stop
       ba: 0, // lower limit boundary
@@ -454,8 +457,8 @@ function gallery (options) {
     var _dx = Math.abs(dx), _dy = Math.abs(dy);
 
     var it = {
-      x: Object.assign({}, runtime, {v: x, dv: _dx, r: !dx ? dx : dx / _dx, ba: boundary.x1, bz :boundary.x2}),
-      y: Object.assign({}, runtime, {v: y, dv: _dy, r: !dy ? dy : dy / _dy, ba: boundary.y1, bz: boundary.y2})
+      x: Object.assign({}, runtime, {v: current.x, dv: _dx, r: !dx ? dx : dx / _dx, ba: boundary.x1, bz :boundary.x2}),
+      y: Object.assign({}, runtime, {v: current.y, dv: _dy, r: !dy ? dy : dy / _dy, ba: boundary.y1, bz: boundary.y2})
     };
     var ease = function (k) { return --k * k * k + 1; };
 
@@ -484,9 +487,32 @@ function gallery (options) {
       // console.log('oz:', iz.oz)
       // console.log('r:', iz.r)
       // console.log('out:', (iz.oa && iz.r === 1) || (iz.oz && iz.r === -1))
-      if ((iz.oa && iz.r === 1) || (iz.oz && iz.r === -1)) { iz.dv = 0; }
-      if (iz.oa || iz.oz) { iz.phase = 'O'; }
+      if ((iz.oa && iz.r === 1) || (iz.oz && iz.r === -1)) { prepareBounce(iz, true); }
+      else if (iz.oa || iz.oz) { iz.phase = 'O'; }
       else if (iz.dv === 0) { iz.phase = 'Z'; }
+    };
+
+    var prepareBounce = function (iz, oneway) {
+      iz.phase = 'B';
+      iz.start = Date.now();
+      iz.from = iz.v;
+      iz.to = iz.oz ? iz.bz : iz.ba;
+      var distance = Math.abs(iz.to - iz.from);
+      var interval = 1000 * distance / doc_w();
+      if (interval > 500) { interval = 500; }
+      else if (interval < 150) { interval = 150; }
+      // console.log('interval.a:', interval)
+
+      if (oneway) {
+        // console.log('dv:', iz.dv)
+        // console.log('distance:', distance)
+        // console.log('duration:', 16.67 * distance / iz.dv)
+        var t = 16.67 * distance / iz.dv;
+        if (t < interval) { interval = t; }
+      }
+
+      iz.interval = interval;
+      // console.log('interval.b:', interval)
     };
 
     var out = function (axis) {
@@ -495,14 +521,7 @@ function gallery (options) {
 
       iz.dv = iz.dv * .8;
       if (iz.dv <= .5) {
-        iz.phase = 'B';
-        iz.start = Date.now();
-        iz.from = iz.v;
-        iz.to = iz.oz ? iz.bz : iz.ba;
-        var interval = 1000 * Math.abs(iz.to - iz.from) / doc_w();
-        if (interval > 500) { interval = 500; }
-        else if (interval < 150) { interval = 150; }
-        iz.interval = interval;
+        prepareBounce(iz);
       } else {
         iz.v += iz.dv * iz.r;
       }
@@ -550,7 +569,8 @@ function gallery (options) {
   };
 
   function postpan (target, current, last) {
-    animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2);
+    // animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2)
+    animateDeceleration(xyBoundary(shape.current), target, shape.current, shape.last);
   }
 
   var gestureEnabled = false;
