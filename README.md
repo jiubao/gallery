@@ -38,9 +38,12 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## element interface
 
 ## Todos
+* add api
+* add readme
 * quick pinch: strange behaviors (bounce back, move far away ...)
-* ~~pinch -> pan: twitter~~
 * do we need post pinch?
+* recover postpinch (current use postpan)
+* ~~pinch -> pan: twitter~~
 * quick pan -> move back
 * pan trigger swipe
 * limit zoom in / out level
@@ -75,7 +78,6 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * manage shape
 * manage animations
 * startSwiper | stopSwiper
-* recover postpinch (current use postpan)
 * gesture.on: support on an object
 * out of screen close animation
 * desktop
