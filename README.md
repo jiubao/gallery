@@ -39,11 +39,9 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 
 ## Todos
 * quick pinch: strange behaviors (bounce back, move far away ...)
+* pinch -> pan: twitter
+* quick pan -> move back
 * pan trigger swipe
-* manage zoom
-* manage shape
-* manage animations
-* startSwiper | stopSwiper
 * limit zoom in / out level
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: a little slow~~
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow~~
@@ -70,11 +68,15 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * ~~disable gesture when swiper~~
 * ~~ios / safari support~~
 * ~~use js to simulate animation~~
+* ~~pinch & pan: pending issue~~
+* manage zoom
+* manage shape
+* manage animations
+* startSwiper | stopSwiper
 * recover postpinch (current use postpan)
 * gesture.on: support on an object
 * out of screen close animation
 * desktop
-* pinch & pan: pending issue
 
 
 [npm]: https://img.shields.io/npm/v/@jiubao/gallery.svg
