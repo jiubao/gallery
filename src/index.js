@@ -148,6 +148,7 @@ function gallery (options) {
   // var occupy = 'idle' // idle, swipe, gesture
 
   const animateDeceleration = (boundary, target, current, last) => {
+    // console.log('animateDeceleration')
     var dx = (current.x - last.x) * 2
     var dy = (current.y - last.y) * 2
     // console.log('dx:', dx)
@@ -348,6 +349,8 @@ function gallery (options) {
       var dx = center2.x - (center1.x - shape.start.x) * zoomLevel
       var dy = center2.y - (center1.y - shape.start.y) * zoomLevel
 
+      // console.log('dx:', dx, ' | dy:', dy)
+
       var _zoom = zoomLevel * shape.start.z
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '')
       applyTranslateScale(wrap, dx, dy, _zoom)
@@ -361,15 +364,17 @@ function gallery (options) {
       applyOpacity(background, opacity)
     },
 
-    pinchend: (points, target) => {
+    pinchend: (points, target, phase, evt) => {
       // ga('pinchend')
+      // console.log('pinchend')
       if (zoom === 'out') {
         if (shape.start.z <= 1 && shape.last.z > shape.current.z) hide(target)
         else show(target)
-      } else {
-        var last = getCenter(points)('last')
-        var current = getCenter(points)('current')
-        postpan(target, current, last)
+      // } else if (evt.touches.length === 0) {
+        // console.log('xxxxxxxxxxx')
+        // var last = getCenter(points)('last')
+        // var current = getCenter(points)('current')
+        // postpan(target, current, last)
       }
     },
 
@@ -393,6 +398,7 @@ function gallery (options) {
     },
 
     start: (points, target) => {
+      // console.log('start')
       clearAnimations()
       setShape3(target)
       var z = shape.start.z
@@ -401,7 +407,7 @@ function gallery (options) {
 
     end: (points, target) => {
       // TODO: tap the img during postpan will stop the animation, as a result we need recover postpan again onend. currently only recover postpan, should recover postpinch also.
-      if (zoom === 'in' && !animations.postpan) postpan(target, points.current[0], points.last[0])
+      // if (zoom === 'in' && !animations.postpan) postpan(target, points.current[0], points.last[0])
     },
 
     move: (points, target) => {

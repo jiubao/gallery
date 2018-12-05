@@ -53,8 +53,10 @@ function gesture (elm) {
     last: [],
     current: []
   }
+
+  var eventArg
   // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
-  const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase))
+  const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
 
   const loop = () => { if (ismoving) { raf(loop); render() }}
 
@@ -68,6 +70,7 @@ function gesture (elm) {
   }
 
   const onstart = evt => {
+    eventArg = evt
     // if (freeze) return
     // ga('gesture.start')
     setTouchPoints(evt, ['start', 'last', 'current'])
@@ -93,6 +96,7 @@ function gesture (elm) {
   /// TODO: check pinch every time, if one point, switch behavior
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   const onmove = evt => {
+    eventArg = evt
     // console.log('gesture.onmove')
     // if (freeze) return
     // ga('gesture.onmove')
@@ -105,6 +109,7 @@ function gesture (elm) {
     if (evt.touches.length > 1) phase.rm('pan').or('pinch')
     else {
       if (phase.is('pinch')) {
+        // console.log('pinch ===> start')
         setTouchPoints(evt, 'start')
         // ga('move.trigger.start')
         trigger('start')
@@ -133,6 +138,9 @@ function gesture (elm) {
   }
 
   const onend = evt => {
+    eventArg = evt
+    // console.log('end...')
+    // console.log('end.touches:', evt.touches)
     // if (freeze) return
     phase.rm('start', 'move').or('end')
 
@@ -181,6 +189,9 @@ function gesture (elm) {
 
     // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
     // ga(phase)
+
+    // var _map = arr => JSON.stringify(arr.map(a => ({x: a.x.toFixed(0), y: a.y.toFixed(0)})))
+    // console.log('current:', _map(points.current), 'start:', _map(points.start))
 
     phase.is('scroll') && trigger('scroll')
     phase.is('swipe') && trigger('swipe')

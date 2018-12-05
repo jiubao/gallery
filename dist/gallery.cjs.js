@@ -161,8 +161,10 @@ function gesture (elm) {
     last: [],
     current: []
   };
+
+  var eventArg;
   // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
-  var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase); }); };
+  var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase, eventArg); }); };
 
   var loop = function () { if (ismoving) { raf.raf(loop); render(); }};
 
@@ -176,6 +178,7 @@ function gesture (elm) {
   };
 
   var onstart = function (evt) {
+    eventArg = evt;
     // if (freeze) return
     // ga('gesture.start')
     setTouchPoints(evt, ['start', 'last', 'current']);
@@ -201,6 +204,7 @@ function gesture (elm) {
   /// TODO: check pinch every time, if one point, switch behavior
   /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
   var onmove = function (evt) {
+    eventArg = evt;
     // console.log('gesture.onmove')
     // if (freeze) return
     // ga('gesture.onmove')
@@ -213,6 +217,7 @@ function gesture (elm) {
     if (evt.touches.length > 1) { phase.rm('pan').or('pinch'); }
     else {
       if (phase.is('pinch')) {
+        // console.log('pinch ===> start')
         setTouchPoints(evt, 'start');
         // ga('move.trigger.start')
         trigger('start');
@@ -241,6 +246,9 @@ function gesture (elm) {
   };
 
   var onend = function (evt) {
+    eventArg = evt;
+    // console.log('end...')
+    // console.log('end.touches:', evt.touches)
     // if (freeze) return
     phase.rm('start', 'move').or('end');
 
@@ -290,6 +298,9 @@ function gesture (elm) {
     // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
     // ga(phase)
 
+    // var _map = arr => JSON.stringify(arr.map(a => ({x: a.x.toFixed(0), y: a.y.toFixed(0)})))
+    // console.log('current:', _map(points.current), 'start:', _map(points.start))
+
     phase.is('scroll') && trigger('scroll');
     phase.is('swipe') && trigger('swipe');
     phase.is('pinch') && trigger('pinch');
@@ -322,7 +333,6 @@ var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity;
 var getRect = function (elm) { return elm.getBoundingClientRect(); };
 
 var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
-var getCenter = function (ps) { return function (type) { return getCenterPoint(ps[type][0], ps[type][1]); }; };
 var square = function (x) { return x * x; };
 var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
 var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
@@ -438,6 +448,7 @@ function gallery (options) {
   // var occupy = 'idle' // idle, swipe, gesture
 
   var animateDeceleration = function (boundary, target, current, last) {
+    // console.log('animateDeceleration')
     var dx = (current.x - last.x) * 2;
     var dy = (current.y - last.y) * 2;
     // console.log('dx:', dx)
@@ -640,6 +651,8 @@ function gallery (options) {
       var dx = center2.x - (center1.x - shape.start.x) * zoomLevel;
       var dy = center2.y - (center1.y - shape.start.y) * zoomLevel;
 
+      // console.log('dx:', dx, ' | dy:', dy)
+
       var _zoom = zoomLevel * shape.start.z;
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
       applyTranslateScale(wrap, dx, dy, _zoom);
@@ -653,15 +666,17 @@ function gallery (options) {
       applyOpacity(background, opacity);
     },
 
-    pinchend: function (points, target) {
+    pinchend: function (points, target, phase, evt) {
       // ga('pinchend')
+      // console.log('pinchend')
       if (zoom === 'out') {
         if (shape.start.z <= 1 && shape.last.z > shape.current.z) { hide(target); }
         else { show(target); }
-      } else {
-        var last = getCenter(points)('last');
-        var current = getCenter(points)('current');
-        postpan(target, current, last);
+      // } else if (evt.touches.length === 0) {
+        // console.log('xxxxxxxxxxx')
+        // var last = getCenter(points)('last')
+        // var current = getCenter(points)('current')
+        // postpan(target, current, last)
       }
     },
 
@@ -685,6 +700,7 @@ function gallery (options) {
     },
 
     start: function (points, target) {
+      // console.log('start')
       clearAnimations();
       setShape3(target);
       var z = shape.start.z;
@@ -693,7 +709,7 @@ function gallery (options) {
 
     end: function (points, target) {
       // TODO: tap the img during postpan will stop the animation, as a result we need recover postpan again onend. currently only recover postpan, should recover postpinch also.
-      if (zoom === 'in' && !animations.postpan) { postpan(target, points.current[0], points.last[0]); }
+      // if (zoom === 'in' && !animations.postpan) postpan(target, points.current[0], points.last[0])
     },
 
     move: function (points, target) {
