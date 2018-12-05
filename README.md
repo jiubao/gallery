@@ -40,14 +40,9 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## Todos
 * add api
 * add readme
-* quick pinch: strange behaviors (bounce back, move far away ...)
-* do we need post pinch?
-* recover postpinch (current use postpan)
-* ~~pinch -> pan: twitter~~
 * quick pan -> move back
 * pan trigger swipe
 * limit zoom in / out level
-* window.resize: add a temp black bk, remove it after init
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: a little slow~~
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow~~
 * ~~destroy swiper (events, elements)~~
@@ -74,6 +69,11 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 * ~~ios / safari support~~
 * ~~use js to simulate animation~~
 * ~~pinch & pan: pending issue~~
+* ~~pinch -> pan: twitter~~
+* quick pinch: strange behaviors (bounce back, move far away ...)
+* recover postpinch (current use postpan)
+* do we need post pinch?
+* window.resize: add a temp black bk, remove it after init
 * manage zoom
 * manage shape
 * manage animations
