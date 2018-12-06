@@ -113,16 +113,17 @@
     while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
   get(evt).forEach(function (fn) { return fn.apply(null, args); });};
 
-    var off = function (evt, fn) { return get(evt).splice(get(evt).indexOf(fn), 1); };
+    var off = function (evt, fn) {
+      if (fn) { get(evt).splice(get(evt).indexOf(fn), 1); }
+      else { delete handlers[evt]; }
+    };
     var on = function (evt, fn) {
       get(evt).push(fn);
       return function () { return off(evt, fn); }
     };
 
-    var destroy = function () {Object.keys(handlers).forEach(function (key) { return delete handlers[key]; });};
-
     return {
-      on: on, off: off, get: get, trigger: trigger, destroy: destroy
+      on: on, off: off, trigger: trigger, $get: get, $destroy: function () {Object.keys(handlers).forEach(function (evt) {off(evt);});}
     }
   }
 
@@ -206,7 +207,7 @@
     var ismoving = false;
     var tapTimes = 0, tapStart = -1, tapLast = -1;
 
-    var target = {};
+    var target;
     var points = {
       start: [],
       last: [],
@@ -339,7 +340,7 @@
     // }
     instance.phase = function () { return phase; };
     instance.destroy = function () {
-      Object.getPrototypeOf(instance).destroy();
+      instance.$destroy();
       offs.forEach(function (h) { return h(); });
     };
     return instance
@@ -881,6 +882,7 @@
 
     var selector = opts.selector;
     var dataset = opts.dataset;
+    var instance = Object.create(new eventFactory());
 
     var cache = [];
     var buildCache = function () {
@@ -922,15 +924,19 @@
     var offs = function (fn) { return offStack.push(fn); };
 
     // click document
+    var onshow = function (img) {
+      buildCache();
+      if (!cache.length) { return }
+      if (!img) { img = cache[0].elm; }
+      var item = getCacheItem(img);
+      shape.init = item.shape;
+      div.innerHTML = tpls.main(cache);
+      raf(function () { return init(item); });
+    };
     moreStack.push(on(document, 'click', function (evt) {
       var target = evt.target;
       if (target.tagName === 'IMG' && dataset in target.dataset) {
-        buildCache();
-        // var sizes = setInitShape(target)
-        var item = getCacheItem(target);
-        shape.init = item.shape;
-        div.innerHTML = tpls.main(cache);
-        raf(function () { return init(item); });
+        onshow(target);
       }
     }));
 
@@ -1096,6 +1102,7 @@
         applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z);
 
         if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { animations.postpan = raf(loop); }
+        else { instance.trigger('postpan'); }
       }();
 
       // const stack = [
@@ -1154,7 +1161,7 @@
         }
       },
 
-      scroll: function (points, target) {
+      scroll: function (points, target, phase, eventArgs) {
         // ga('onscroll')
         stopSwiper();
         if (zoom !== '') { return }
@@ -1162,13 +1169,15 @@
         applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
         opacity = 1 - Math.abs(yy * 2 / doc_h());
         applyOpacity(background, opacity > 0 ? opacity : 0);
+        instance.trigger('scroll', points, target, phase, eventArgs);
       },
-      scrollend: function (points, target) {
+      scrollend: function (points, target, phase, eventArgs) {
         if (zoom !== '') { return }
         var yy = Math.abs(points.current[0].y - points.start[0].y);
 
         if (yy / doc_h() > 1/7) { hide(target); }
         else { show(target); }
+        instance.trigger('scrollend', points, target, phase, eventArgs);
       },
 
       pinch: function (points, target) {
@@ -1212,21 +1221,23 @@
       },
 
       // TODO: 拖拽卡顿
-      pan: function (points, target, phase) {
+      pan: function (points, target, phase, eventArgs) {
         // ga('pan')
         if (zoom === 'in') {
           stopSwiper();
           var dx = points.current[0].x - points.start[0].x + shape.start.x;
           var dy = points.current[0].y - points.start[0].y + shape.start.y;
           applyTranslateScale(wrap, dx, dy, shape.start.z);
+          instance.trigger('pan', points, target, phase, eventArgs);
         }
       },
 
-      panend: function (points, target) {
+      panend: function (points, target, phase, eventArgs) {
         // ga('panend')
   		  // TODO: Avoid acceleration animation if speed is too low
         if (zoom === 'in') {
           postpan(target, points.current[0], points.last[0]);
+          instance.trigger('panend', points, target, phase, eventArgs);
         }
       },
 
@@ -1255,36 +1266,26 @@
         var args = [], len = arguments.length;
         while ( len-- ) args[ len ] = arguments[ len ];
 
-        if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) { fn.apply(null, args); }
+        if (gestureEnabled && (!swiping || ['single', 'double'].indexOf(key) >= 0)) {
+          fn.apply(null, args);
+          if (['pan', 'panend', 'scroll', 'scrollend'].indexOf(key) < 0) { instance.trigger.apply(instance, [ key ].concat( args )); }
+        }
+        // if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) fn.apply(null, args)
+        // instance.trigger(key, ...args)
       };
     });
 
-    var gallery = {
-      // on, off
-      // release,
-      // caution: destroy can't rollback, if you still want to show the gallery, use hide
-      destroy: function () {
-        release();
-        moreStack.forEach(function (m) { return m(); });
-        div.parentNode && div.parentNode.removeChild(div);
-      },
-      on: function (evt, handler) {},
-      show: show,
-      hide: hide
-      // offs: () => offStack
-      // wrap: () => wrap
-      // shape: () => shape,
-      // cache: () => cache
-      // get: () => opacity
-      // get: () => {
-      //   return {
-      //     swiping,
-      //     occupy
-      //   }
-      // }
+    instance.hide = hide;
+    instance.show = onshow;
+    // caution: destroy can't rollback, if you still want to show the gallery, use hide
+    instance.destroy = function () {
+      release();
+      moreStack.forEach(function (m) { return m(); });
+      div.parentNode && div.parentNode.removeChild(div);
+      instance.$destroy();
     };
 
-    return gallery
+    return instance
 
     function release () {
       // TODO: remove all events and dom elements in destroy
@@ -1333,13 +1334,18 @@
         css: true
       });
 
+      swiperInstance.on('start', function (index) {
+        instance.trigger('swipestart', index);
+      });
       swiperInstance.on('move', function (index) {
         swiping = true;
+        instance.trigger('swipe', index);
       });
       swiperInstance.on('end', function (index) {
         wrap = cache[index].wrap;
         shape.init = cache[index].shape;
         swiping = false;
+        instance.trigger('swipeend', index);
       });
 
       swiping = false;
@@ -1422,6 +1428,10 @@
     }
 
     function show (img) {
+      if (!img) {
+        if (cache.length) { img = cache[0].elm; }
+        else { return }
+      }
       disableGesture();
       var rect = getRect(img);
       animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, null);
@@ -1431,9 +1441,11 @@
         startSwiper();
         enableGesture();
       });
+      instance.trigger('show', img);
     }
 
     function hide (img) {
+      if (!img) { img = wrap.firstElementChild; }
       disableGesture();
       stopSwiper();
       var rect = getRect(getCacheItem(img).elm);
@@ -1443,6 +1455,7 @@
         gallery.style.display = 'none';
         release();
       });
+      instance.trigger('hide', img);
     }
 
     function limitxy (_shape) {

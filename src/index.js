@@ -4,6 +4,7 @@ import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
 import swiper from 'swipe-core'
+import eventFactory from './event'
 
 /*
  * animations
@@ -50,6 +51,7 @@ function gallery (options) {
   }
 
   var {selector, dataset} = opts
+  var instance = Object.create(new eventFactory())
 
   var cache = []
   var buildCache = () => {
@@ -91,15 +93,19 @@ function gallery (options) {
   var offs = fn => offStack.push(fn)
 
   // click document
+  const onshow = img => {
+    buildCache()
+    if (!cache.length) return
+    if (!img) img = cache[0].elm
+    var item = getCacheItem(img)
+    shape.init = item.shape
+    div.innerHTML = tpls.main(cache)
+    raf(() => init(item))
+  }
   moreStack.push(on(document, 'click', evt => {
     var target = evt.target
     if (target.tagName === 'IMG' && dataset in target.dataset) {
-      buildCache()
-      // var sizes = setInitShape(target)
-      var item = getCacheItem(target)
-      shape.init = item.shape
-      div.innerHTML = tpls.main(cache)
-      raf(() => init(item))
+      onshow(target)
     }
   }))
 
@@ -265,6 +271,7 @@ function gallery (options) {
       applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z)
 
       if (it.x.phase !== 'Z' || it.y.phase !== 'Z') animations.postpan = raf(loop)
+      else instance.trigger('postpan')
     }()
 
     // const stack = [
@@ -321,7 +328,7 @@ function gallery (options) {
       }
     },
 
-    scroll: (points, target) => {
+    scroll: (points, target, phase, eventArgs) => {
       // ga('onscroll')
       stopSwiper()
       if (zoom !== '') return
@@ -329,13 +336,15 @@ function gallery (options) {
       applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1)
       opacity = 1 - Math.abs(yy * 2 / doc_h())
       applyOpacity(background, opacity > 0 ? opacity : 0)
+      instance.trigger('scroll', points, target, phase, eventArgs)
     },
-    scrollend: (points, target) => {
+    scrollend: (points, target, phase, eventArgs) => {
       if (zoom !== '') return
       var yy = Math.abs(points.current[0].y - points.start[0].y)
 
       if (yy / doc_h() > 1/7) hide(target)
       else show(target)
+      instance.trigger('scrollend', points, target, phase, eventArgs)
     },
 
     pinch: (points, target) => {
@@ -379,21 +388,23 @@ function gallery (options) {
     },
 
     // TODO: 拖拽卡顿
-    pan: (points, target, phase) => {
+    pan: (points, target, phase, eventArgs) => {
       // ga('pan')
       if (zoom === 'in') {
         stopSwiper()
         var dx = points.current[0].x - points.start[0].x + shape.start.x
         var dy = points.current[0].y - points.start[0].y + shape.start.y
         applyTranslateScale(wrap, dx, dy, shape.start.z)
+        instance.trigger('pan', points, target, phase, eventArgs)
       }
     },
 
-    panend: (points, target) => {
+    panend: (points, target, phase, eventArgs) => {
       // ga('panend')
 		  // TODO: Avoid acceleration animation if speed is too low
       if (zoom === 'in') {
         postpan(target, points.current[0], points.last[0])
+        instance.trigger('panend', points, target, phase, eventArgs)
       }
     },
 
@@ -419,36 +430,26 @@ function gallery (options) {
   Object.keys(handlers).forEach(key => {
     var fn = handlers[key]
     handlers[key] = (...args) => {
-      if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) fn.apply(null, args)
+      if (gestureEnabled && (!swiping || ['single', 'double'].indexOf(key) >= 0)) {
+        fn.apply(null, args)
+        if (['pan', 'panend', 'scroll', 'scrollend'].indexOf(key) < 0) instance.trigger(key, ...args)
+      }
+      // if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) fn.apply(null, args)
+      // instance.trigger(key, ...args)
     }
   })
 
-  var gallery = {
-    // on, off
-    // release,
-    // caution: destroy can't rollback, if you still want to show the gallery, use hide
-    destroy: () => {
-      release()
-      moreStack.forEach(m => m())
-      div.parentNode && div.parentNode.removeChild(div)
-    },
-    on: (evt, handler) => {},
-    show,
-    hide
-    // offs: () => offStack
-    // wrap: () => wrap
-    // shape: () => shape,
-    // cache: () => cache
-    // get: () => opacity
-    // get: () => {
-    //   return {
-    //     swiping,
-    //     occupy
-    //   }
-    // }
+  instance.hide = hide
+  instance.show = onshow
+  // caution: destroy can't rollback, if you still want to show the gallery, use hide
+  instance.destroy = () => {
+    release()
+    moreStack.forEach(m => m())
+    div.parentNode && div.parentNode.removeChild(div)
+    instance.$destroy()
   }
 
-  return gallery
+  return instance
 
   function release () {
     // TODO: remove all events and dom elements in destroy
@@ -497,13 +498,18 @@ function gallery (options) {
       css: true
     })
 
+    swiperInstance.on('start', index => {
+      instance.trigger('swipestart', index)
+    })
     swiperInstance.on('move', index => {
       swiping = true
+      instance.trigger('swipe', index)
     })
     swiperInstance.on('end', index => {
       wrap = cache[index].wrap
       shape.init = cache[index].shape
       swiping = false
+      instance.trigger('swipeend', index)
     })
 
     swiping = false
@@ -586,6 +592,10 @@ function gallery (options) {
   }
 
   function show (img) {
+    if (!img) {
+      if (cache.length) img = cache[0].elm
+      else return
+    }
     disableGesture()
     var rect = getRect(img)
     animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, null)
@@ -595,9 +605,11 @@ function gallery (options) {
       startSwiper()
       enableGesture()
     })
+    instance.trigger('show', img)
   }
 
   function hide (img) {
+    if (!img) img = wrap.firstElementChild
     disableGesture()
     stopSwiper()
     var rect = getRect(getCacheItem(img).elm)
@@ -607,6 +619,7 @@ function gallery (options) {
       gallery.style.display = 'none'
       release()
     })
+    instance.trigger('hide', img)
   }
 
   function limitxy (_shape) {

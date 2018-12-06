@@ -6,16 +6,17 @@ export default function () {
   }
   const trigger = (evt, ...args) => {get(evt).forEach(fn => fn.apply(null, args))}
 
-  const off = (evt, fn) => get(evt).splice(get(evt).indexOf(fn), 1)
+  const off = (evt, fn) => {
+    if (fn) get(evt).splice(get(evt).indexOf(fn), 1)
+    else delete handlers[evt]
+  }
   const on = (evt, fn) => {
     get(evt).push(fn)
     return () => off(evt, fn)
   }
 
-  const destroy = () => {Object.keys(handlers).forEach(key => delete handlers[key])}
-
   return {
-    on, off, get, trigger, destroy
+    on, off, trigger, $get: get, $destroy: () => {Object.keys(handlers).forEach(evt => {off(evt)})}
   }
 }
 

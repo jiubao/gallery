@@ -27,7 +27,7 @@ function gesture (elm) {
   var ismoving = false
   var tapTimes = 0, tapStart = -1, tapLast = -1
 
-  var target = {}
+  var target
   var points = {
     start: [],
     last: [],
@@ -160,7 +160,7 @@ function gesture (elm) {
   // }
   instance.phase = () => phase
   instance.destroy = () => {
-    Object.getPrototypeOf(instance).destroy()
+    instance.$destroy()
     offs.forEach(h => h())
   }
   return instance
