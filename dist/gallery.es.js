@@ -40,6 +40,9 @@ function prevent () {
   }
 }
 
+// data-gallery-item ===> galleryItem
+var camelCase = function (str) { return str.split('-').slice(1).map(function (item, index) { return !index ? item : item.replace(/^./, function (match) { return match.toUpperCase(); }); }).join(''); };
+
 var classes = {
 	gallery: "_src_style_css_gallery",
 	bg: "_src_style_css_bg",
@@ -53,18 +56,6 @@ var classes = {
 
 var templateObject$1 = Object.freeze(["\n      <div class=\"", "\" style=\"padding: 0 ", "px;\">\n        <div class=\"", "\" style=\"width: ", "px;\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
 var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\" style=\"margin-left: -", "px; width: ", "px;\">\n    <div class=\"", "\">\n    ", "\n    </div>\n  </div>\n</div>\n"]);
-// function htmlEscape(str) {
-//     return str.replace(/&/g, '&amp;') // first!
-//               .replace(/>/g, '&gt;')
-//               .replace(/</g, '&lt;')
-//               .replace(/"/g, '&quot;')
-//               .replace(/'/g, '&#39;')
-//               .replace(/`/g, '&#96;');
-// }
-
-    // <img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" />
-        // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
-      // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
 
 var half = ~~(doc_w() / 15);
 
@@ -363,8 +354,7 @@ var calculateZoomLevel = function (points) { return distance(points.current[0], 
 var preventDefault = prevent();
 
 var defaultOptions = {
-  selector: 'data-gallery-item',
-  dataset: 'galleryItem'
+  selector: 'data-gallery-item'
 };
 
 function gallery (options) {
@@ -372,7 +362,7 @@ function gallery (options) {
     options);
 
   var selector = opts.selector;
-  var dataset = opts.dataset;
+  var dataset = camelCase(selector);
   var instance = Object.create(new eventFactory());
 
   var cache = [];
@@ -1003,7 +993,7 @@ export default gallery;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16],
-    ["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],
+    [7,0,5,0,4,0,6,0,27,8,3,7,0,5,0,4,0,6,0,28,8,3,7,0,5,0,4,0,6,0,38,8,3,7,0,5,0,4,0,6,0,50,8,3,7,0,5,0,4,0,6,0,49,8,3,7,0,5,0,4,0,6,0,48,12,24,2,15,1,26,2,15,1,34,2,31,13,1,58,2,31,13,1,40,9,51,2,62,9,40,1,11,14,7,0,5,0,4,0,6,0,27,8,3,7,0,5,0,4,0,6,0,28,8,3,7,0,5,0,4,0,6,0,20,8,3,7,0,5,0,4,0,6,0,38,12,52,2,57,1,11,14,7,0,5,0,4,0,6,0,27,12,60,2,10,1,16,2,59,1,46,9,55,2,64,1,53,2,10,1,23,9,29,2,10,1,21,9,25,2,10,1,11,14,7,0,5,0,4,0,6,0,28,12,16,2,30,1,63,2,66,65,1,18,19,3,35,2,3,36,3,42,37,3,39,9,41,33,44,8,3,15,8,3,45,8,3,43,32,1,3,19,18,36,2,15,1,11,14,7,0,5,0,4,0,6,0,20,12,16,2,30,1,22,9,54,2,26,3,24,1,18,19,3,35,2,3,22,3,42,37,3,39,9,41,33,44,8,3,15,8,3,45,8,3,43,32,1,3,19,18,23,9,29,2,10,1,21,9,25,2,10,1,11,14,7,0,5,0,4,0,6,0,20,3,56,12,34,2,31,13,1,23,9,29,2,10,1,21,9,25,2,10,1,11,14,7,0,5,0,4,0,6,0,61,12,16,2,30,1,26,2,17,13,1,24,2,17,13,1,22,2,47,33,9,17,13,8,3,9,17,13,32,1,11],
+    ["_",";",":"," ","style","src","css",".",",","-","none","}","{","%","\n","0","position","50","/","*","wrap","user","transform","touch","top","select","left","gallery","bg","action","absolute","100",")","(","width","transition","opacity","ms","full","cubic","box","bezier","333","1","0.4","0.22","z","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","fixed","display","center","border","background","9999","000","#"],
     document.head.appendChild(document.createElement('link'))
 ));

@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent, isArray } from './utils'
+import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent, isArray, camelCase } from './utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
@@ -40,8 +40,7 @@ const calculateZoomLevel = points => distance(points.current[0], points.current[
 const preventDefault = prevent()
 
 var defaultOptions = {
-  selector: 'data-gallery-item',
-  dataset: 'galleryItem'
+  selector: 'data-gallery-item'
 }
 
 function gallery (options) {
@@ -50,7 +49,8 @@ function gallery (options) {
     ...options
   }
 
-  var {selector, dataset} = opts
+  var {selector} = opts
+  var dataset = camelCase(selector)
   var instance = Object.create(new eventFactory())
 
   var cache = []

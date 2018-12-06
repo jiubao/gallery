@@ -38,3 +38,6 @@ export function prevent () {
     off: () => off(document, 'touchmove', handler, opts)
   }
 }
+
+// data-gallery-item ===> galleryItem
+export const camelCase = str => str.split('-').slice(1).map((item, index) => !index ? item : item.replace(/^./, match => match.toUpperCase())).join('')

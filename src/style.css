@@ -45,19 +45,3 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
-
-/* .center-h {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.center-v {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-} */
-
-/* .disableTransition .bg, .disableTransition .wrap {
-  transition: none;
-} */

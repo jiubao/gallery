@@ -1,17 +1,5 @@
 import {html, doc_w} from './utils'
 import {classes as cls} from './style.css'
-// function htmlEscape(str) {
-//     return str.replace(/&/g, '&amp;') // first!
-//               .replace(/>/g, '&gt;')
-//               .replace(/</g, '&lt;')
-//               .replace(/"/g, '&quot;')
-//               .replace(/'/g, '&#39;')
-//               .replace(/`/g, '&#96;');
-// }
-
-    // <img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" />
-        // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
-      // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
 
 var half = ~~(doc_w() / 15)
 

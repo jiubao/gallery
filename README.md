@@ -1,7 +1,7 @@
 [![npm][npm]][npm-url]
 
 # gallery
-* 18k before gzip
+* 19k before gzip
 
 ## Demo
 * https://jiubao.github.io/gallery/
@@ -48,6 +48,11 @@ import gallery from '@jiubao/gallery/dist/gallery.es'
 gallery()
 ```
 
+## Options
+| Attribute | Description | Type | Default | Values |
+| ----- | :-: | :-: | :-: | :-: |
+| selector | gallery item flag, start with `data` | string | data-gallery-item | |
+
 ## Methods
 | Name | Description | Parameters | Return |
 | ----- | :-: | :-: | :-: |
@@ -89,8 +94,9 @@ gallery()
 | eventArg | touch event argument |
 
 ## Todos
-* add api
-* add readme
+* ~~add api~~
+* ~~add readme~~
+* two slide bug
 * need figure out a one step close solution
 * quick pan -> move back
 * pan trigger swipe
