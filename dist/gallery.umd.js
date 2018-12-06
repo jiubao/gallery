@@ -1,1 +1,1507 @@
-!function(n,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):n.gallery=t()}(this,function(){"use strict";var n=["webkit","moz","ms","o"],nn=n.reduce(function(n,t){return n||window[t+"RequestAnimationFrame"]},window.requestAnimationFrame).bind(window),tn=n.reduce(function(n,t){return n||window[t+"CancelAnimationFrame"]},window.cancelAnimationFrame).bind(window);if(!nn||!tn){var e=0;nn=function(n){var t=+new Date;return e=Math.max(t,e+16),setTimeout(n,e-t)},tn=clearTimeout}function t(n){var t=!1;function e(){}var r=Object.defineProperty({},"passive",{get:function(){t=!0}});return window.addEventListener("testPassive",e,r),window.removeEventListener("testPassive",e,r),t}var i=!!t()&&{capture:!1,passive:!0},I=function(n,t,e,r){return void 0===r&&(r=i),n.addEventListener(t,e,r),function(){return R(n,t,e,r)}},R=function(n,t,e,r){return void 0===r&&(r=i),n.removeEventListener(t,e,r)},B=function(n){return Array.isArray(n)||n instanceof Array},r=function(r){for(var n=[],t=arguments.length-1;0<t--;)n[t]=arguments[t+1];return n.reduce(function(n,t,e){return n+t+r[e+1]},r[0])},S=function(){return window.innerHeight},W=function(){return window.innerWidth},X="_src_style_css_bg",F="_src_style_css_swiper",P="_src_style_css_wrap",o=Object.freeze(['\n      <div class="','" style="padding: 0 ','px;">\n        <div class="','" style="width: ','px;">\n          <img data-gallery-index="','" src="','" style="width: ',"px; height: ",'px;"/>\n        </div>\n      </div>\n    ']),a=Object.freeze(['\n<div class="','">\n  <div class="','"></div>\n  <div class="','" style="margin-left: -',"px; width: ",'px;">\n    <div class="','">\n    ',"\n    </div>\n  </div>\n</div>\n"]),u=~~(W()/15),U=function(n){return r(a,"_src_style_css_gallery",X,F,u,W()+2*u,"_src_style_css_swiperWrap",n.map(function(n){return r(o,"_src_style_css_swiperItem",u,P,n.shape.w,n.i,n.src,n.shape.w,n.shape.h)}).join(""))};document.documentElement;var Y=function(n){return{x:n.clientX,y:n.clientY}};function en(n){var t=this;n.forEach(function(n){return t.append(n)})}en.prototype.append=function(n){var t=n.$next=n.$prev=n;return this.$tail?(t.$prev=this.$tail,t.$next=this.$tail.$next,(this.$tail.$next=t).$next.$prev=t,this.$tail=t):this.$head=this.$tail=t};var rn=!!t()&&{capture:!1,passive:!0},on=function(n,t,e,r){void 0===r&&(r=rn),n.removeEventListener(t,e,r)},an=function(n){return"function"==typeof n},un=function(n){var t=n.getBoundingClientRect();return t.top<window.innerHeight&&0<t.bottom&&t.left<window.innerWidth&&0<t.right},cn={cubic:function(n){return--n*n*n+1},circ:function(n){return Math.sqrt(1-Math.pow(n-1,2))}},sn=function(n,t){return window.getComputedStyle(n,null).getPropertyValue(t)};function fn(){this.value=0}fn.prototype={is:function(n){return this.value&n},or:function(n){return this.value=this.value|n,this},rm:function(n){return this.value=this.value&~n,this},set:function(n){return this.value=n,this}};var ln={root:null,rootMargin:"0px",threshold:[0,.01]},dn=!!window.IntersectionObserver,hn={auto:!1,cycle:!0,expose:!1,root:null,elms:[],index:0,width:window.screen.width,height:200,css:!1,ease:"cubic",plugins:[],initHandlers:[],startHandlers:[],moveHandlers:[],endHandlers:[],animationEndHandlers:[]};function Z(n){var t=document.createElement("div");t.style.display="none",document.body.appendChild(t);var o=Object.assign({},hn,n),a=o.index,u=o.root,f=o.elms,c=o.width,s=o.height,l=o.cycle,d=(o.expose,o.auto),h=o.css,p=o.ease;o.plugins.forEach(function(t){return Object.keys(t).forEach(function(n){return o[n+"Handlers"].push(t[n])})});var e=function(r){return function(){for(var n=arguments,t=[],e=arguments.length;e--;)t[e]=n[e];return o[r+"Handlers"].forEach(function(n){return n.apply(null,t)})}},v=e("init"),r=e("start"),i=e("move"),y=e("end");if(u){h&&(c=Number(sn(u,"width").slice(0,-2)),s=Number(sn(u,"height").slice(0,-2)));var x=u.children[0],w={main:-1,auto:-1},m=c/3,b={idle:0,start:1,drag:2,animate:4,scroll:8,auto:16,cancel:32},g=new fn,$=0,z=0,E=0,_=0,M=0,O=0,j=0,D=0,H=[],k=!1;d=l&&d;var A=f[a],C=function(n,t){var e,r;n.x=t,r=t,(e=n)&&(e.style.transition=e.style.webkitTransition="",e.style.transform=e.style.webkitTransform="translate3d("+r+"px, 0, 0)",i(A.$index,A,x,f))},L=function(n){return t.appendChild(n)},N=function(n){return x.appendChild(n)},T=function(n){return!l&&O<j&&A===H.$head},q=function(n){return!l&&j<=O&&A===H.$tail},I=function(n){return clearTimeout(w.auto)},R=function(n){return I(g.set(b.cancel))},B=function(n){I(),tn(w.main)},S=!0,W=[],X=function(){for(var n=arguments,t=[],e=arguments.length;e--;)t[e]=n[e];return W.push(function(n,t,e,r){return void 0===r&&(r=rn),n.addEventListener(t,e,r),function(){return on(n,t,e,r)}}.apply(null,t))};return function(){if(0===f.length)return v(-1);u.style.position="relative",h||(u.style.width=c+"px",u.style.height=s+"px");var n=2===f.length&&l;n&&(f.push(f[0].cloneNode(!0)),N(f[2]),f.push(f[1].cloneNode(!0)),N(f[3]),f[0].$index=f[2].$index=0,f[1].$index=f[3].$index=1);var t=1===f.length;if(k=2===f.length,H=new en(f),n||f.forEach(function(n,t){return n.$index=t}),C(A,0),t||k||C(A.$prev,-c),t||C(A.$next,c),f.forEach(function(n){n.style.position="absolute",h||(n.style.width=c+"px",n.style.height=s+"px"),k||t||n===A||n===A.$prev||n===A.$next||L(n)}),t)return v(A.$index,A,x,f);if(k||l||0!==a||L(A.$prev),k||l||a!==f.length-1||L(A.$next),X(u,"touchstart",F),X(u,"touchmove",P),X(u,"touchend",K),d){if(dn)nn(function(){o.unobserve=function(n,t){if(!dn)return t();var e=new IntersectionObserver(t,ln);return e.observe(n),function(){e.unobserve(n)}}(u,function(n){n&&0===n[0].intersectionRatio?R():J()})});else{var e=function(){return un(u)?G():R()};X(window,"touchmove",function(){return un(u)||R()}),X(window,"touchend",e),e()}var r=["webkit","moz","ms","-"].reduce(function(n,t){return void 0!==document[n[0]]?n:[t+"Hidden",t+"visibilitychange"]},["hidden","visibilitychange"]),i=r[0];r[1],"-"!==i[0]&&X(document,"visibilitychange",function(){document[i]?R():G()},!1)}x.x=0,v(A.$index,A,x,f)}(),{destroy:function(){B(),an(o.unobserve)&&o.unobserve(),W.forEach(function(n){return n()}),t.parentNode&&t.parentNode.removeChild(t)},index:function(n){return A.$index},on:function(n,t){var e=o[n+"Handlers"];return e.push(t),function(){return e.splice(e.indexOf(t),1)}},stop:function(){return S=!1},start:function(){return S=!0}}}function F(n){if(S){B(),g.or(b.start).rm(b.scroll),E=0;var t=n.touches[0];M=Date.now(),z=j=O=t.pageX,D=t.clientY,r(A.$index,A,x,f)}}function P(n){if(S&&!g.is(b.scroll)){var t=n.touches[0],e=t.pageX-j;if(g.is(b.start)&&2*Math.abs(e)<Math.abs(t.clientY-D))g.or(b.scroll).rm(b.start);else{var r=0<e?1:-1;E!==r&&(z=j,M=Date.now(),E=r),g.set(b.drag),j=t.pageX,C(x,_+=e)}}}function U(){k||L(A.$next),A=A.$prev,T()||(C(A.$prev,A.x-c),N(A.$prev))}function Y(){k||L(A.$prev),A=A.$next,q()||(C(A.$next,A.x+c),N(A.$next))}function Z(){0===$&&-A.x-_>c/2&&($=1,Y())}function G(){I(),w.auto=setTimeout(function(){S&&V()},3e3)}function V(){$=0,g.set(b.auto),r(A.$index,A,x,f),Q(x,_,-A.x-c,2e3/3,Z,G)}function J(){3<Math.abs(_+A.x)?V():G()}function K(n){if(S){if(g.is(b.scroll)&&!g.is(b.animate)&&!g.is(b.auto))return d&&J();g.set(b.animate);var t=z<j,e=Date.now()-M<120;if(!T()&&!q()){var r=A.x+_;e?t&&0<r?U():!t&&r<0&&Y():m<r?U():r<-m&&Y()}var i=-1*A.x,o=Math.min(Math.max(1e3*Math.abs(i-_)/c,250),2e3/3);Q(x,_,i,e?250:o,null,d?function(){return J()}:null)}}function Q(r,i,o,a,u,c){var s=Date.now();!function n(){var t=Date.now()-s;if(a<=t&&(_=o),an(u)&&u(),a<=t)return C(r,o),!g.is(b.cancel)&&an(c)&&c(),g.set(b.idle),y(A.$index,A,x,f);var e=(o-i)*cn[p](t/a)+i;C(r,_=e),w.main=nn(n)}()}}var c,s,G={cubic:function(n){return--n*n*n+1},circ:function(n){return Math.sqrt(1-Math.pow(n-1,2))}},V=function(n,t,e,r){return n.style.transform="translate3d("+t+"px,"+e+"px,0) scale("+r+")"},J=function(n,t){return n.style.opacity=t},K=function(n){return n.getBoundingClientRect()},Q=function(n,t){return{x:.5*(n.x+t.x),y:.5*(n.y+t.y)}},f=function(n){return n*n},pn=function(n,t){return Math.sqrt(f(n.x-t.x)+f(n.y-t.y))},vn=(s={passive:(c=function(n){return n.preventDefault()},!1)},{on:function(){return I(document,"touchmove",c,s)},off:function(){return R(document,"touchmove",c,s)}}),yn={selector:"data-gallery-item",dataset:"galleryItem"};return function(n){var t=Object.assign({},yn,n),e=t.selector,r=t.dataset,i=[],o=function(){i.splice(0,i.length),document.querySelectorAll("img["+e+"]").forEach(function(n,t){n.dataset.galleryIndex=t;var e=n.naturalWidth,r=n.naturalHeight;i[t]={elm:n,w:e,h:r,r:e/r,src:n.src,i:t},i[t].shape=a(n)})},f=function(n){return i[Number(n.dataset.galleryIndex)]},a=function(n){var t=f(n),e=W(),r=S(),i=e/r>t.r,o=i?r*t.r:e,a=i?r:e/t.r;return{x:i?(e-o)/2:0,y:i?0:(r-a)/2,w:o,h:a,z:1,t:i}},E={init:{x:0,y:0,z:1,w:0,h:0},start:{x:0,y:0,z:1,w:0,h:0},last:{x:0,y:0,z:1,w:0,h:0},current:{x:0,y:0,z:1,w:0,h:0}},u=function(){return E.init.t},c=document.createElement("div");document.body.appendChild(c);var v,l,s,d,h=0,p=[],y=[],_=function(n){return p.push(n)};y.push(I(document,"click",function(n){var t=n.target;if("IMG"===t.tagName&&r in t.dataset){o();var e=f(t);E.init=e.shape,c.innerHTML=U(i),nn(function(){return function e($,t){vn.on();var r=$.elm;O=c.childNodes[1],l=O.querySelector("."+X),s=O.querySelector("."+F);var z=K(r);i.forEach(function(n){n.wrap=O.querySelector("."+P+' img[data-gallery-index="'+n.i+'"]').parentElement,n.i===$.i?V(n.wrap,z.left,z.top,z.width/E.init.w):V(n.wrap,n.shape.x,n.shape.y,1);var e,r,i,t,o,a,u,c,s,f,l,d,h,p,v,y,x,w,m,b,g=(e=n.wrap,s=window.phase=(i=0,t=1,o={idle:0},a=function(n){return"number"==typeof n?n:o[n]},u=function(e,n){return function(){for(var n=[],t=arguments.length;t--;)n[t]=arguments[t];return n.forEach(function(n){return e(n)}),c}},c={v:function(){return i},or:u(function(n){return i|=a(n)}),rm:u(function(n){return i&=~a(n)}),add:u(function(n){o[n]=t,t<<=1}),is:function(){for(var n=[],t=arguments.length;t--;)n[t]=arguments[t];return n.reduce(function(n,t){return n&&!!(i&a(t))},!0)},set:function(){for(var n=[],t=arguments.length;t--;)n[t]=arguments[t];return i=n.reduce(function(n,t){return n|a(t)},0),c}},c).add("start","move","end","scroll","pinch","pan","swipe"),f=!1,l=0,h=d=-1,p={tap:[],single:[],double:[],start:[],move:[],end:[],scroll:[],scrollend:[],pan:[],panstart:[],panend:[],pinch:[],pinchstart:[],pinchend:[],swipe:[]},v={},y={start:[],last:[],current:[]},x=function(n){return p[n].forEach(function(n){return n(y,v,s,r)})},w=function(){f&&(nn(w),x("move"),s.is("scroll")&&x("scroll"),s.is("swipe")&&x("swipe"),s.is("pinch")&&x("pinch"),s.is("pan")&&x("pan"))},m=function(t,n){if(B(n))return n.forEach(function(n){return m(t,n)});y[n]=[],"string"==typeof n&&(y[n][0]=Y(t.touches[0])),1<t.touches.length&&(y[n][1]=Y(t.touches[1]))},b=[I(e,"touchstart",function(n){m(r=n,["start","last","current"]),v=n.target,s.set("start"),1<n.touches.length&&s.or("pinch"),x("start"),s.is("pinch")?x("pinchstart"):x("panstart"),s.is("pinch")||(d=Date.now())}),I(e,"touchmove",function(n){r=n,y.last=y.current,m(n,"current"),1<n.touches.length?s.rm("pan").or("pinch"):(s.is("pinch")&&(m(n,"start"),x("start")),s.rm("pinch").or("pan")),s.is("start")&&!s.is("pinch")&&Math.abs(y.current[0].x-y.start[0].x)<Math.abs(y.current[0].y-y.start[0].y)&&s.or("scroll"),s.is("pan")&&!s.is("scroll")&&s.or("swipe"),s.rm("start").or("move"),f||(f=!0,w())}),I(e,"touchend",function(n){if(r=n,s.rm("start","move").or("end"),s.is("scroll")&&x("scrollend"),s.is("pinch")&&x("pinchend"),s.is("pan")&&x("panend"),f=!1,!s.is("pinch")&&!s.is("pan")){var t=Date.now();t-d<=200&&(x("tap"),l=t-h<=300?l+1:1,h=t,1===l?setTimeout(function(){return 1===l&&x("single")},300):2===l&&x("double"))}x("end")})],{on:function(n,t){return p[n].push(t),function(){return R(e,n,t)}},off:function(n,t){return p[n].splice(p[n].indexOf(t),1)},phase:function(){return s},destroy:function(){return b.forEach(function(n){return n()})}});Object.keys(k).forEach(function(n){return _(g.on(n,k[n]))}),H.push(g)}),v=$.wrap,(d=Z({root:s,elms:Array.prototype.slice.apply(s.children[0].children),auto:!1,index:$.i,expose:!0,css:!0})).on("move",function(n){M=!0}),d.on("end",function(n){v=i[n].wrap,E.init=i[n].shape,M=!1}),M=!1,O.style.display="block",nn(function(){if(t){var n=E.init;V(v,n.x,n.y,n.z),J(l,1)}else T(r)}),_(I(window,"resize",function(n){A(),o();var t=f(v.firstElementChild);E.init=t.shape,c.innerHTML=U(i),nn(function(){return e(t,!0)})}))}(e)})}}));var x=function(){M=!1,d.stop()},w=function(){return d.start()},m=function(n,t){var e=K(n),r=function(n){E[n].x=e.x,E[n].y=e.y,E[n].w=e.width,E[n].h=e.height,E[n].z=e[u()?"height":"width"]/E.init[u()?"h":"w"]};B(t)?t.forEach(function(n){return r(n)}):r(t)},b=function(n){return m(n,["start","current","last"])},g="",M=!1,$={postpan:0,main:0,opacity:0};var O,z=!1,j=function(){return z=!0},D=function(){return z=!1},H=[],k={single:function(n,t){},double:function(n,t){if("out"!==g){x(),D();var e=E.init;if("in"===g)g="",T(t);else{var r=(o=(i={x:2*e.x-n.start[0].x,y:2*e.y-n.start[0].y,w:2*e.w,h:2*e.h}).x,a=i.y,c=i.h,(u=i.w)<(s=W())?o=(s-u)/2:0<o?o=0:o<s-u&&(o=s-u),c<(f=S())?a=(f-c)/2:0<a?a=0:a<f-c&&(a=f-c),{x:o,y:a});L(!1,e,{x:r.x,y:r.y,z:2},null,function(){b(t),j()}),g="in"}}var i,o,a,u,c,s,f},scroll:function(n,t){if(x(),""===g){var e=n.current[0].y-n.start[0].y;V(v,E.init.x,E.init.y+e,1),h=1-Math.abs(2*e/S()),J(l,0<h?h:0)}},scrollend:function(n,t){""===g&&(Math.abs(n.current[0].y-n.start[0].y)/S()>1/7?q(t):T(t))},pinch:function(n,t){x();var e,r=pn((e=n).current[0],e.current[1])/pn(e.start[0],e.start[1]),i=Q(n.start[0],n.start[1]),o=Q(n.current[0],n.current[1]),a=o.x-(i.x-E.start.x)*r,u=o.y-(i.y-E.start.y)*r,c=r*E.start.z;if(g=1<c?"in":c<1?"out":"",V(v,a,u,c),"out"===g){var s=K(f(t).elm);E.start.z<=1&&(h=(E.current.w-s.width)/(E.init.w-s.width))}1<=E.current.z&&(h=1),J(l,h)},pinchend:function(n,t,e,r){"out"===g&&(E.start.z<=1&&E.last.z>E.current.z?q(t):T(t))},pan:function(n,t,e){if("in"===g){x();var r=n.current[0].x-n.start[0].x+E.start.x,i=n.current[0].y-n.start[0].y+E.start.y;V(v,r,i,E.start.z)}},panend:function(n,t){var e,r,i,o,a,u,c,s,f,l,d,h,p;"in"===g&&(n.current[0],n.last[0],e=function(n){n.x,n.y;var t,e,r,i,o=n.w,a=n.h,u=W(),c=S();return o<u?t=e=(u-o)/2:(t=u-o,e=0),a<c?r=i=(c-a)/2:(r=c-a,i=0),{x1:t,x2:e,y1:r,y2:i}}(E.current),r=E.current,i=E.last,o=2*(r.x-i.x),a=2*(r.y-i.y),u={phase:"D",ba:0,bz:0,oa:!1,oz:!1,start:0,now:0,interval:0,from:0,to:0,v:0,dv:0,r:1},c=Math.abs(o),s=Math.abs(a),f={x:Object.assign({},u,{v:r.x,dv:c,r:o?o/c:o,ba:e.x1,bz:e.x2}),y:Object.assign({},u,{v:r.y,dv:s,r:a?a/s:a,ba:e.y1,bz:e.y2})},l=function(n){var t=f[n];"D"===t.phase&&(t.dv*=.95,t.dv<=.5&&(t.dv=0),t.v+=t.dv*t.r,t.oa=t.v<=t.ba,t.oz=t.v>=t.bz,t.oa&&1===t.r||t.oz&&-1===t.r?d(t,!0):t.oa||t.oz?t.phase="O":0===t.dv&&(t.phase="Z"))},d=function(n,t){n.phase="B",n.start=Date.now(),n.from=n.v,n.to=n.oz?n.bz:n.ba;var e=Math.abs(n.to-n.from),r=1e3*e/W();if(500<r?r=500:r<150&&(r=150),t){var i=16.67*e/n.dv;i<r&&(r=i)}n.interval=r},h=function(n){var t=f[n];"O"===t.phase&&(t.dv=.8*t.dv,t.dv<=.5?d(t):t.v+=t.dv*t.r)},p=function(n){var t=f[n];if("B"===t.phase){t.now=Date.now();var e,r=t.now-t.start;r>=t.interval&&(t.v=t.to,t.phase="Z"),t.v=(t.to-t.from)*(e=r/t.interval,--e*e*e+1)+t.from}},function n(){l("x"),l("y"),h("x"),h("y"),p("x"),p("y"),V(v,f.x.v,f.y.v,E.current.z),"Z"===f.x.phase&&"Z"===f.y.phase||($.postpan=nn(n))}())},start:function(n,t){Object.keys($).forEach(function(n){tn($[n]),$[n]=0}),b(t);var e=E.start.z;g=1<e?"in":e<1?"out":""},end:function(n,t){},move:function(n,t){E.last=Object.assign({},E.current),m(t,"current")}};return Object.keys(k).forEach(function(e){var r=k[e];k[e]=function(){for(var n=[],t=arguments.length;t--;)n[t]=arguments[t];!z||M&&"double"!==e&&"single"!==e||r.apply(null,n)}}),O={release:A,destroy:function(){A(),y.forEach(function(n){return n()}),c.parentNode&&c.parentNode.removeChild(c)}};function A(){p.forEach(function(n){return n()}),vn.off(),H.forEach(function(n){return n.destroy()}),d.destroy()}function C(o,a,u,c,s,f,l,d,h,p,v){var y=Date.now();!function n(){var t=function(n,t){return(t-n)*G[h](e/d)+n},e=Date.now()-y;if(d<=e)return l(u,s),p&&p(s),v&&v();var r=f?f(c,s,t):t(c,s);p&&p(r),l(u,r);var i=nn(n);o&&($[a]=i)}()}function L(n,t,e,r,i){C(n,"main",v,t,e,function(n,t,e){return{x:e(n.x,t.x),y:e(n.y,t.y),z:e(n.z,t.z)}},function(n,t){return V(n,t.x,t.y,t.z)},333,"cubic",r,i)}function N(n,t,e,r){C(n,"opacity",l,t,e,null,function(n,t){return J(n,t)},333,"cubic",function(n){return h=n},r)}function T(n){D();var t=K(n);L(!1,{x:t.x,y:t.y,z:t.width/E.init.w},E.init,null,null),N(!1,h,1,function(){b(n),w(),j()})}function q(n){D(),x();var t=K(f(n).elm);L(!1,E.current,{x:t.x,y:t.y,z:t.width/E.init.w}),N(!1,h,0,function(){O.style.display="none",A()})}}}),function(n,t,e){e.setAttribute("rel","stylesheet"),e.setAttribute("href",URL.createObjectURL(new Blob([4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16].map(function(n){return t[n]}),{type:"text/css"}))),URL.revokeObjectURL(e.getAttribute("href"))}(0,["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],document.head.appendChild(document.createElement("link")));
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.gallery = factory());
+}(this, (function () { 'use strict';
+
+  // for a 60Hz monitor, requestAnimationFrame will trigger the callback every 16.67ms (1000 / 60 == 16.66...)
+  var vendorPrefixes = ['webkit','moz','ms','o'];
+  var raf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "RequestAnimationFrame")]; }, window.requestAnimationFrame).bind(window);
+  var caf = vendorPrefixes.reduce(function (result, next) { return result || window[(next + "CancelAnimationFrame")]; }, window.cancelAnimationFrame).bind(window);
+  if (!raf || !caf) {
+    var last = 0;
+    raf = function (fn) {
+      var now = +new Date();
+      last = Math.max(now, last + 16);
+      return setTimeout(fn, last - now)
+    };
+    caf = clearTimeout;
+  }
+
+  function index (_) {
+    var passive = false;
+
+    function noop () {}
+
+    var options = Object.defineProperty({}, 'passive', {
+      get: function get () { passive = true; }
+    });
+
+    window.addEventListener('testPassive', noop, options);
+    window.removeEventListener('testPassive', noop, options);
+    return passive
+  }
+
+  var passive = index();
+  var defaultEventOptions = passive ? {capture: false, passive: true} : false;
+
+  var on = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off(element, evt, handler, options); }
+  };
+
+  var off = function (element, evt, handler, options) {
+    if ( options === void 0 ) options = defaultEventOptions;
+
+    return element.removeEventListener(evt, handler, options);
+  };
+  var isString = function (value) { return typeof value === 'string'; };
+  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
+
+  var html = function (literalSections) {
+    var subsets = [], len = arguments.length - 1;
+    while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
+
+    return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
+  };
+
+  var doc_h = function () { return window.innerHeight; };
+  var doc_w = function () { return window.innerWidth; };
+
+  function prevent () {
+    var handler = function (e) { return e.preventDefault(); };
+    var opts = {passive: false};
+
+    return {
+      on: function () { return on(document, 'touchmove', handler, opts); },
+      off: function () { return off(document, 'touchmove', handler, opts); }
+    }
+  }
+
+  var classes = {
+  	gallery: "_src_style_css_gallery",
+  	bg: "_src_style_css_bg",
+  	full: "_src_style_css_full",
+  	swiper: "_src_style_css_swiper",
+  	swiperItem: "_src_style_css_swiperItem",
+  	swiperWrap: "_src_style_css_swiperWrap",
+  	wrap: "_src_style_css_wrap",
+  	center: "_src_style_css_center"
+  };
+
+  var templateObject$1 = Object.freeze(["\n      <div class=\"", "\" style=\"padding: 0 ", "px;\">\n        <div class=\"", "\" style=\"width: ", "px;\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
+  var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "\"></div>\n  <div class=\"", "\" style=\"margin-left: -", "px; width: ", "px;\">\n    <div class=\"", "\">\n    ", "\n    </div>\n  </div>\n</div>\n"]);
+  // function htmlEscape(str) {
+  //     return str.replace(/&/g, '&amp;') // first!
+  //               .replace(/>/g, '&gt;')
+  //               .replace(/</g, '&lt;')
+  //               .replace(/"/g, '&quot;')
+  //               .replace(/'/g, '&#39;')
+  //               .replace(/`/g, '&#96;');
+  // }
+
+      // <img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" />
+          // <div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /> </div>
+        // `${srcs.forEach(src => `<div><img data-gallery-index="${index}" src="${src}" style="width: ${width}px; height: ${height}px;" /></div>`)}`
+
+  var half = ~~(doc_w() / 15);
+
+  var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
+
+  var tpls = {main: main};
+
+  function eventFactory () {
+    var handlers = Object.create(null);
+    var get = function (evt) {
+      if (!handlers[evt]) { handlers[evt] = []; }
+      return handlers[evt]
+    };
+    var trigger = function (evt) {
+    var args = [], len = arguments.length - 1;
+    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+  get(evt).forEach(function (fn) { return fn.apply(null, args); });};
+
+    var off = function (evt, fn) { return get(evt).splice(get(evt).indexOf(fn), 1); };
+    var on = function (evt, fn) {
+      get(evt).push(fn);
+      return function () { return off(evt, fn); }
+    };
+
+    var destroy = function () {Object.keys(handlers).forEach(function (key) { return delete handlers[key]; });};
+
+    return {
+      on: on, off: off, get: get, trigger: trigger, destroy: destroy
+    }
+  }
+
+  // function eventFactory () {
+  //   this.handlers = {}
+  // }
+  //
+  // eventFactory.prototype = {
+  //   get: evt => {
+  //     if (!this.handlers[evt]) this.handlers.evt = []
+  //     return this.handlers.evt
+  //   },
+  //   off: (evt, fn) => get(evt).splice(get(evt).indexOf(fn), 1),
+  //   on: (evt, fn) => {
+  //     this.get(evt).push(fn)
+  //     return () => this.off(evt, fn)
+  //   },
+  //   trigger: (evt, ...args) => {
+  //     get(evt).forEach(fn => fn.apply(null, args))
+  //   },
+  //   destroy: () => {}
+  // }
+  //
+  // export default eventFactory
+
+  function enumFactory () {
+    // TODO: should rm idle
+    var value = 0, next = 1, enums = {'idle': 0};
+
+    var get = function (v) { return typeof v === 'number' ? v : enums[v]; };
+    var is = function (v) { return !!(value & get(v)); };
+    var or = function (v) { return value = value | get(v); };
+    var rm = function (v) { return value = value & ~get(v); };
+    // const set = v => { value = get(v); return bit }
+    var add = function (name) { enums[name] = next; next = next << 1; };
+    var spread = function (fn, value) { return function () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+   args.forEach(function (arg) { return fn(arg); }); return bit }; };
+
+    var bit = {
+      v: function () { return value; },
+      or: spread(or),
+      rm: spread(rm),
+      add: spread(add),
+      is: function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        return args.reduce(function (result, arg) { return result && is(arg); }, true);
+    },
+      set: function () {
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+   value = args.reduce(function (r, v) { return r | get(v); }, 0); return bit }
+      // get,
+      // enums
+    };
+
+    return bit
+  }
+
+  var html$1 = document.documentElement;
+  var touch2point = function (touch) { return ({x: touch.clientX, y: touch.clientY}); };
+
+  /*
+   * tap, single, double, start, move, end, scroll, scrollend, pan, panstart, panend, pinch, pinchstart, pinchend, swipe
+   */
+  function gesture (elm) {
+    /*
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: swipe
+     * 0000 0100: vertical scrolling
+     * 0000 1000: pinch (two fingers)
+     * 0001 0000: pan (one fingers move)
+     */
+    // var phase = 0
+    // TODO: rm window.phase
+    var phase = window.phase = enumFactory().add('start', 'move', 'end', 'scroll', 'pinch', 'pan', 'swipe');
+    var ismoving = false;
+    var tapTimes = 0, tapStart = -1, tapLast = -1;
+
+    var target = {};
+    var points = {
+      start: [],
+      last: [],
+      current: []
+    };
+
+    var eventArg;
+    // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
+    var instance = Object.create(eventFactory());
+    var trigger = function (evt) { return instance.trigger(evt, points, target, phase, eventArg); };
+
+    var loop = function () { if (ismoving) { raf(loop); render(); }};
+
+    var setTouchPoints = function (evt, item) {
+      // if (!evt.touches || !evt.touches.length) return
+      if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+      points[item] = [];
+      if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
+      if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
+      // else points[item].splice(1, 10)
+    };
+
+    var onstart = function (evt) {
+      eventArg = evt;
+      // if (freeze) return
+      // ga('gesture.start')
+      setTouchPoints(evt, ['start', 'last', 'current']);
+      // points.start[0] = points.last[0] = points.current[0] = touch2point(evt.touches[0])
+      // if (evt.touches.length > 1) points.start[1] = points.last[1] = points.current[1] = touch2point(evt.touches[1])
+
+      target = evt.target;
+
+      // phase = evt.touches.length > 1 ? 8 : 1
+      phase.set('start');
+      if (evt.touches.length > 1) { phase.or('pinch'); }
+
+      // ismoving = true
+
+      trigger('start');
+      if (phase.is('pinch')) { trigger('pinchstart'); }
+      else { trigger('panstart'); } // one touch point trigger pan
+
+      // loop()
+      if (!phase.is('pinch')) { tapStart = Date.now(); }
+    };
+
+    /// TODO: check pinch every time, if one point, switch behavior
+    /// TODO: pinch / scroll: change status in onmove or trigger loop in onmove
+    var onmove = function (evt) {
+      eventArg = evt;
+      // console.log('gesture.onmove')
+      // if (freeze) return
+      // ga('gesture.onmove')
+
+      points.last = points.current;
+      setTouchPoints(evt, 'current');
+
+      // evt.touches.length === 1 && phase.rm('pinch')
+      // evt.touches.length > 1 && phase.or('pinch')
+      if (evt.touches.length > 1) { phase.rm('pan').or('pinch'); }
+      else {
+        if (phase.is('pinch')) {
+          // console.log('pinch ===> start')
+          setTouchPoints(evt, 'start');
+          // ga('move.trigger.start')
+          trigger('start');
+        }
+        phase.rm('pinch').or('pan');
+        // ga('xxxxxxxxxxx: ', phase.is('pan'))
+      }
+      // phase[evt.touches.length > 1 ? 'or' : 'rm']('pinch')
+
+      if (phase.is('start') && !phase.is('pinch')) {
+        Math.abs(points.current[0].x - points.start[0].x) < Math.abs(points.current[0].y - points.start[0].y) && phase.or('scroll');
+        // phase.or('pan')
+      }
+
+      if (phase.is('pan') && !phase.is('scroll')) { phase.or('swipe'); }
+
+      phase.rm('start').or('move');
+      //
+      // if (evt.touches.length === 1) phase = 16
+
+      if (!ismoving) {
+        // TODO: change from two points to one points
+        ismoving = true;
+        loop();
+      }
+    };
+
+    var onend = function (evt) {
+      eventArg = evt;
+      // console.log('end...')
+      // console.log('end.touches:', evt.touches)
+      // if (freeze) return
+      phase.rm('start', 'move').or('end');
+
+      // ga('gesture.end')
+
+      phase.is('scroll') && trigger('scrollend');
+      phase.is('pinch') && trigger('pinchend');
+      phase.is('pan') && trigger('panend');
+      ismoving = false;
+      // phase.set(0)
+
+      // TODO: learn single / double logic
+      if (!phase.is('pinch') && !phase.is('pan')) {
+        var now = Date.now();
+        if (now - tapStart <= 200) {
+          trigger('tap');
+          // if (now - tapLastTimestamp <= 200) tapTimes++
+          // else tapTimes = 0
+
+          tapTimes = now - tapLast <= 300 ? tapTimes + 1 : 1;
+          tapLast = now;
+
+          if (tapTimes === 1) { setTimeout(function () { return tapTimes === 1 && trigger('single'); }, 300); }
+          else if (tapTimes === 2) { trigger('double'); }
+        }
+      }
+
+      trigger('end');
+    };
+
+    var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
+
+    // return {
+    //   on: _on, off: _off, phase: () => phase,
+    //   destroy: () => offs.forEach(h => h())
+    // }
+    instance.phase = function () { return phase; };
+    instance.destroy = function () {
+      Object.getPrototypeOf(instance).destroy();
+      offs.forEach(function (h) { return h(); });
+    };
+    return instance
+
+    function render () {
+      trigger('move');
+
+      // ga('yyyyyyyyyyyyy: ', phase.is('pan'))
+      // ga(phase)
+
+      // var _map = arr => JSON.stringify(arr.map(a => ({x: a.x.toFixed(0), y: a.y.toFixed(0)})))
+      // console.log('current:', _map(points.current), 'start:', _map(points.start))
+
+      phase.is('scroll') && trigger('scroll');
+      phase.is('swipe') && trigger('swipe');
+      phase.is('pinch') && trigger('pinch');
+      phase.is('pan') && trigger('pan');
+
+      // (phase.is('pan') && !phase.is('scroll')) && trigger('swipe')
+    }
+  }
+
+  function Link (arr) {
+    var this$1 = this;
+
+    arr.forEach(function (item) { return this$1.append(item); });
+  }
+
+  Link.prototype.append = function (item) {
+    var node = item.$next = item.$prev = item;
+    if (!this.$tail) { return this.$head = this.$tail = node }
+    node.$prev = this.$tail;
+    node.$next = this.$tail.$next;
+    this.$tail.$next = node;
+    node.$next.$prev = node;
+    return this.$tail = node
+  };
+
+  var passive$1 = index();
+  var defaultEventOptions$1 = passive$1 ? {capture: false, passive: true} : false;
+
+  var on$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off$1(element, evt, handler, options); }
+  };
+
+  var off$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
+
+    element.removeEventListener(evt, handler, options);
+  };
+
+  var isFunction$1 = function (value) {
+    return typeof value === 'function'
+  };
+
+  var inViewport = function (item) {
+    var rect = item.getBoundingClientRect();
+    return (rect.top < window.innerHeight && rect.bottom > 0) &&
+      (rect.left < window.innerWidth && rect.right > 0)
+  };
+
+  var easing = {
+    'cubic': function (k) { return --k * k * k + 1; },
+    // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+    // quint: k => 1 - Math.pow(1 - k, 5),
+    // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+    'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+  };
+
+  // TODO: desktop support, mouse / pointer events
+  // var touch = 'ontouchstart' in window
+  // export var pointerdown = touch ? 'touchstart' : 'mousedown'
+  // export var pointermove = touch ? 'touchmove' : 'mousemove'
+  // export var pointerup = touch ? 'touchend' : 'mouseup'
+  var pointerdown = 'touchstart';
+  var pointermove = 'touchmove';
+  var pointerup = 'touchend';
+
+  var computedProp = function (el, prop) { return window.getComputedStyle(el, null).getPropertyValue(prop); };
+
+  // export const requestFrame = fn => {
+  //   var ticking = false
+  //   return () => {
+  //     if (!ticking) {
+  //       raf(() => {
+  //         fn()
+  //         ticking = false
+  //       })
+  //       ticking = true
+  //     }
+  //   }
+  // }
+
+  function bitEnum () {
+    this.value = 0;
+  }
+  bitEnum.prototype = {
+    is: function (v) {
+      return this.value & v
+    },
+    or: function (v) {
+      this.value = this.value | v;
+      return this
+    },
+    rm: function (v) {
+      this.value = this.value & ~v;
+      return this
+    },
+    set: function (v) {
+      this.value = v;
+      return this
+    }
+  };
+
+  var options = { 'root': null, 'rootMargin': '0px', 'threshold': [0, 0.01] };
+
+  var observable = !!window['IntersectionObserver'];
+
+  var observe = function (el, fn) {
+    if (!observable) { return fn() }
+    var observer = new IntersectionObserver (fn, options);
+    observer.observe(el);
+    return function () { observer.unobserve(el); }
+  };
+
+  var FAST_THRESHOLD = 120; // threshold to identify fast swipe
+  var FAST_INTERVAL = 250; // swipe duration in fast mode
+  var MAX_INTERVAL = 1000; // total swipe duration
+  var MAX_PART = MAX_INTERVAL * 2 / 3;
+  var AUTO_TIMEOUT = 3000; // auto swipe interval
+
+  // quote property name to pervent mangling
+  var defaultOptions = {
+    'auto': false,
+    'cycle': true,
+    'expose': false,
+    'root': null, // required
+    'elms': [], // required
+    'index': 0,
+    'width': window.screen.width, // if css is false, need width & height
+    'height': 200,
+    'css': false,
+    'ease': 'cubic',
+    'plugins': [],
+    'initHandlers': [],
+    'startHandlers': [],
+    'moveHandlers': [],
+    'endHandlers': [],
+    'animationEndHandlers': []
+  };
+
+  function swipeIt (options) {
+    // hidden div to store swipe elements which are out of current three
+    var hides = document.createElement('div');
+    hides.style.display = 'none';
+    document.body.appendChild(hides);
+
+    var opts = Object.assign({}, defaultOptions,
+      options);
+
+    var index$$1 = opts.index;
+    var root = opts.root;
+    var elms = opts.elms;
+    var width = opts.width;
+    var height = opts.height;
+    var cycle = opts.cycle;
+    var expose = opts.expose;
+    var auto = opts.auto;
+    var css = opts.css;
+    var ease = opts.ease;
+    var plugins = opts.plugins;
+
+    plugins.forEach(function (p) { return Object.keys(p).forEach(function (action) { return opts[action + 'Handlers'].push(p[action]); }); });
+
+    var onFn = function (action) { return function () {
+      var arguments$1 = arguments;
+
+      var args = [], len = arguments.length;
+      while ( len-- ) { args[ len ] = arguments$1[ len ]; }
+
+      return opts[action + 'Handlers'].forEach(function (f) { return f.apply(null, args); });
+   }    };
+    var onInit = onFn('init');
+    var onStart = onFn('start');
+    var onMove = onFn('move');
+    var onEnd = onFn('end');
+    // var onAnimationEnd = onFn('animationEnd')
+
+    if (!root) { return }
+
+    if (css) {
+      width = Number(computedProp(root, 'width').slice(0, -2));
+      height = Number(computedProp(root, 'height').slice(0, -2));
+    }
+    var main = root.children[0], animations = {main: -1, auto: -1}, threshold = width / 3;
+
+    /* phase
+     * 0000 0000: idle
+     * 0000 0001: start
+     * 0000 0010: dragging
+     * 0000 0100: animating
+     * 0000 1000: vertical scrolling
+     * 0001 0000: auto animating
+     * 0010 0000: cancel auto animating
+     */
+
+    var phaseEnum = {
+      idle:     0,
+      start:    1,
+      drag:     2,
+      animate:  4,
+      scroll:   8,
+      auto:     16,
+      cancel:   32
+    };
+    var phase = new bitEnum();
+
+    /* autoPhase
+     * 0: distance <= width / 2
+     * 1: distance > width / 2
+     */
+    var autoPhase = 0;
+    var restartX = 0, direction = 0; // -1: left, 0: na, 1: right
+    var x = 0, startTime = 0, startX = 0, currentX = 0, startY = 0, slides = [];
+    var two = false;
+    auto = cycle && auto;
+
+    var current = elms[index$$1];
+
+    // const moveE = el => moveX(el, el.x)
+    var moveEx = function (el, x) { el.x = x; moveX(el, x); };
+    var hide = function (el) { return hides.appendChild(el); };
+
+    var show = function (el) { return main.appendChild(el); };
+    var stopR = function (_) { return !cycle && currentX > startX && current === slides.$head; };
+    var stopL = function (_) { return !cycle && currentX <= startX && current === slides.$tail; };
+
+    var clearAuto = function (_) { return clearTimeout(animations.auto); };
+    var clearAndCancel = function (_) { return clearAuto(phase.set(phaseEnum.cancel)); };
+    var clearMain = function (_) { return caf(animations.main); };
+    var clearAnimations = function (_) {clearAuto(); clearMain();};
+
+    var running = true;
+
+    var offStack = [];
+    var on2 = function () {
+      var arguments$1 = arguments;
+
+      var args = [], len = arguments.length;
+      while ( len-- ) { args[ len ] = arguments$1[ len ]; }
+
+      return offStack.push(on$1.apply(null, args));
+    };
+
+    init();
+
+    return {
+      'destroy': destroy,
+      'index': function (_) { return current.$index; },
+      'on': function (evt, callback) {
+        var fns = opts[evt + 'Handlers'];
+        fns.push(callback);
+        return function () { return fns.splice(fns.indexOf(callback), 1); }
+      },
+      stop: function () { return running = false; },
+      start: function () { return running = true; }
+    }
+
+    function moveX (el, x) {
+      if (!el) { return }
+      el.style.transition = el.style.webkitTransition = '';
+      el.style.transform = el.style.webkitTransform = "translate3d(" + x + "px, 0, 0)";
+      onMove(current.$index, current, main, elms);
+    }
+
+    function onTouchStart (evt) {
+      if (!running) { return }
+      clearAnimations();
+      phase.or(phaseEnum.start).rm(phaseEnum.scroll);
+      direction = 0;
+
+      var touch = evt.touches[0];
+      startTime = Date.now();
+      restartX = currentX = startX = touch.pageX;
+      startY = touch.clientY;
+      onStart(current.$index, current, main, elms);
+    }
+
+    function onTouchMove (evt) {
+      if (!running) { return }
+      if (phase.is(phaseEnum.scroll)) { return }
+
+      var touch = evt.touches[0];
+      var gap = touch.pageX - currentX;
+
+      // identify vertical scrolling
+      if (phase.is(phaseEnum.start) && Math.abs(gap) * 2 < Math.abs(touch.clientY - startY)) {
+        phase.or(phaseEnum.scroll).rm(phaseEnum.start);
+        return
+      }
+
+      var _d = gap > 0 ? 1 : -1;
+      if (direction !== _d) {
+        restartX = currentX;
+        startTime = Date.now();
+        direction = _d;
+      }
+
+      phase.set(phaseEnum.drag);
+      currentX = touch.pageX;
+
+      x = x + gap;
+      // moveX(main, x)
+      moveEx(main, x);
+
+      // evt.preventDefault();
+    }
+
+    function moveRight () {
+      two || hide(current.$next);
+      current = current.$prev;
+      if (!stopR()) {
+        moveEx(current.$prev, current.x - width);
+        show(current.$prev);
+      }
+    }
+
+    function moveLeft () {
+      two || hide(current.$prev);
+      current = current.$next;
+      if (!stopL()) {
+        moveEx(current.$next, current.x + width);
+        show(current.$next);
+      }
+    }
+
+    function onAutoAnimation () {
+      if (autoPhase === 0 && -current.x - x > width / 2) {
+        autoPhase = 1;
+        moveLeft();
+      }
+    }
+
+    function autoSwipePostpone () {
+      clearAuto();
+      animations.auto = setTimeout(function () {
+        if (!running) { return }
+        autoSwipeImmediate();
+      }, AUTO_TIMEOUT);
+    }
+
+    function autoSwipeImmediate () {
+      autoPhase = 0;
+      phase.set(phaseEnum.auto);
+      onStart(current.$index, current, main, elms);
+      animate(main, x, -current.x - width, MAX_PART, onAutoAnimation, autoSwipePostpone);
+      // animate(main, x, x - width, MAX_INTERVAL, onAutoAnimation, autoCallback)
+      // onEnd(current.$next.$index, current.$next, main, elms)
+    }
+
+    function autoSwipe() {
+      if (Math.abs(x + current.x) > 3) { autoSwipeImmediate(); }
+      else { autoSwipePostpone(); }
+    }
+
+    function onTouchEnd (evt) {
+      if (!running) { return }
+      // auto && autoCallback()
+      if (phase.is(phaseEnum.scroll) && !phase.is(phaseEnum.animate) && !phase.is(phaseEnum.auto)) { return auto && autoSwipe(); }
+      phase.set(phaseEnum.animate);
+      var right = currentX > restartX;
+      var fast = (Date.now() - startTime) < FAST_THRESHOLD;
+
+      if (!stopR() && !stopL()) {
+        var cx = current.x + x;
+        if (fast) {
+          if (right && cx > 0) { moveRight(); }
+          else if (!right && cx < 0) { moveLeft(); }
+        } else if (cx > threshold) { moveRight(); }
+        else if (cx < -threshold) { moveLeft(); }
+      }
+
+      var to = current.x * -1;
+
+      var t = Math.min(Math.max(MAX_INTERVAL * Math.abs(to - x) / width, FAST_INTERVAL), MAX_PART);
+      animate(main, x, to, fast ? FAST_INTERVAL : t, null, auto ? function () { return autoSwipe(); } : null);
+      // animate(main, x, to, fast ? FAST_INTERVAL : t)
+
+      // onEnd(current.$index, current, main, elms)
+    }
+
+    function animate (elm, from, to, interval, onAnimation, callback) {
+      var start = Date.now();
+      function loop () {
+        var now = Date.now();
+        var during = now - start;
+        if (during >= interval) { x = to; }
+        isFunction$1(onAnimation) && onAnimation();
+        if (during >= interval) {
+          // moveX(elm, to)
+          moveEx(elm, to);
+          !phase.is(phaseEnum.cancel) && isFunction$1(callback) && callback();
+          phase.set(phaseEnum.idle);
+          // return onAnimationEnd(current.$index, current, main, elms)
+          return onEnd(current.$index, current, main, elms)
+        }
+        var distance = (to - from) * easing[ease](during / interval) + from;
+        x = distance;
+        // moveX(elm, distance)
+        moveEx(elm, x);
+        animations.main = raf(loop);
+      }
+      loop();
+    }
+
+    function init () {
+      if (elms.length === 0) { return onInit(-1) }
+      // if (!expose) root.style.overflow = 'hidden'
+      root.style.position = 'relative';
+      if (!css) {
+        root.style.width = width + 'px';
+        root.style.height = height + 'px';
+      }
+      var needClone = elms.length === 2 && cycle;
+      if (needClone) {
+        elms.push(elms[0].cloneNode(true));
+        show(elms[2]);
+        elms.push(elms[1].cloneNode(true));
+        show(elms[3]);
+        elms[0].$index = elms[2].$index = 0;
+        elms[1].$index = elms[3].$index = 1;
+      }
+      var one = elms.length === 1;
+      two = elms.length === 2;
+      // slides = new Link(elms, needClone ? '0101' : null)
+      slides = new Link(elms);
+      needClone || elms.forEach(function (e, i) { return e.$index = i; });
+
+      moveEx(current, 0);
+      one || two || moveEx(current.$prev, -width);
+      one || moveEx(current.$next, width);
+      elms.forEach(function (el) {
+        el.style.position = 'absolute';
+        if (!css) {
+          el.style.width = width + 'px';
+          el.style.height = height + 'px';
+        }
+        // el.style.overflow = 'hidden'
+        if (!two && !one && el !== current && el !== current.$prev && el !== current.$next) { hide(el); }
+      });
+
+      if (one) { return onInit(current.$index, current, main, elms) }
+
+      if (!two && !cycle && index$$1 === 0) { hide(current.$prev); }
+      if (!two && !cycle && index$$1 === elms.length - 1) { hide(current.$next); }
+
+      // destroy()
+      on2(root, pointerdown, onTouchStart);
+      on2(root, pointermove, onTouchMove);
+      on2(root, pointerup, onTouchEnd);
+
+      if (auto) {
+        // stop auto swipe when out of screen
+        if (observable) {
+          raf(function () {
+            opts.unobserve = observe(root, function (entries) {
+              if (entries && entries[0].intersectionRatio === 0) { clearAndCancel(); }
+              else { autoSwipe(); }
+            });
+          });
+        } else {
+          var toggleSwiper = function () { return inViewport(root) ? autoSwipePostpone() : clearAndCancel(); };
+          on2(window, 'touchmove', function () { return inViewport(root) || clearAndCancel(); });
+          on2(window, 'touchend', toggleSwiper);
+          toggleSwiper();
+        }
+
+        // stop auto swipe when invisible
+        // Set the name of the hidden property and the change event for visibility
+        var ref = ['webkit', 'moz', 'ms', '-'].reduce(function (result, current) { return typeof document[result[0]] !== 'undefined' ? result : [current + 'Hidden', current + 'visibilitychange']; }, ['hidden', 'visibilitychange']);
+        var hidden = ref[0];
+        var visibilitychange = ref[1];
+        // Handle page visibility change
+        hidden[0] !== '-' && on2(document, 'visibilitychange', function () {document[hidden] ? clearAndCancel() : autoSwipePostpone();}, false);
+      }
+
+      main.x = 0;
+      onInit(current.$index, current, main, elms);
+    }
+
+    function destroy () {
+      clearAnimations();
+      isFunction$1(opts.unobserve) && opts.unobserve();
+      offStack.forEach(function (fn) { return fn(); });
+      hides.parentNode && hides.parentNode.removeChild(hides);
+    }
+  }
+
+  /*
+   * animations
+   *    1. show / hide
+   *    2. post pan / pinch
+   *    3. double tap
+   *    4. opacity
+   *    5. scroll end
+   */
+
+  // console.log('the best gallery is coming...')
+  var easing$1 = {
+    'cubic': function (k) { return --k * k * k + 1; },
+    // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
+    // quint: k => 1 - Math.pow(1 - k, 5),
+    // expo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+    'circ': function (k) { return Math.sqrt(1 - Math.pow(k - 1, 2)); }
+  };
+
+  var applyTranslateScale = function (elm, x, y, scale) { return elm.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + scale + ")"; };
+  var applyOpacity = function (elm, opacity) { return elm.style.opacity = opacity; };
+  var getRect = function (elm) { return elm.getBoundingClientRect(); };
+
+  var getCenterPoint = function (p1, p2) { return ({x: (p1.x + p2.x) * .5, y: (p1.y + p2.y) * .5}); };
+  var square = function (x) { return x * x; };
+  var distance = function (p1, p2) { return Math.sqrt(square(p1.x - p2.x) + square(p1.y - p2.y)); };
+  var calculateZoomLevel = function (points) { return distance(points.current[0], points.current[1]) / distance(points.start[0], points.start[1]); };
+
+  var preventDefault = prevent();
+
+  var defaultOptions$1 = {
+    selector: 'data-gallery-item',
+    dataset: 'galleryItem'
+  };
+
+  function gallery (options) {
+    var opts = Object.assign({}, defaultOptions$1,
+      options);
+
+    var selector = opts.selector;
+    var dataset = opts.dataset;
+
+    var cache = [];
+    var buildCache = function () {
+      cache.splice(0, cache.length);
+      document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
+        img.dataset.galleryIndex = index;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
+        cache[index].shape = getInitShape(img);
+      });
+    };
+    var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
+
+    var getInitShape = function (img) {
+      var item = getCacheItem(img);
+      var docWidth = doc_w(), docHeight = doc_h();
+      var thin = (docWidth / docHeight) > item.r;
+      var w = thin ? docHeight * item.r : docWidth;
+      var h = thin ? docHeight : docWidth / item.r;
+      var x = thin ? (docWidth - w) / 2 : 0;
+      var y = thin ? 0 : (docHeight - h) / 2;
+
+      return {x: x, y: y, w: w, h: h, z: 1, t: thin}
+    };
+
+    var emptyshape = function () { return ({x: 0, y: 0, z: 1, w: 0, h: 0}); };
+
+    var shape = {init: emptyshape(), start: emptyshape(), last: emptyshape(), current: emptyshape()};
+    var thin = function () { return shape.init.t; };
+
+    // the container
+    var div = document.createElement('div');
+    document.body.appendChild(div);
+
+    var gallery, wrap, background, opacity = 0;
+    var swiperDom, swiperInstance;
+    var offStack = [];
+    var moreStack = [];
+    var offs = function (fn) { return offStack.push(fn); };
+
+    // click document
+    moreStack.push(on(document, 'click', function (evt) {
+      var target = evt.target;
+      if (target.tagName === 'IMG' && dataset in target.dataset) {
+        buildCache();
+        // var sizes = setInitShape(target)
+        var item = getCacheItem(target);
+        shape.init = item.shape;
+        div.innerHTML = tpls.main(cache);
+        raf(function () { return init(item); });
+      }
+    }));
+
+    var stopSwiper = function () {swiping = false; swiperInstance.stop();};
+    var startSwiper = function () { return swiperInstance.start(); };
+
+    var setShape = function (target, key) {
+      var rect = getRect(target);
+
+      var setByKey = function (key) {
+        shape[key].x = rect.x;
+        shape[key].y = rect.y;
+        shape[key].w = rect.width;
+        shape[key].h = rect.height;
+        shape[key].z = rect[thin() ? 'height' : 'width'] / shape.init[thin() ? 'h' : 'w'];
+      };
+
+      isArray(key) ? key.forEach(function (key) { return setByKey(key); }) : setByKey(key);
+    };
+
+    var setShape3 = function (target) { return setShape(target, ['start', 'current', 'last']); };
+
+    /*
+     * events (pan | pinch | press | rotate | swipe | tap)
+     * horizontal swipe: flick to next / previous
+     * vertical swipe: close gallery
+     * spread: zoom in
+     * pinch: zoom out and close gallery
+     * double tap: zoom in / zoom out based on tap point
+     * pan: drag to pan
+     * tap: toggle controls
+     */
+    // var on = () => {}
+    // var off = () => {}
+
+    var zoom = '';
+    var swiping = false;
+    var animations = { postpan: 0, main: 0, opacity: 0 };
+    var clearAnimations = function () {
+      Object.keys(animations).forEach(function (key) {
+        caf(animations[key]);
+        animations[key] = 0;
+      });
+    };
+
+    // var occupy = 'idle' // idle, swipe, gesture
+
+    var animateDeceleration = function (boundary, target, current, last) {
+      // console.log('animateDeceleration')
+      var dx = (current.x - last.x) * 2;
+      var dy = (current.y - last.y) * 2;
+      // console.log('dx:', dx)
+      var runtime = {
+        phase: 'D', // D: deceleration, O: outofboundary, B: debounce, Z: stop
+        ba: 0, // lower limit boundary
+        bz: 0, // upper limit boundary
+        oa: false, // out of lower limit
+        oz: false, // out of upper limit
+        start: 0, // debounce start
+        now: 0, // debounce current
+        interval: 0, // debounce interval
+        from: 0, // debounce from
+        to: 0, // debounce to
+
+        v: 0, // x | y
+        dv: 0, // dx | dy
+        r: 1 // right|down: 1, left|up: -1, freeze: 0
+      };
+
+      var _dx = Math.abs(dx), _dy = Math.abs(dy);
+
+      var it = {
+        x: Object.assign({}, runtime, {v: current.x, dv: _dx, r: !dx ? dx : dx / _dx, ba: boundary.x1, bz :boundary.x2}),
+        y: Object.assign({}, runtime, {v: current.y, dv: _dy, r: !dy ? dy : dy / _dy, ba: boundary.y1, bz: boundary.y2})
+      };
+      var ease = function (k) { return --k * k * k + 1; };
+
+      var deceleration = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'D') { return }
+
+        iz.dv *= .95;
+        if (iz.dv <= .5) {
+          iz.dv = 0;
+        }
+
+        iz.v += iz.dv * iz.r;
+
+        iz.oa = iz.v <= iz.ba;
+        iz.oz = iz.v >= iz.bz;
+
+        // TODO: why write this login
+        // if (iz.dv > 0) {
+        //   iz.oa = iz.oa && iz.r <= 0
+        //   iz.oz = iz.oz && iz.r >= 0
+        // }
+
+        // console.log('axiz:', axis)
+        // console.log('oa:', iz.oa)
+        // console.log('oz:', iz.oz)
+        // console.log('r:', iz.r)
+        // console.log('out:', (iz.oa && iz.r === 1) || (iz.oz && iz.r === -1))
+        if ((iz.oa && iz.r === 1) || (iz.oz && iz.r === -1)) { prepareBounce(iz, true); }
+        else if (iz.oa || iz.oz) { iz.phase = 'O'; }
+        else if (iz.dv === 0) { iz.phase = 'Z'; }
+      };
+
+      var prepareBounce = function (iz, oneway) {
+        iz.phase = 'B';
+        iz.start = Date.now();
+        iz.from = iz.v;
+        iz.to = iz.oz ? iz.bz : iz.ba;
+        var distance = Math.abs(iz.to - iz.from);
+        var interval = 1000 * distance / doc_w();
+        if (interval > 500) { interval = 500; }
+        else if (interval < 150) { interval = 150; }
+        // console.log('interval.a:', interval)
+
+        if (oneway) {
+          // console.log('dv:', iz.dv)
+          // console.log('distance:', distance)
+          // console.log('duration:', 16.67 * distance / iz.dv)
+          var t = 16.67 * distance / iz.dv;
+          if (t < interval) { interval = t; }
+        }
+
+        iz.interval = interval;
+        // console.log('interval.b:', interval)
+      };
+
+      var out = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'O') { return }
+
+        iz.dv = iz.dv * .8;
+        if (iz.dv <= .5) {
+          prepareBounce(iz);
+        } else {
+          iz.v += iz.dv * iz.r;
+        }
+      };
+
+      var debounce = function (axis) {
+        var iz = it[axis];
+        if (iz.phase !== 'B') { return }
+
+        iz.now = Date.now();
+        var during = iz.now - iz.start;
+        if (during >= iz.interval) {
+          iz.v = iz.to;
+          iz.phase = 'Z';
+        }
+        iz.v = (iz.to - iz.from) * ease(during / iz.interval) + iz.from;
+      };
+
+      ~function loop () {
+        deceleration('x');
+        deceleration('y');
+        out('x');
+        out('y');
+        debounce('x');
+        debounce('y');
+        applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z);
+
+        if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { animations.postpan = raf(loop); }
+      }();
+
+      // const stack = [
+      //   () => deceleration('x'),
+      //   () => deceleration('y'),
+      //   () => out('x'),
+      //   () => out('y'),
+      //   () => debounce('x'),
+      //   () => debounce('y'),
+      //   () => applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z)
+      // ]
+      //
+      // ~function loop2 () {
+      //   animations.pan = raf(loop2)
+      //   stack.forEach(fn => fn())
+      // }()
+    };
+
+    function postpan (target, current, last) {
+      // animateDeceleration(xyBoundary(shape.current), target, shape.current.x, shape.current.y, (current.x - last.x) * 2, (current.y - last.y) * 2)
+      animateDeceleration(xyBoundary(shape.current), target, shape.current, shape.last);
+    }
+
+    var gestureEnabled = false;
+    var enableGesture = function () { return gestureEnabled = true; };
+    var disableGesture = function () { return gestureEnabled = false; };
+
+    var gestures = [];
+    var handlers = {
+      single: function (points, target) {
+        // TODO: trigger wrong
+        // ga('single')
+        // hide(target)
+      },
+      double: function (points, target) {
+        // ga('double.zoom: ', zoom)
+        if (zoom !== 'out') {
+          stopSwiper();
+          disableGesture();
+          var init = shape.init;
+          if (zoom === 'in') {
+            zoom = '';
+            show(target);
+          } else {
+            var ref = limitxy({
+              x: init.x * 2 - points.start[0].x,
+              y: init.y * 2 - points.start[0].y,
+              w: init.w * 2,
+              h: init.h * 2
+            });
+            var x = ref.x;
+            var y = ref.y;
+            animateTranslateScale(false, init, {x: x, y: y, z: 2}, null, function () {setShape3(target); enableGesture();});
+            zoom = 'in';
+          }
+        }
+      },
+
+      scroll: function (points, target) {
+        // ga('onscroll')
+        stopSwiper();
+        if (zoom !== '') { return }
+        var yy = points.current[0].y - points.start[0].y;
+        applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
+        opacity = 1 - Math.abs(yy * 2 / doc_h());
+        applyOpacity(background, opacity > 0 ? opacity : 0);
+      },
+      scrollend: function (points, target) {
+        if (zoom !== '') { return }
+        var yy = Math.abs(points.current[0].y - points.start[0].y);
+
+        if (yy / doc_h() > 1/7) { hide(target); }
+        else { show(target); }
+      },
+
+      pinch: function (points, target) {
+        // ga('pinch')
+        stopSwiper();
+
+        var zoomLevel = calculateZoomLevel(points); //* pinch.z
+        var center1 = getCenterPoint(points.start[0], points.start[1]);
+        var center2 = getCenterPoint(points.current[0], points.current[1]);
+
+        var dx = center2.x - (center1.x - shape.start.x) * zoomLevel;
+        var dy = center2.y - (center1.y - shape.start.y) * zoomLevel;
+
+        // console.log('dx:', dx, ' | dy:', dy)
+
+        var _zoom = zoomLevel * shape.start.z;
+        zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
+        applyTranslateScale(wrap, dx, dy, _zoom);
+        if (zoom === 'out') {
+          var rect = getRect(getCacheItem(target).elm);
+          if (shape.start.z <= 1) { opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width); }
+        }
+
+        if (shape.current.z >= 1) { opacity = 1; }
+
+        applyOpacity(background, opacity);
+      },
+
+      pinchend: function (points, target, phase, evt) {
+        // ga('pinchend')
+        // console.log('pinchend')
+        if (zoom === 'out') {
+          if (shape.start.z <= 1 && shape.last.z > shape.current.z) { hide(target); }
+          else { show(target); }
+        // } else if (evt.touches.length === 0) {
+          // console.log('xxxxxxxxxxx')
+          // var last = getCenter(points)('last')
+          // var current = getCenter(points)('current')
+          // postpan(target, current, last)
+        }
+      },
+
+      // TODO: 拖拽卡顿
+      pan: function (points, target, phase) {
+        // ga('pan')
+        if (zoom === 'in') {
+          stopSwiper();
+          var dx = points.current[0].x - points.start[0].x + shape.start.x;
+          var dy = points.current[0].y - points.start[0].y + shape.start.y;
+          applyTranslateScale(wrap, dx, dy, shape.start.z);
+        }
+      },
+
+      panend: function (points, target) {
+        // ga('panend')
+  		  // TODO: Avoid acceleration animation if speed is too low
+        if (zoom === 'in') {
+          postpan(target, points.current[0], points.last[0]);
+        }
+      },
+
+      start: function (points, target) {
+        // console.log('start')
+        clearAnimations();
+        setShape3(target);
+        var z = shape.start.z;
+        zoom = z > 1 ? 'in' : (z < 1 ? 'out' : '');
+      },
+
+      end: function (points, target) {
+        // TODO: tap the img during postpan will stop the animation, as a result we need recover postpan again onend. currently only recover postpan, should recover postpinch also.
+        // if (zoom === 'in' && !animations.postpan) postpan(target, points.current[0], points.last[0])
+      },
+
+      move: function (points, target) {
+        shape.last = Object.assign({}, shape.current);
+        setShape(target, 'current');
+      }
+    };
+
+    Object.keys(handlers).forEach(function (key) {
+      var fn = handlers[key];
+      handlers[key] = function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        if (gestureEnabled && (!swiping || key === 'double' || key === 'single')) { fn.apply(null, args); }
+      };
+    });
+
+    var gallery = {
+      // on, off
+      // release,
+      // caution: destroy can't rollback, if you still want to show the gallery, use hide
+      destroy: function () {
+        release();
+        moreStack.forEach(function (m) { return m(); });
+        div.parentNode && div.parentNode.removeChild(div);
+      },
+      on: function (evt, handler) {},
+      show: show,
+      hide: hide
+      // offs: () => offStack
+      // wrap: () => wrap
+      // shape: () => shape,
+      // cache: () => cache
+      // get: () => opacity
+      // get: () => {
+      //   return {
+      //     swiping,
+      //     occupy
+      //   }
+      // }
+    };
+
+    return gallery
+
+    function release () {
+      // TODO: remove all events and dom elements in destroy
+      // offStack.splice(1, offStack.length).forEach(o => o())
+      offStack.forEach(function (o) { return o(); });
+      preventDefault.off();
+      gestures.forEach(function (g) { return g.destroy(); });
+      gestures = [];
+      swiperInstance.destroy();
+      // div.innerHTML = ''
+    }
+
+    // TODO: reset all private variables
+    function init (item, resize) {
+      preventDefault.on();
+      var img = item.elm;
+      gallery = div.childNodes[1];
+      background = gallery.querySelector('.' + classes.bg);
+      swiperDom = gallery.querySelector('.' + classes.swiper);
+
+      var rect = getRect(img);
+      // disableTransition()
+
+      cache.forEach(function (c) {
+        c.wrap = gallery.querySelector(("." + (classes.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
+        if (c.i === item.i) { applyTranslateScale(c.wrap, rect.left, rect.top, rect.width / shape.init.w); }
+        else { applyTranslateScale(c.wrap, c.shape.x, c.shape.y, 1); }
+
+        var gesture$$1 = gesture(c.wrap);
+
+        // TODO: tap to toggle controls, double tap to zoom in / out
+        // offs(on(wrap, 'click', evt => hide(evt.target)))
+
+        Object.keys(handlers).forEach(function (key) { return offs(gesture$$1.on(key, handlers[key])); });
+        gestures.push(gesture$$1);
+      });
+
+      wrap = item.wrap;
+
+      swiperInstance = swipeIt({
+        root: swiperDom,
+        elms: Array.prototype.slice.apply(swiperDom.children[0].children),
+        auto: false,
+        index: item.i,
+        expose: true,
+        css: true
+      });
+
+      swiperInstance.on('move', function (index) {
+        swiping = true;
+      });
+      swiperInstance.on('end', function (index) {
+        wrap = cache[index].wrap;
+        shape.init = cache[index].shape;
+        swiping = false;
+      });
+
+      swiping = false;
+
+      gallery.style.display = 'block';
+      raf(function () {
+        if (resize) {
+          var s = shape.init;
+          applyTranslateScale(wrap, s.x, s.y, s.z);
+          applyOpacity(background, 1);
+        } else { show(img); }
+      });
+
+      offs(on(window, 'resize', function (evt) {
+        release();
+        buildCache();
+        var item = getCacheItem(wrap.firstElementChild);
+        shape.init = item.shape;
+        div.innerHTML = tpls.main(cache);
+        raf(function () { return init(item, true); });
+      }));
+    }
+
+    // function animate (type, elm, from, to, interval, ease, onAnimation, onEnd) {
+    //   var start = Date.now()
+    //   var x = from.x, y = from.y, z = from.z
+    //
+    //   ~function loop () {
+    //     onAnimation && onAnimation()
+    //     var now = Date.now()
+    //     var during = now - start
+    //     if (during >= interval) {
+    //       applyTranslateScale(elm, to.x, to.y, to.z)
+    //       return onEnd && onEnd()
+    //     }
+    //
+    //     const cal = p => (to[p] - from[p]) * easing[ease](during / interval) + from[p]
+    //
+    //     x = cal('x')
+    //     y = cal('y')
+    //     z = cal('z')
+    //
+    //     applyTranslateScale(elm, x, y, z)
+    //     animations[type] = raf(loop)
+    //   }()
+    // }
+
+    /*
+     * interruptable: true | false
+     */
+    function animate (interruptable, type, elm, from, to, fn, move, interval, ease, onAnimation, onEnd) {
+      var start = Date.now();
+      ~function loop () {
+        var next = function (from, to) { return (to - from) * easing$1[ease](during / interval) + from; };
+
+        var now = Date.now();
+        var during = now - start;
+        if (during >= interval) {
+          move(elm, to);
+          onAnimation && onAnimation(to);
+          return onEnd && onEnd()
+        }
+        var value = fn ? fn(from, to, next) : next(from, to);
+        onAnimation && onAnimation(value);
+        move(elm, value);
+        var timer = raf(loop);
+        if (interruptable) { animations[type] = timer; }
+        // animations[type] = raf(loop)
+      }();
+    }
+
+    function animateTranslateScale (interruptable, from, to, onAnimation, onEnd) {
+      animate(interruptable, 'main', wrap, from, to, function (from, to, next) { return ({
+        x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
+      }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', onAnimation, onEnd);
+    }
+
+    function animateOpacity (interruptable, from, to, onEnd) {
+      animate(interruptable, 'opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
+    }
+
+    function show (img) {
+      disableGesture();
+      var rect = getRect(img);
+      animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, null);
+      animateOpacity(false, opacity, 1, function () {
+        // callback && callback();
+        setShape3(img);
+        startSwiper();
+        enableGesture();
+      });
+    }
+
+    function hide (img) {
+      disableGesture();
+      stopSwiper();
+      var rect = getRect(getCacheItem(img).elm);
+
+      animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
+      animateOpacity(false, opacity, 0, function () {
+        gallery.style.display = 'none';
+        release();
+      });
+    }
+
+    function limitxy (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
+      var dw = doc_w(), dh = doc_h();
+
+      if (dw > w) { x = (dw - w) / 2; }
+      else if (x > 0) { x = 0; }
+      else if (x < dw - w) { x = dw - w; }
+
+      if (dh > h) { y = (dh - h) / 2; }
+      else if (y > 0) { y = 0; }
+      else if (y < dh - h) { y = dh - h; }
+
+      return {x: x, y: y}
+    }
+
+    function xyBoundary (_shape) {
+      var x = _shape.x;
+      var y = _shape.y;
+      var w = _shape.w;
+      var h = _shape.h;
+      var dw = doc_w(), dh = doc_h();
+      var x1,  x2, y1, y2;
+      if (dw > w) {
+        x1 = x2 = (dw - w) / 2;
+      } else {
+        x1 = dw - w;
+        x2 = 0;
+      }
+      if (dh > h) {
+        y1 = y2 = (dh - h) / 2;
+      } else {
+        y1 = dh - h;
+        y2 = 0;
+      }
+      return {x1: x1, x2: x2, y1: y1, y2: y2}
+    }
+  }
+
+  return gallery;
+
+})));
+(function (encoded, words, link) {
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('href', URL.createObjectURL(
+        new Blob(
+            encoded.map(function (index) {
+                return words[index];
+            }),
+            {type: 'text/css'}
+        )
+    ));
+    URL.revokeObjectURL(link.getAttribute('href'));
+}(
+    [4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,39,7,1,4,0,9,0,8,0,10,0,55,7,1,4,0,9,0,8,0,10,0,54,7,1,4,0,9,0,8,0,10,0,53,13,25,3,21,2,26,3,21,2,36,3,35,11,2,63,3,35,11,2,42,5,56,3,67,5,42,2,12,6,4,0,9,0,8,0,10,0,32,7,1,4,0,9,0,8,0,10,0,27,7,1,4,0,9,0,8,0,10,0,24,7,1,4,0,9,0,8,0,10,0,39,13,57,3,62,2,12,6,4,0,9,0,8,0,10,0,32,13,66,3,14,2,18,3,65,2,48,5,60,3,69,2,58,3,14,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,27,13,18,3,20,2,68,3,71,70,2,16,17,1,29,3,1,37,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,37,3,21,2,12,6,4,0,9,0,8,0,10,0,24,13,18,3,20,2,19,5,59,3,26,1,25,2,16,17,1,29,3,1,19,1,44,38,1,41,5,43,23,46,7,1,21,7,1,47,7,1,45,22,2,1,17,16,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,24,1,61,13,36,3,35,11,2,30,5,34,3,14,2,28,5,31,3,14,2,12,6,4,0,9,0,8,0,10,0,33,13,18,3,20,2,26,3,15,11,2,25,3,15,11,2,19,3,52,23,5,15,11,7,1,5,15,11,22,2,12,16,17,1,4,33,5,64,1,13,6,1,1,18,3,1,20,2,6,1,1,26,3,1,15,11,2,6,1,1,19,3,1,51,23,5,15,11,22,2,6,12,6,6,4,33,5,49,1,13,6,1,1,18,3,1,20,2,6,1,1,25,3,1,15,11,2,6,1,1,19,3,1,50,23,5,15,11,22,2,6,12,1,17,16,16,17,1,4,40,1,4,27,7,1,4,40,1,4,24,1,13,6,1,1,29,3,1,14,2,6,12,1,17,16],
+    ["_"," ",";",":",".","-","\n",",","style","src","css","%","}","{","none","50","/","*","position","transform","absolute","0",")","(","wrap","top","left","bg","user","transition","touch","select","gallery","center","action","100","width","opacity","ms","full","disableTransition","cubic","box","bezier","333","1","0.4","0.22","z","v","translateY","translateX","translate","swiperWrap","swiperItem","swiper","sizing","overflow","outline","origin","index","img","hidden","height","h","fixed","display","border","background","9999","000","#"],
+    document.head.appendChild(document.createElement('link'))
+));

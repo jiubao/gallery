@@ -1,12 +1,19 @@
 [![npm][npm]][npm-url]
 
 # gallery
-* 17k before gzip
+* 18k before gzip
 
 ## Demo
 * https://jiubao.github.io/gallery/
 
-## Features
+## Gestures
+* tap to open gallery
+* swipe to next or previous image
+* vertical pan to close
+* double tap to zoom in or zoom out
+* pinch to zoom in
+* pan to drag
+* pinch to zoom out or close
 
 ## Install
 ```sh
@@ -17,7 +24,7 @@ $ yarn add @jiubao/gallery
 ```
 ```javascript
 // using ES6 modules
-import swiper from '@jiubao/gallery/dist/gallery.es'
+import gallery from '@jiubao/gallery/dist/gallery.es'
 ```
 
 The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://unpkg.com):
@@ -26,6 +33,20 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ```
 
 ## Usage
+```html
+<div class="box">
+  <img src="./imgs/1.jpg" data-gallery-item alt="">
+  <img src="./imgs/2.jpg" data-gallery-item alt="">
+  <img src="./imgs/3.jpg" data-gallery-item alt="">
+  <img src="./imgs/4.jpg" data-gallery-item alt="">
+  <img src="./imgs/5.jpg" data-gallery-item alt="">
+</div>
+```
+
+```js
+import gallery from '@jiubao/gallery/dist/gallery.es'
+gallery()
+```
 
 ## Options
 
@@ -40,6 +61,7 @@ The [UMD](https://github.com/umdjs/umd) build is available on [unpkg](https://un
 ## Todos
 * add api
 * add readme
+* need figure out a one step close solution
 * quick pan -> move back
 * pan trigger swipe
 * limit zoom in / out level

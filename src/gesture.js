@@ -1,5 +1,6 @@
 import {raf, caf} from '@jiubao/raf'
 import { on, off, isString, isArray, addClass, removeClass } from './utils'
+import eventFactory from './event'
 import enumFactory from './enum'
 
 const html = document.documentElement
@@ -7,6 +8,9 @@ const doc_h = () => html.clientHeight
 const doc_w = () => html.clientWidth
 const touch2point = touch => ({x: touch.clientX, y: touch.clientY})
 
+/*
+ * tap, single, double, start, move, end, scroll, scrollend, pan, panstart, panend, pinch, pinchstart, pinchend, swipe
+ */
 function gesture (elm) {
   /*
    * 0000 0000: idle
@@ -23,30 +27,6 @@ function gesture (elm) {
   var ismoving = false
   var tapTimes = 0, tapStart = -1, tapLast = -1
 
-  const handlers = {
-    // 'swipe': [],
-    'tap': [],
-    'single': [],
-    'double': [],
-
-    'start': [],
-    'move': [],
-    'end': [],
-
-    'scroll': [],
-    'scrollend': [],
-
-    'pan': [],
-    'panstart': [],
-    'panend': [],
-
-    'pinch': [],
-    'pinchstart': [],
-    'pinchend': [],
-
-    'swipe': []
-  }
-
   var target = {}
   var points = {
     start: [],
@@ -55,8 +35,9 @@ function gesture (elm) {
   }
 
   var eventArg
-  // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
-  const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
+  // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
+  var instance = Object.create(eventFactory())
+  var trigger = evt => instance.trigger(evt, points, target, phase, eventArg)
 
   const loop = () => { if (ismoving) { raf(loop); render() }}
 
@@ -171,18 +152,18 @@ function gesture (elm) {
     trigger('end')
   }
 
-  const _off = (evt, fn) => handlers[evt].splice(handlers[evt].indexOf(fn), 1)
-  const _on = (evt, fn) => {
-    handlers[evt].push(fn)
-    return () => off(elm, evt, fn)
-  }
-
   var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ]
 
-  return {
-    on: _on, off: _off, phase: () => phase,
-    destroy: () => offs.forEach(h => h())
+  // return {
+  //   on: _on, off: _off, phase: () => phase,
+  //   destroy: () => offs.forEach(h => h())
+  // }
+  instance.phase = () => phase
+  instance.destroy = () => {
+    Object.getPrototypeOf(instance).destroy()
+    offs.forEach(h => h())
   }
+  return instance
 
   function render () {
     trigger('move')

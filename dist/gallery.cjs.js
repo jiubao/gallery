@@ -76,6 +76,52 @@ var main = function (imgs) { return html(templateObject, classes.gallery, classe
 
 var tpls = {main: main};
 
+function eventFactory () {
+  var handlers = Object.create(null);
+  var get = function (evt) {
+    if (!handlers[evt]) { handlers[evt] = []; }
+    return handlers[evt]
+  };
+  var trigger = function (evt) {
+  var args = [], len = arguments.length - 1;
+  while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+get(evt).forEach(function (fn) { return fn.apply(null, args); });};
+
+  var off = function (evt, fn) { return get(evt).splice(get(evt).indexOf(fn), 1); };
+  var on = function (evt, fn) {
+    get(evt).push(fn);
+    return function () { return off(evt, fn); }
+  };
+
+  var destroy = function () {Object.keys(handlers).forEach(function (key) { return delete handlers[key]; });};
+
+  return {
+    on: on, off: off, get: get, trigger: trigger, destroy: destroy
+  }
+}
+
+// function eventFactory () {
+//   this.handlers = {}
+// }
+//
+// eventFactory.prototype = {
+//   get: evt => {
+//     if (!this.handlers[evt]) this.handlers.evt = []
+//     return this.handlers.evt
+//   },
+//   off: (evt, fn) => get(evt).splice(get(evt).indexOf(fn), 1),
+//   on: (evt, fn) => {
+//     this.get(evt).push(fn)
+//     return () => this.off(evt, fn)
+//   },
+//   trigger: (evt, ...args) => {
+//     get(evt).forEach(fn => fn.apply(null, args))
+//   },
+//   destroy: () => {}
+// }
+//
+// export default eventFactory
+
 function enumFactory () {
   // TODO: should rm idle
   var value = 0, next = 1, enums = {'idle': 0};
@@ -116,6 +162,9 @@ function enumFactory () {
 var html$1 = document.documentElement;
 var touch2point = function (touch) { return ({x: touch.clientX, y: touch.clientY}); };
 
+/*
+ * tap, single, double, start, move, end, scroll, scrollend, pan, panstart, panend, pinch, pinchstart, pinchend, swipe
+ */
 function gesture (elm) {
   /*
    * 0000 0000: idle
@@ -131,30 +180,6 @@ function gesture (elm) {
   var ismoving = false;
   var tapTimes = 0, tapStart = -1, tapLast = -1;
 
-  var handlers = {
-    // 'swipe': [],
-    'tap': [],
-    'single': [],
-    'double': [],
-
-    'start': [],
-    'move': [],
-    'end': [],
-
-    'scroll': [],
-    'scrollend': [],
-
-    'pan': [],
-    'panstart': [],
-    'panend': [],
-
-    'pinch': [],
-    'pinchstart': [],
-    'pinchend': [],
-
-    'swipe': []
-  };
-
   var target = {};
   var points = {
     start: [],
@@ -163,8 +188,9 @@ function gesture (elm) {
   };
 
   var eventArg;
-  // const trigger = (evt, ...args) => handlers[evt].forEach(fn => fn(...args))
-  var trigger = function (evt) { return handlers[evt].forEach(function (fn) { return fn(points, target, phase, eventArg); }); };
+  // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
+  var instance = Object.create(eventFactory());
+  var trigger = function (evt) { return instance.trigger(evt, points, target, phase, eventArg); };
 
   var loop = function () { if (ismoving) { raf.raf(loop); render(); }};
 
@@ -279,18 +305,18 @@ function gesture (elm) {
     trigger('end');
   };
 
-  var _off = function (evt, fn) { return handlers[evt].splice(handlers[evt].indexOf(fn), 1); };
-  var _on = function (evt, fn) {
-    handlers[evt].push(fn);
-    return function () { return off(elm, evt, fn); }
-  };
-
   var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
 
-  return {
-    on: _on, off: _off, phase: function () { return phase; },
-    destroy: function () { return offs.forEach(function (h) { return h(); }); }
-  }
+  // return {
+  //   on: _on, off: _off, phase: () => phase,
+  //   destroy: () => offs.forEach(h => h())
+  // }
+  instance.phase = function () { return phase; };
+  instance.destroy = function () {
+    Object.getPrototypeOf(instance).destroy();
+    offs.forEach(function (h) { return h(); });
+  };
+  return instance
 
   function render () {
     trigger('move');
@@ -730,12 +756,16 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    release: release,
+    // release,
+    // caution: destroy can't rollback, if you still want to show the gallery, use hide
     destroy: function () {
       release();
       moreStack.forEach(function (m) { return m(); });
       div.parentNode && div.parentNode.removeChild(div);
-    }
+    },
+    on: function (evt, handler) {},
+    show: show,
+    hide: hide
     // offs: () => offStack
     // wrap: () => wrap
     // shape: () => shape,
@@ -757,6 +787,7 @@ function gallery (options) {
     offStack.forEach(function (o) { return o(); });
     preventDefault.off();
     gestures.forEach(function (g) { return g.destroy(); });
+    gestures = [];
     swiperInstance.destroy();
     // div.innerHTML = ''
   }

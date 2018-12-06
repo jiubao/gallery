@@ -425,12 +425,16 @@ function gallery (options) {
 
   var gallery = {
     // on, off
-    release,
+    // release,
+    // caution: destroy can't rollback, if you still want to show the gallery, use hide
     destroy: () => {
       release()
       moreStack.forEach(m => m())
       div.parentNode && div.parentNode.removeChild(div)
-    }
+    },
+    on: (evt, handler) => {},
+    show,
+    hide
     // offs: () => offStack
     // wrap: () => wrap
     // shape: () => shape,
@@ -452,6 +456,7 @@ function gallery (options) {
     offStack.forEach(o => o())
     preventDefault.off()
     gestures.forEach(g => g.destroy())
+    gestures = []
     swiperInstance.destroy()
     // div.innerHTML = ''
   }
