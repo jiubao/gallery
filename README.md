@@ -48,15 +48,45 @@ import gallery from '@jiubao/gallery/dist/gallery.es'
 gallery()
 ```
 
-## Options
-
 ## Methods
+| Name | Description | Parameters | Return |
+| ----- | :-: | :-: | :-: |
+| destroy | destroy gallery | | |
+| show | show gallery | img | |
+| hide | hide gallery | | |
+| on | add a event handler | event name, event handler | unregister function |
+| off | remove handler | event name, event handler | |
 
 ## Events
 
+| Name | Description | trigger | Parameters |
+| ----- | :-: | :-: | :-: |
+| show | show gallery | - | img |
+| hide | hide gallery | - | img |
+| single | single tap | - | points, target, phase, eventArg |
+| double | double tap | - | points, target, phase, eventArg |
+| scroll | vertical scroll | - | points, target, phase, eventArg |
+| scrollend | vertical scroll end | - | points, target, phase, eventArg |
+| pinch | pinch move | - | points, target, phase, eventArg |
+| pinchend | pinch end | - | points, target, phase, eventArg |
+| pan | pan move | - | points, target, phase, eventArg |
+| panend | pan end | - | points, target, phase, eventArg |
+| postpan | post pan end | - | |
+| start | touch start | - | points, target, phase, eventArg |
+| move | touch move | - | points, target, phase, eventArg |
+| end | touch end | - | points, target, phase, eventArg |
+| swipestart | swipe start | - | index |
+| swipe | swipe move | - | index |
+| swipeend | swipe end | - | index |
+
 ## Event handler arguments
 
-## element interface
+| Name | Description |
+| ----- | :-: |
+| points | start, last, current |
+| target | target img |
+| phase | gesture phase |
+| eventArg | touch event argument |
 
 ## Todos
 * add api
