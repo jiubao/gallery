@@ -4,6 +4,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var supportPassive = _interopDefault(require('@jiubao/passive'));
 var raf = require('@jiubao/raf');
+var hook = _interopDefault(require('@jiubao/hook'));
 var swiper = _interopDefault(require('swipe-core'));
 
 var passive = supportPassive();
@@ -66,33 +67,6 @@ var half = ~~(doc_w() / 15);
 var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
 
 var tpls = {main: main};
-
-function index () {
-  var handlers = Object.create(null);
-  var get = function (evt) {
-    if (!handlers[evt]) { handlers[evt] = []; }
-    return handlers[evt]
-  };
-  var trigger = function (evt) {
-  var arguments$1 = arguments;
-
-  var args = [], len = arguments.length - 1;
-  while ( len-- > 0 ) { args[ len ] = arguments$1[ len + 1 ]; }
-get(evt).forEach(function (fn) { return fn.apply(null, args); });};
-
-  var off = function (evt, fn) {
-    if (fn) { get(evt).splice(get(evt).indexOf(fn), 1); }
-    else { delete handlers[evt]; }
-  };
-  var on = function (evt, fn) {
-    get(evt).push(fn);
-    return function () { return off(evt, fn); }
-  };
-
-  return {
-    on: on, off: off, trigger: trigger, $get: get, $destroy: function () {Object.keys(handlers).forEach(function (evt) {off(evt);});}
-  }
-}
 
 function enumFactory () {
   // TODO: should rm idle
@@ -161,7 +135,7 @@ function gesture (elm) {
 
   var eventArg;
   // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
-  var instance = Object.create(index());
+  var instance = Object.create(hook());
   var trigger = function (evt) { return instance.trigger(evt, points, target, phase, eventArg); };
 
   var loop = function () { if (ismoving) { raf.raf(loop); render(); }};
@@ -347,16 +321,16 @@ function gallery (options) {
 
   var selector = opts.selector;
   var dataset = camelCase(selector);
-  var instance = Object.create(new index());
+  var instance = Object.create(new hook());
 
   var cache = [];
   var buildCache = function () {
     cache.splice(0, cache.length);
-    document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index$$1) {
-      img.dataset.galleryIndex = index$$1;
+    document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
+      img.dataset.galleryIndex = index;
       var w = img.naturalWidth, h = img.naturalHeight;
-      cache[index$$1] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index$$1 };
-      cache[index$$1].shape = getInitShape(img);
+      cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
+      cache[index].shape = getInitShape(img);
     });
   };
   var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
@@ -799,18 +773,18 @@ function gallery (options) {
       css: true
     });
 
-    swiperInstance.on('start', function (index$$1) {
-      instance.trigger('swipestart', index$$1);
+    swiperInstance.on('start', function (index) {
+      instance.trigger('swipestart', index);
     });
-    swiperInstance.on('move', function (index$$1) {
+    swiperInstance.on('move', function (index) {
       swiping = true;
-      instance.trigger('swipe', index$$1);
+      instance.trigger('swipe', index);
     });
-    swiperInstance.on('end', function (index$$1) {
-      wrap = cache[index$$1].wrap;
-      shape.init = cache[index$$1].shape;
+    swiperInstance.on('end', function (index) {
+      wrap = cache[index].wrap;
+      shape.init = cache[index].shape;
       swiping = false;
-      instance.trigger('swipeend', index$$1);
+      instance.trigger('swipeend', index);
     });
 
     swiping = false;

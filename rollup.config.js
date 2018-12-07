@@ -20,7 +20,8 @@ export default [{
     'swipe-core',
     '@jiubao/raf',
     '@jiubao/passive',
-    '@jiubao/link'
+    '@jiubao/link',
+    '@jiubao/hook'
   ],
   plugins: [
     embedCSS({
