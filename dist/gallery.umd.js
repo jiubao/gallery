@@ -33,6 +33,35 @@
   }
 
   var passive = index();
+  var defaultEventOptions = passive ? {capture: false, passive: true} : false;
+
+  var on = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions; }
+
+    element.addEventListener(evt, handler, options);
+    return function () { return off(element, evt, handler, options); }
+  };
+
+  var off = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions; }
+
+    element.removeEventListener(evt, handler, options);
+  };
+  var isString = function (value) { return typeof value === 'string'; };
+  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
+
+  var html = function (literalSections) {
+    var arguments$1 = arguments;
+
+    var subsets = [], len = arguments.length - 1;
+    while ( len-- > 0 ) { subsets[ len ] = arguments$1[ len + 1 ]; }
+
+    return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
+  };
+
+  // import supportPassive from '@jiubao/passive'
+  // var passive = supportPassive()
+  // var defaultEventOptions = passive ? {capture: false, passive: true} : false
 
   // export const on = (element, evt, handler, options = defaultEventOptions) => {
   //   element.addEventListener(evt, handler, options)
@@ -72,31 +101,7 @@
   }
 
   // data-gallery-item ===> galleryItem
-  var camelCase = function (str) { return str.split('-').slice(1).map(function (item, index$$1) { return !index$$1 ? item : item.replace(/^./, function (match) { return match.toUpperCase(); }); }).join(''); };
-
-  var on$1 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions; }
-
-    element.addEventListener(evt, handler, options);
-    return function () { return off$1(element, evt, handler, options); }
-  };
-
-  var off$1 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions; }
-
-    element.removeEventListener(evt, handler, options);
-  };
-  var isString = function (value) { return typeof value === 'string'; };
-  var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
-
-  var html = function (literalSections) {
-    var arguments$1 = arguments;
-
-    var subsets = [], len = arguments.length - 1;
-    while ( len-- > 0 ) { subsets[ len ] = arguments$1[ len + 1 ]; }
-
-    return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
-  };
+  var camelCase = function (str) { return str.split('-').slice(1).map(function (item, index) { return !index ? item : item.replace(/^./, function (match) { return match.toUpperCase(); }); }).join(''); };
 
   var classes = {
   	gallery: "_src_style_css_gallery",
@@ -328,7 +333,7 @@
       trigger('end');
     };
 
-    var offs = [ on$1(elm, 'touchstart', onstart), on$1(elm, 'touchmove', onmove), on$1(elm, 'touchend', onend) ];
+    var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
 
     // return {
     //   on: _on, off: _off, phase: () => phase,
@@ -376,17 +381,17 @@
   };
 
   var passive$1 = index();
-  var defaultEventOptions$2 = passive$1 ? {capture: false, passive: true} : false;
+  var defaultEventOptions$1 = passive$1 ? {capture: false, passive: true} : false;
 
-  var on$2 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions$2; }
+  var on$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
 
     element.addEventListener(evt, handler, options);
-    return function () { return off$2(element, evt, handler, options); }
+    return function () { return off$1(element, evt, handler, options); }
   };
 
-  var off$2 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions$2; }
+  var off$1 = function (element, evt, handler, options) {
+    if ( options === void 0 ) { options = defaultEventOptions$1; }
 
     element.removeEventListener(evt, handler, options);
   };
@@ -588,7 +593,7 @@
       var args = [], len = arguments.length;
       while ( len-- ) { args[ len ] = arguments$1[ len ]; }
 
-      return offStack.push(on$2.apply(null, args));
+      return offStack.push(on$1.apply(null, args));
     };
 
     init();
@@ -941,7 +946,7 @@
       div.innerHTML = tpls.main(cache);
       raf(function () { return init(item); });
     };
-    moreStack.push(on$1(document, 'click', function (evt) {
+    moreStack.push(on(document, 'click', function (evt) {
       var target = evt.target;
       if (target.tagName === 'IMG' && dataset in target.dataset) {
         onshow(target);
@@ -1367,7 +1372,7 @@
         } else { show(img); }
       });
 
-      offs(on$1(window, 'resize', function (evt) {
+      offs(on(window, 'resize', function (evt) {
         release();
         buildCache();
         var item = getCacheItem(wrap.firstElementChild);

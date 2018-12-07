@@ -38,9 +38,8 @@
   },
   "dependencies": {
     "@jiubao/hook": "^0.0.2",
-    "@jiubao/passive": "^0.0.1",
     "@jiubao/raf": "^0.0.2",
-    "@jiubao/utils": "0.0.4",
+    "@jiubao/utils": "0.0.5",
     "swipe-core": "^0.1.7"
   }
 }

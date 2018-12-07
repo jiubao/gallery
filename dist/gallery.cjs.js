@@ -2,13 +2,14 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var supportPassive = _interopDefault(require('@jiubao/passive'));
 var utils = require('@jiubao/utils');
 var raf = require('@jiubao/raf');
 var hook = _interopDefault(require('@jiubao/hook'));
 var swiper = _interopDefault(require('swipe-core'));
 
-var passive = supportPassive();
+// import supportPassive from '@jiubao/passive'
+// var passive = supportPassive()
+// var defaultEventOptions = passive ? {capture: false, passive: true} : false
 
 // export const on = (element, evt, handler, options = defaultEventOptions) => {
 //   element.addEventListener(evt, handler, options)
@@ -42,8 +43,8 @@ function prevent () {
   var opts = {passive: false};
 
   return {
-    on: function () { return on(document, 'touchmove', handler, opts); },
-    off: function () { return off(document, 'touchmove', handler, opts); }
+    on: function () { return utils.on(document, 'touchmove', handler, opts); },
+    off: function () { return utils.off(document, 'touchmove', handler, opts); }
   }
 }
 

@@ -1,10 +1,11 @@
-import supportPassive from '@jiubao/passive';
-import { html, on as on$1, isString, isArray } from '@jiubao/utils';
+import { on, off, html, isString, isArray } from '@jiubao/utils';
 import { raf, caf } from '@jiubao/raf';
 import hook from '@jiubao/hook';
 import swiper from 'swipe-core';
 
-var passive = supportPassive();
+// import supportPassive from '@jiubao/passive'
+// var passive = supportPassive()
+// var defaultEventOptions = passive ? {capture: false, passive: true} : false
 
 // export const on = (element, evt, handler, options = defaultEventOptions) => {
 //   element.addEventListener(evt, handler, options)
@@ -249,7 +250,7 @@ function gesture (elm) {
     trigger('end');
   };
 
-  var offs = [ on$1(elm, 'touchstart', onstart), on$1(elm, 'touchmove', onmove), on$1(elm, 'touchend', onend) ];
+  var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
 
   // return {
   //   on: _on, off: _off, phase: () => phase,
@@ -370,7 +371,7 @@ function gallery (options) {
     div.innerHTML = tpls.main(cache);
     raf(function () { return init(item); });
   };
-  moreStack.push(on$1(document, 'click', function (evt) {
+  moreStack.push(on(document, 'click', function (evt) {
     var target = evt.target;
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       onshow(target);
@@ -796,7 +797,7 @@ function gallery (options) {
       } else { show(img); }
     });
 
-    offs(on$1(window, 'resize', function (evt) {
+    offs(on(window, 'resize', function (evt) {
       release();
       buildCache();
       var item = getCacheItem(wrap.firstElementChild);
