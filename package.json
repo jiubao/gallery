@@ -37,9 +37,9 @@
     "uglify-js": "^3.4.9"
   },
   "dependencies": {
-    "@jiubao/hook": "^0.0.2",
-    "@jiubao/raf": "^0.0.2",
+    "@jiubao/hook": "0.0.2",
+    "@jiubao/raf": "0.0.2",
     "@jiubao/utils": "0.0.5",
-    "swipe-core": "^0.1.7"
+    "swipe-core": "0.1.13"
   }
 }

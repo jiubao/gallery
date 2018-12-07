@@ -47,6 +47,8 @@
 
     element.removeEventListener(evt, handler, options);
   };
+
+  var isFunction = function (value) { return typeof value === 'function'; };
   var isString = function (value) { return typeof value === 'string'; };
   var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
 
@@ -59,33 +61,11 @@
     return subsets.reduce(function (result, current, index$$1) { return result + current + literalSections[index$$1 + 1]; }, literalSections[0]);
   };
 
-  // import supportPassive from '@jiubao/passive'
-  // var passive = supportPassive()
-  // var defaultEventOptions = passive ? {capture: false, passive: true} : false
-
-  // export const on = (element, evt, handler, options = defaultEventOptions) => {
-  //   element.addEventListener(evt, handler, options)
-  //   return () => off(element, evt, handler, options)
-  // }
-  //
-  // export const off = (element, evt, handler, options = defaultEventOptions) => element.removeEventListener(evt, handler, options)
-
-  // export const isFunction = value => typeof value === 'function'
-  // export const isString = value => typeof value === 'string'
-  // export const isArray = arr => Array.isArray(arr) || arr instanceof Array
-  //
-  // export const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])
-  //
-  // export const hasClass = (elm, className) => elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className)
-  // export const addClass = (elm, className) => {
-  // 	if (!hasClass(elm, className)) {
-  // 		elm.className += (elm.className ? ' ' : '') + className
-  // 	}
-  // }
-  // export const removeClass = (elm, className) => {
-  // 	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
-  // 	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
-  // }
+  var inViewport = function (item) {
+    var rect = item.getBoundingClientRect();
+    return (rect.top < window.innerHeight && rect.bottom > 0) &&
+      (rect.left < window.innerWidth && rect.right > 0)
+  };
 
   var doc_h = function () { return window.innerHeight; };
   var doc_w = function () { return window.innerWidth; };
@@ -380,32 +360,6 @@
     return this.$tail = node
   };
 
-  var passive$1 = index();
-  var defaultEventOptions$1 = passive$1 ? {capture: false, passive: true} : false;
-
-  var on$1 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions$1; }
-
-    element.addEventListener(evt, handler, options);
-    return function () { return off$1(element, evt, handler, options); }
-  };
-
-  var off$1 = function (element, evt, handler, options) {
-    if ( options === void 0 ) { options = defaultEventOptions$1; }
-
-    element.removeEventListener(evt, handler, options);
-  };
-
-  var isFunction$1 = function (value) {
-    return typeof value === 'function'
-  };
-
-  var inViewport$1 = function (item) {
-    var rect = item.getBoundingClientRect();
-    return (rect.top < window.innerHeight && rect.bottom > 0) &&
-      (rect.left < window.innerWidth && rect.right > 0)
-  };
-
   var easing = {
     'cubic': function (k) { return --k * k * k + 1; },
     // quart: k => 1 - Math.pow(1 - k, 4), // 1 - --k * k * k * k,
@@ -488,12 +442,7 @@
     'height': 200,
     'css': false,
     'ease': 'cubic',
-    'plugins': [],
-    // 'initHandlers': [],
-    // 'startHandlers': [],
-    // 'moveHandlers': [],
-    // 'endHandlers': [],
-    // 'animationEndHandlers': []
+    'plugins': []
   };
 
   function swipeIt (options) {
@@ -506,7 +455,7 @@
     var opts = Object.assign({}, defaultOptions,
       options);
 
-    var index$$1 = opts.index;
+    var index = opts.index;
     var root = opts.root;
     var elms = opts.elms;
     var width = opts.width;
@@ -520,13 +469,6 @@
 
     // plugins.forEach(p => Object.keys(p).forEach(action => opts[action + 'Handlers'].push(p[action])))
     plugins.forEach(function (p) { return Object.keys(p).forEach(function (evt) { return instance.on(evt, p[evt]); }); });
-
-    // var onFn = action => (...args) => opts[action + 'Handlers'].forEach(f => f.apply(null, args))
-    // var onInit = onFn('init')
-    // var onStart = onFn('start')
-    // var onMove = onFn('move')
-    // var onEnd = onFn('end')
-    // var onAnimationEnd = onFn('animationEnd')
 
     if (!root) { return }
 
@@ -567,7 +509,7 @@
     var two = false;
     auto = cycle && auto;
 
-    var current = elms[index$$1];
+    var current = elms[index];
 
     var trigger = function (evt) { return instance.trigger(evt, current.$index, current, main, elms); };
 
@@ -593,7 +535,7 @@
       var args = [], len = arguments.length;
       while ( len-- ) { args[ len ] = arguments$1[ len ]; }
 
-      return offStack.push(on$1.apply(null, args));
+      return offStack.push(on.apply(null, args));
     };
 
     init();
@@ -603,25 +545,12 @@
     instance.stop = function () {running = false;};
     instance.start = function () {running = true;};
 
-    // return {
-    //   'destroy': destroy,
-    //   'index': _ => current.$index,
-    //   'on': (evt, callback) => {
-    //     var fns = opts[evt + 'Handlers']
-    //     fns.push(callback)
-    //     return () => fns.splice(fns.indexOf(callback), 1)
-    //   },
-    //   stop: () => running = false,
-    //   start: () => running = true
-    // }
-
     return instance
 
     function moveX (el, x) {
       if (!el) { return }
       el.style.transition = el.style.webkitTransition = '';
       el.style.transform = el.style.webkitTransform = "translate3d(" + x + "px, 0, 0)";
-      // onMove(current.$index, current, main, elms)
       trigger('move');
     }
 
@@ -635,7 +564,6 @@
       startTime = Date.now();
       restartX = currentX = startX = touch.pageX;
       startY = touch.clientY;
-      // onStart(current.$index, current, main, elms)
       trigger('start');
     }
 
@@ -705,11 +633,9 @@
     function autoSwipeImmediate () {
       autoPhase = 0;
       phase.set(phaseEnum.auto);
-      // onStart(current.$index, current, main, elms)
       trigger('start');
       animate(main, x, -current.x - width, MAX_PART, onAutoAnimation, autoSwipePostpone);
       // animate(main, x, x - width, MAX_INTERVAL, onAutoAnimation, autoCallback)
-      // onEnd(current.$next.$index, current.$next, main, elms)
     }
 
     function autoSwipe() {
@@ -739,8 +665,6 @@
       var t = Math.min(Math.max(MAX_INTERVAL * Math.abs(to - x) / width, FAST_INTERVAL), MAX_PART);
       animate(main, x, to, fast ? FAST_INTERVAL : t, null, auto ? function () { return autoSwipe(); } : null);
       // animate(main, x, to, fast ? FAST_INTERVAL : t)
-
-      // onEnd(current.$index, current, main, elms)
     }
 
     function animate (elm, from, to, interval, onAnimation, callback) {
@@ -749,14 +673,13 @@
         var now = Date.now();
         var during = now - start;
         if (during >= interval) { x = to; }
-        isFunction$1(onAnimation) && onAnimation();
+        isFunction(onAnimation) && onAnimation();
         if (during >= interval) {
           // moveX(elm, to)
           moveEx(elm, to);
-          !phase.is(phaseEnum.cancel) && isFunction$1(callback) && callback();
+          !phase.is(phaseEnum.cancel) && isFunction(callback) && callback();
           phase.set(phaseEnum.idle);
           // return onAnimationEnd(current.$index, current, main, elms)
-          // return onEnd(current.$index, current, main, elms)
           return trigger('end')
         }
         var distance = (to - from) * easing[ease](during / interval) + from;
@@ -769,7 +692,6 @@
     }
 
     function init () {
-      // if (elms.length === 0) return onInit(-1)
       if (elms.length === 0) { return instance.trigger('init', -1) }
 
       // if (!expose) root.style.overflow = 'hidden'
@@ -806,11 +728,10 @@
         if (!two && !one && el !== current && el !== current.$prev && el !== current.$next) { hide(el); }
       });
 
-      // if (one) return onInit(current.$index, current, main, elms)
       if (one) { return trigger('init') }
 
-      if (!two && !cycle && index$$1 === 0) { hide(current.$prev); }
-      if (!two && !cycle && index$$1 === elms.length - 1) { hide(current.$next); }
+      if (!two && !cycle && index === 0) { hide(current.$prev); }
+      if (!two && !cycle && index === elms.length - 1) { hide(current.$next); }
 
       // destroy()
       on2(root, pointerdown, onTouchStart);
@@ -827,8 +748,8 @@
             });
           });
         } else {
-          var toggleSwiper = function () { return inViewport$1(root) ? autoSwipePostpone() : clearAndCancel(); };
-          on2(window, 'touchmove', function () { return inViewport$1(root) || clearAndCancel(); });
+          var toggleSwiper = function () { return inViewport(root) ? autoSwipePostpone() : clearAndCancel(); };
+          on2(window, 'touchmove', function () { return inViewport(root) || clearAndCancel(); });
           on2(window, 'touchend', toggleSwiper);
           toggleSwiper();
         }
@@ -843,13 +764,12 @@
       }
 
       main.x = 0;
-      // onInit(current.$index, current, main, elms)
       trigger('init');
     }
 
     function destroy () {
       clearAnimations();
-      isFunction$1(opts.unobserve) && opts.unobserve();
+      isFunction(opts.unobserve) && opts.unobserve();
       offStack.forEach(function (fn) { return fn(); });
       hides.parentNode && hides.parentNode.removeChild(hides);
       instance.$destroy();
