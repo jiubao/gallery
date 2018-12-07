@@ -4,7 +4,7 @@ import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'
 import swiper from 'swipe-core'
-import eventFactory from './event'
+import hook from '@jiubao/hook'
 
 /*
  * animations
@@ -51,7 +51,7 @@ function gallery (options) {
 
   var {selector} = opts
   var dataset = camelCase(selector)
-  var instance = Object.create(new eventFactory())
+  var instance = Object.create(new hook())
 
   var cache = []
   var buildCache = () => {

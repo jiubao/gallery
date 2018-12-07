@@ -1,6 +1,6 @@
 import {raf, caf} from '@jiubao/raf'
 import { on, off, isString, isArray, addClass, removeClass } from './utils'
-import eventFactory from './event'
+import hook from '@jiubao/hook'
 import enumFactory from './enum'
 
 const html = document.documentElement
@@ -36,7 +36,7 @@ function gesture (elm) {
 
   var eventArg
   // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
-  var instance = Object.create(eventFactory())
+  var instance = Object.create(hook())
   var trigger = evt => instance.trigger(evt, points, target, phase, eventArg)
 
   const loop = () => { if (ismoving) { raf(loop); render() }}

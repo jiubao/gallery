@@ -63,15 +63,17 @@ var main = function (imgs) { return html(templateObject, classes.gallery, classe
 
 var tpls = {main: main};
 
-function eventFactory () {
+function index () {
   var handlers = Object.create(null);
   var get = function (evt) {
     if (!handlers[evt]) { handlers[evt] = []; }
     return handlers[evt]
   };
   var trigger = function (evt) {
+  var arguments$1 = arguments;
+
   var args = [], len = arguments.length - 1;
-  while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+  while ( len-- > 0 ) { args[ len ] = arguments$1[ len + 1 ]; }
 get(evt).forEach(function (fn) { return fn.apply(null, args); });};
 
   var off = function (evt, fn) {
@@ -87,28 +89,6 @@ get(evt).forEach(function (fn) { return fn.apply(null, args); });};
     on: on, off: off, trigger: trigger, $get: get, $destroy: function () {Object.keys(handlers).forEach(function (evt) {off(evt);});}
   }
 }
-
-// function eventFactory () {
-//   this.handlers = {}
-// }
-//
-// eventFactory.prototype = {
-//   get: evt => {
-//     if (!this.handlers[evt]) this.handlers.evt = []
-//     return this.handlers.evt
-//   },
-//   off: (evt, fn) => get(evt).splice(get(evt).indexOf(fn), 1),
-//   on: (evt, fn) => {
-//     this.get(evt).push(fn)
-//     return () => this.off(evt, fn)
-//   },
-//   trigger: (evt, ...args) => {
-//     get(evt).forEach(fn => fn.apply(null, args))
-//   },
-//   destroy: () => {}
-// }
-//
-// export default eventFactory
 
 function enumFactory () {
   // TODO: should rm idle
@@ -177,7 +157,7 @@ function gesture (elm) {
 
   var eventArg;
   // const trigger = evt => handlers[evt].forEach(fn => fn(points, target, phase, eventArg))
-  var instance = Object.create(eventFactory());
+  var instance = Object.create(index());
   var trigger = function (evt) { return instance.trigger(evt, points, target, phase, eventArg); };
 
   var loop = function () { if (ismoving) { raf(loop); render(); }};
@@ -363,16 +343,16 @@ function gallery (options) {
 
   var selector = opts.selector;
   var dataset = camelCase(selector);
-  var instance = Object.create(new eventFactory());
+  var instance = Object.create(new index());
 
   var cache = [];
   var buildCache = function () {
     cache.splice(0, cache.length);
-    document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index) {
-      img.dataset.galleryIndex = index;
+    document.querySelectorAll(("img[" + selector + "]")).forEach(function (img, index$$1) {
+      img.dataset.galleryIndex = index$$1;
       var w = img.naturalWidth, h = img.naturalHeight;
-      cache[index] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index };
-      cache[index].shape = getInitShape(img);
+      cache[index$$1] = { elm: img, w: w, h: h, r: w / h, src: img.src, i: index$$1 };
+      cache[index$$1].shape = getInitShape(img);
     });
   };
   var getCacheItem = function (img) { return cache[Number(img.dataset.galleryIndex)]; };
@@ -815,18 +795,18 @@ function gallery (options) {
       css: true
     });
 
-    swiperInstance.on('start', function (index) {
-      instance.trigger('swipestart', index);
+    swiperInstance.on('start', function (index$$1) {
+      instance.trigger('swipestart', index$$1);
     });
-    swiperInstance.on('move', function (index) {
+    swiperInstance.on('move', function (index$$1) {
       swiping = true;
-      instance.trigger('swipe', index);
+      instance.trigger('swipe', index$$1);
     });
-    swiperInstance.on('end', function (index) {
-      wrap = cache[index].wrap;
-      shape.init = cache[index].shape;
+    swiperInstance.on('end', function (index$$1) {
+      wrap = cache[index$$1].wrap;
+      shape.init = cache[index$$1].shape;
       swiping = false;
-      instance.trigger('swipeend', index);
+      instance.trigger('swipeend', index$$1);
     });
 
     swiping = false;
