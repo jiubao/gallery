@@ -1,7 +1,7 @@
 [![npm][npm]][npm-url]
 
 # gallery
-* 19k before gzip
+* 18k before gzip
 
 ## Demo
 * https://jiubao.github.io/gallery/
