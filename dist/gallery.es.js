@@ -1,32 +1,34 @@
 import supportPassive from '@jiubao/passive';
+import { html, on as on$1, isString, isArray } from '@jiubao/utils';
 import { raf, caf } from '@jiubao/raf';
 import hook from '@jiubao/hook';
 import swiper from 'swipe-core';
 
 var passive = supportPassive();
-var defaultEventOptions = passive ? {capture: false, passive: true} : false;
 
-var on = function (element, evt, handler, options) {
-  if ( options === void 0 ) options = defaultEventOptions;
+// export const on = (element, evt, handler, options = defaultEventOptions) => {
+//   element.addEventListener(evt, handler, options)
+//   return () => off(element, evt, handler, options)
+// }
+//
+// export const off = (element, evt, handler, options = defaultEventOptions) => element.removeEventListener(evt, handler, options)
 
-  element.addEventListener(evt, handler, options);
-  return function () { return off(element, evt, handler, options); }
-};
-
-var off = function (element, evt, handler, options) {
-  if ( options === void 0 ) options = defaultEventOptions;
-
-  return element.removeEventListener(evt, handler, options);
-};
-var isString = function (value) { return typeof value === 'string'; };
-var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
-
-var html = function (literalSections) {
-  var subsets = [], len = arguments.length - 1;
-  while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
-
-  return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
-};
+// export const isFunction = value => typeof value === 'function'
+// export const isString = value => typeof value === 'string'
+// export const isArray = arr => Array.isArray(arr) || arr instanceof Array
+//
+// export const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])
+//
+// export const hasClass = (elm, className) => elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className)
+// export const addClass = (elm, className) => {
+// 	if (!hasClass(elm, className)) {
+// 		elm.className += (elm.className ? ' ' : '') + className
+// 	}
+// }
+// export const removeClass = (elm, className) => {
+// 	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+// 	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+// }
 
 var doc_h = function () { return window.innerHeight; };
 var doc_w = function () { return window.innerWidth; };
@@ -247,7 +249,7 @@ function gesture (elm) {
     trigger('end');
   };
 
-  var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
+  var offs = [ on$1(elm, 'touchstart', onstart), on$1(elm, 'touchmove', onmove), on$1(elm, 'touchend', onend) ];
 
   // return {
   //   on: _on, off: _off, phase: () => phase,
@@ -368,7 +370,7 @@ function gallery (options) {
     div.innerHTML = tpls.main(cache);
     raf(function () { return init(item); });
   };
-  moreStack.push(on(document, 'click', function (evt) {
+  moreStack.push(on$1(document, 'click', function (evt) {
     var target = evt.target;
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       onshow(target);
@@ -794,7 +796,7 @@ function gallery (options) {
       } else { show(img); }
     });
 
-    offs(on(window, 'resize', function (evt) {
+    offs(on$1(window, 'resize', function (evt) {
       release();
       buildCache();
       var item = getCacheItem(wrap.firstElementChild);

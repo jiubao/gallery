@@ -21,7 +21,8 @@ export default [{
     '@jiubao/raf',
     '@jiubao/passive',
     '@jiubao/link',
-    '@jiubao/hook'
+    '@jiubao/hook',
+    '@jiubao/utils'
   ],
   plugins: [
     embedCSS({

@@ -1,5 +1,5 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isString, isArray, addClass, removeClass } from './utils'
+import {on, off, isString, isArray, addClass, removeClass} from '@jiubao/utils'
 import hook from '@jiubao/hook'
 import enumFactory from './enum'
 

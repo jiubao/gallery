@@ -1,5 +1,6 @@
 import {raf, caf} from '@jiubao/raf'
-import { on, off, isFunction, addClass, removeClass, doc_w, doc_h, prevent, isArray, camelCase } from './utils'
+import { doc_w, doc_h, prevent, camelCase } from './utils'
+import {isFunction, isArray, addClass, removeClass, on, off} from '@jiubao/utils'
 import tpls from './html.js'
 import {classes as cls} from './style.css'
 import gestureFactory from './gesture.js'

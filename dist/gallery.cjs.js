@@ -3,34 +3,36 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var supportPassive = _interopDefault(require('@jiubao/passive'));
+var utils = require('@jiubao/utils');
 var raf = require('@jiubao/raf');
 var hook = _interopDefault(require('@jiubao/hook'));
 var swiper = _interopDefault(require('swipe-core'));
 
 var passive = supportPassive();
-var defaultEventOptions = passive ? {capture: false, passive: true} : false;
 
-var on = function (element, evt, handler, options) {
-  if ( options === void 0 ) options = defaultEventOptions;
+// export const on = (element, evt, handler, options = defaultEventOptions) => {
+//   element.addEventListener(evt, handler, options)
+//   return () => off(element, evt, handler, options)
+// }
+//
+// export const off = (element, evt, handler, options = defaultEventOptions) => element.removeEventListener(evt, handler, options)
 
-  element.addEventListener(evt, handler, options);
-  return function () { return off(element, evt, handler, options); }
-};
-
-var off = function (element, evt, handler, options) {
-  if ( options === void 0 ) options = defaultEventOptions;
-
-  return element.removeEventListener(evt, handler, options);
-};
-var isString = function (value) { return typeof value === 'string'; };
-var isArray = function (arr) { return Array.isArray(arr) || arr instanceof Array; };
-
-var html = function (literalSections) {
-  var subsets = [], len = arguments.length - 1;
-  while ( len-- > 0 ) subsets[ len ] = arguments[ len + 1 ];
-
-  return subsets.reduce(function (result, current, index) { return result + current + literalSections[index + 1]; }, literalSections[0]);
-};
+// export const isFunction = value => typeof value === 'function'
+// export const isString = value => typeof value === 'string'
+// export const isArray = arr => Array.isArray(arr) || arr instanceof Array
+//
+// export const html = (literalSections, ...subsets) => subsets.reduce((result, current, index) => result + current + literalSections[index + 1], literalSections[0])
+//
+// export const hasClass = (elm, className) => elm.className && new RegExp('(^|\\s)' + className + '(\\s|$)').test(elm.className)
+// export const addClass = (elm, className) => {
+// 	if (!hasClass(elm, className)) {
+// 		elm.className += (elm.className ? ' ' : '') + className
+// 	}
+// }
+// export const removeClass = (elm, className) => {
+// 	var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+// 	elm.className = elm.className.replace(reg, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+// }
 
 var doc_h = function () { return window.innerHeight; };
 var doc_w = function () { return window.innerWidth; };
@@ -64,7 +66,7 @@ var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "
 
 var half = ~~(doc_w() / 15);
 
-var main = function (imgs) { return html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
+var main = function (imgs) { return utils.html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return utils.html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
 
 var tpls = {main: main};
 
@@ -105,7 +107,7 @@ function enumFactory () {
   return bit
 }
 
-var html$1 = document.documentElement;
+var html = document.documentElement;
 var touch2point = function (touch) { return ({x: touch.clientX, y: touch.clientY}); };
 
 /*
@@ -142,9 +144,9 @@ function gesture (elm) {
 
   var setTouchPoints = function (evt, item) {
     // if (!evt.touches || !evt.touches.length) return
-    if (isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
+    if (utils.isArray(item)) { return item.forEach(function (i) { return setTouchPoints(evt, i); }) }
     points[item] = [];
-    if (isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
+    if (utils.isString(item)) { points[item][0] = touch2point(evt.touches[0]); }
     if (evt.touches.length > 1) { points[item][1] = touch2point(evt.touches[1]); }
     // else points[item].splice(1, 10)
   };
@@ -251,7 +253,7 @@ function gesture (elm) {
     trigger('end');
   };
 
-  var offs = [ on(elm, 'touchstart', onstart), on(elm, 'touchmove', onmove), on(elm, 'touchend', onend) ];
+  var offs = [ utils.on(elm, 'touchstart', onstart), utils.on(elm, 'touchmove', onmove), utils.on(elm, 'touchend', onend) ];
 
   // return {
   //   on: _on, off: _off, phase: () => phase,
@@ -372,7 +374,7 @@ function gallery (options) {
     div.innerHTML = tpls.main(cache);
     raf.raf(function () { return init(item); });
   };
-  moreStack.push(on(document, 'click', function (evt) {
+  moreStack.push(utils.on(document, 'click', function (evt) {
     var target = evt.target;
     if (target.tagName === 'IMG' && dataset in target.dataset) {
       onshow(target);
@@ -393,7 +395,7 @@ function gallery (options) {
       shape[key].z = rect[thin() ? 'height' : 'width'] / shape.init[thin() ? 'h' : 'w'];
     };
 
-    isArray(key) ? key.forEach(function (key) { return setByKey(key); }) : setByKey(key);
+    utils.isArray(key) ? key.forEach(function (key) { return setByKey(key); }) : setByKey(key);
   };
 
   var setShape3 = function (target) { return setShape(target, ['start', 'current', 'last']); };
@@ -798,7 +800,7 @@ function gallery (options) {
       } else { show(img); }
     });
 
-    offs(on(window, 'resize', function (evt) {
+    offs(utils.on(window, 'resize', function (evt) {
       release();
       buildCache();
       var item = getCacheItem(wrap.firstElementChild);
