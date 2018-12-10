@@ -101,6 +101,8 @@ gallery()
 * quick pan -> move back
 * pan trigger swipe
 * limit zoom in / out level
+* ~~support wechat~~
+* ~~support alipay~~
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: a little slow~~
 * ~~pan right () -> postpan -> tap (out) -> pan left -> post pan: super slow~~
 * ~~destroy swiper (events, elements)~~

@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@jiubao/hook@^0.0.2":
+"@jiubao/hook@0.0.2", "@jiubao/hook@^0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@jiubao/hook/-/hook-0.0.2.tgz#3e1c9571827d385d85704db4d6d7c57bbf8df82a"
 
@@ -14,7 +14,7 @@
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@jiubao/passive/-/passive-0.0.1.tgz#ab0edd7dc36af50f2be48ddeb04867be7457a778"
 
-"@jiubao/raf@^0.0.2":
+"@jiubao/raf@0.0.2", "@jiubao/raf@^0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@jiubao/raf/-/raf-0.0.2.tgz#ec148af9faaaa9c571cdf002287a59a97e7ca261"
 
@@ -1119,6 +1119,13 @@ has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
 
+hasha@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/hasha/-/hasha-2.2.0.tgz#78d7cbfc1e6d66303fe79837365984517b2f6ee1"
+  dependencies:
+    is-stream "^1.0.1"
+    pinkie-promise "^2.0.0"
+
 home-or-tmp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/home-or-tmp/-/home-or-tmp-2.0.0.tgz#e36c3f2d2cae7d746a857e38d18d5f32a7882db8"
@@ -1242,7 +1249,7 @@ is-primitive@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/is-primitive/-/is-primitive-2.0.0.tgz#207bab91638499c07b2adf240a41a87210034575"
 
-is-stream@^1.1.0:
+is-stream@^1.0.1, is-stream@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-1.1.0.tgz#12d4a3dd4e68e0b79ceb8dbc84173ae80d91ca44"
 
@@ -1905,6 +1912,12 @@ rollup-plugin-embed-css@^0.3.2:
     "@nlib/afs" "^0.2.4"
     postcss "^7.0.5"
     rollup-pluginutils "^2.3.3"
+
+rollup-plugin-hash@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-hash/-/rollup-plugin-hash-1.3.0.tgz#6f87442cb432a8bf45356855fec69aab5dc22b07"
+  dependencies:
+    hasha "^2.2.0"
 
 rollup-plugin-node-resolve@^3.4.0:
   version "3.4.0"

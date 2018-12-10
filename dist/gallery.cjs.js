@@ -361,8 +361,8 @@ function gallery (options) {
     var rect = getRect(target);
 
     var setByKey = function (key) {
-      shape[key].x = rect.x;
-      shape[key].y = rect.y;
+      shape[key].x = rect.left;
+      shape[key].y = rect.top;
       shape[key].w = rect.width;
       shape[key].h = rect.height;
       shape[key].z = rect[thin() ? 'height' : 'width'] / shape.init[thin() ? 'h' : 'w'];
@@ -838,7 +838,7 @@ function gallery (options) {
   }
 
   function animateOpacity (interruptable, from, to, onEnd) {
-    animate(interruptable, 'opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) { return opacity = v; }, onEnd);
+    animate(interruptable, 'opacity', background, from, to, null, function (elm, opts) { return applyOpacity(elm, opts); }, 333, 'cubic', function (v) {opacity = v;}, onEnd);
   }
 
   function show (img) {
@@ -848,7 +848,7 @@ function gallery (options) {
     }
     disableGesture();
     var rect = getRect(img);
-    animateTranslateScale(false, {x: rect.x, y: rect.y, z: rect.width / shape.init.w}, shape.init, null, null);
+    animateTranslateScale(false, {x: rect.left, y: rect.top, z: rect.width / shape.init.w}, shape.init, null, null);
     animateOpacity(false, opacity, 1, function () {
       // callback && callback();
       setShape3(img);
@@ -864,7 +864,7 @@ function gallery (options) {
     stopSwiper();
     var rect = getRect(getCacheItem(img).elm);
 
-    animateTranslateScale(false, shape.current, {x: rect.x, y: rect.y, z: rect.width / shape.init.w});
+    animateTranslateScale(false, shape.current, {x: rect.left, y: rect.top, z: rect.width / shape.init.w});
     animateOpacity(false, opacity, 0, function () {
       gallery.style.display = 'none';
       release();
