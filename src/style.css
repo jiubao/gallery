@@ -13,30 +13,21 @@
   display: none;
   position: fixed;
   z-index: 9999;
-  outline: none;
-  touch-action: none;
-  user-select: none;
 }
 
 .bg {
   position: absolute;
   background: #000;
-  /* transition: opacity 333ms cubic-bezier(0.4, 0, 0.22, 1); */
   opacity: 0;
 }
 
 .wrap {
   position: absolute;
   transform-origin: left top;
-  /* transition: transform 333ms cubic-bezier(0.4, 0, 0.22, 1); */
-  touch-action: none;
-  user-select: none;
 }
 
 .wrap img {
   width: 100%;
-  touch-action: none;
-  user-select: none;
 }
 
 .center {
