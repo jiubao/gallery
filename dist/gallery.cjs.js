@@ -1,3 +1,8 @@
+/*
+ * @jiubao/gallery v0.0.29
+ * (c) 2018-2018 jiubao
+ * MIT License
+ */
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }

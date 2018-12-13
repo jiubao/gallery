@@ -6,15 +6,29 @@ import resolve from 'rollup-plugin-node-resolve'
 // import nodeResolve from 'rollup-plugin-node-resolve'
 import cfg from './package.json'
 import embedCSS from 'rollup-plugin-embed-css'
+import { uglify } from "rollup-plugin-uglify"
 
-export default [{
+const banner =
+`/*
+ * @jiubao/gallery v${cfg.version}
+ * (c) 2018-${new Date().getFullYear()} jiubao
+ * MIT License
+ */`
+
+var env = process.env.target
+
+var isprod = (env === 'prod')
+
+var moduler = {
   input: 'src/index.js',
   output: [{
     file: cfg.module,
-    format: 'es'
+    format: 'es',
+    banner
   }, {
     file: cfg.cjs,
-    format: 'cjs'
+    format: 'cjs',
+    banner
   }],
   external: [
     'swipe-core',
@@ -26,7 +40,7 @@ export default [{
   ],
   plugins: [
     embedCSS({
-      mangle: true, // true for prod build
+      mangle: isprod, // true for prod build
       classesOnly: true
     }),
     buble({
@@ -40,16 +54,19 @@ export default [{
       module: true
     })
   ]
-}, {
+}
+
+var browser = {
   input: 'src/index.js',
   output: [{
     file: cfg.browser,
     format: 'umd',
-    name: 'gallery'
+    name: 'gallery',
+    banner
   }],
   plugins: [
     embedCSS({
-      mangle: true, // true for prod build
+      mangle: isprod, // true for prod build
       classesOnly: true
     }),
     buble({
@@ -63,4 +80,14 @@ export default [{
       module: true
     })
   ]
-}]
+}
+
+if (isprod) {
+  browser.plugins.push(uglify({
+    output: {
+      preamble: banner
+    }
+  }))
+}
+
+export default [moduler, browser]

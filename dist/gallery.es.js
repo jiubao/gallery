@@ -1,3 +1,8 @@
+/*
+ * @jiubao/gallery v0.0.29
+ * (c) 2018-2018 jiubao
+ * MIT License
+ */
 import { on, off, html, isString, isArray } from '@jiubao/utils';
 import { raf, caf } from '@jiubao/raf';
 import hook from '@jiubao/hook';
