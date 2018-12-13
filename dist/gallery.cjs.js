@@ -23,15 +23,29 @@ function prevent () {
 // data-gallery-item ===> galleryItem
 var camelCase = function (str) { return str.split('-').slice(1).map(function (item, index) { return !index ? item : item.replace(/^./, function (match) { return match.toUpperCase(); }); }).join(''); };
 
-var classes = {
-	gallery: "_src_style_css_gallery",
-	bg: "_src_style_css_bg",
-	full: "_src_style_css_full",
-	swiper: "_src_style_css_swiper",
-	swiperItem: "_src_style_css_swiperItem",
-	swiperWrap: "_src_style_css_swiperWrap",
-	wrap: "_src_style_css_wrap",
-	center: "_src_style_css_center"
+var addStylesheetRules = function (str) {
+  var style = document.createElement('style');
+  document.head.appendChild(style);
+  style.sheet.insertRule(str);
+};
+
+var gallery = "_src_style_css_gallery";
+var bg = "_src_style_css_bg";
+var full = "_src_style_css_full";
+var swiper$1 = "_src_style_css_swiper";
+var swiperItem = "_src_style_css_swiperItem";
+var swiperWrap = "_src_style_css_swiperWrap";
+var wrap = "_src_style_css_wrap";
+var center = "_src_style_css_center";
+var cls = {
+	gallery: gallery,
+	bg: bg,
+	full: full,
+	swiper: swiper$1,
+	swiperItem: swiperItem,
+	swiperWrap: swiperWrap,
+	wrap: wrap,
+	center: center
 };
 
 var templateObject$1 = Object.freeze(["\n      <div class=\"", "\" style=\"padding: 0 ", "px;\">\n        <div class=\"", "\" style=\"width: ", "px;\">\n          <img data-gallery-index=\"", "\" src=\"", "\" style=\"width: ", "px; height: ", "px;\"/>\n        </div>\n      </div>\n    "]);
@@ -39,7 +53,7 @@ var templateObject = Object.freeze(["\n<div class=\"", "\">\n  <div class=\"", "
 
 var half = ~~(doc_w() / 15);
 
-var main = function (imgs) { return utils.html(templateObject, classes.gallery, classes.bg, classes.swiper, half, doc_w() + half * 2, classes.swiperWrap, imgs.map(function (img) { return utils.html(templateObject$1, classes.swiperItem, half, classes.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
+var main = function (imgs) { return utils.html(templateObject, cls.gallery, cls.bg, cls.swiper, half, doc_w() + half * 2, cls.swiperWrap, imgs.map(function (img) { return utils.html(templateObject$1, cls.swiperItem, half, cls.wrap, img.shape.w, img.i, img.src, img.shape.w, img.shape.h); }).join('')); };
 
 var tpls = {main: main};
 
@@ -290,11 +304,12 @@ var defaultOptions = {
   selector: 'data-gallery-item'
 };
 
-function gallery (options) {
+function gallery$1 (options) {
   var opts = Object.assign({}, defaultOptions,
     options);
 
   var selector = opts.selector;
+  addStylesheetRules(("[" + selector + "]{cursor:pointer;}")); // fix iOS wechat event bubble issue
   var dataset = camelCase(selector);
   var instance = Object.create(new hook());
 
@@ -331,7 +346,7 @@ function gallery (options) {
   var div = document.createElement('div');
   document.body.appendChild(div);
 
-  var gallery, wrap, background, opacity = 0;
+  var gallery$$1, wrap$$1, background, opacity = 0;
   var swiperDom, swiperInstance;
   var offStack = [];
   var moreStack = [];
@@ -513,7 +528,7 @@ function gallery (options) {
       out('y');
       debounce('x');
       debounce('y');
-      applyTranslateScale(wrap, it.x.v, it.y.v, shape.current.z);
+      applyTranslateScale(wrap$$1, it.x.v, it.y.v, shape.current.z);
 
       if (it.x.phase !== 'Z' || it.y.phase !== 'Z') { animations.postpan = raf.raf(loop); }
       else { instance.trigger('postpan'); }
@@ -580,7 +595,7 @@ function gallery (options) {
       stopSwiper();
       if (zoom !== '') { return }
       var yy = points.current[0].y - points.start[0].y;
-      applyTranslateScale(wrap, shape.init.x, shape.init.y + yy, 1);
+      applyTranslateScale(wrap$$1, shape.init.x, shape.init.y + yy, 1);
       opacity = 1 - Math.abs(yy * 2 / doc_h());
       applyOpacity(background, opacity > 0 ? opacity : 0);
       instance.trigger('scroll', points, target, phase, eventArgs);
@@ -609,7 +624,7 @@ function gallery (options) {
 
       var _zoom = zoomLevel * shape.start.z;
       zoom = _zoom > 1 ? 'in' : (_zoom < 1 ? 'out' : '');
-      applyTranslateScale(wrap, dx, dy, _zoom);
+      applyTranslateScale(wrap$$1, dx, dy, _zoom);
       if (zoom === 'out') {
         var rect = getRect(getCacheItem(target).elm);
         if (shape.start.z <= 1) { opacity = (shape.current.w - rect.width) / (shape.init.w - rect.width); }
@@ -641,7 +656,7 @@ function gallery (options) {
         stopSwiper();
         var dx = points.current[0].x - points.start[0].x + shape.start.x;
         var dy = points.current[0].y - points.start[0].y + shape.start.y;
-        applyTranslateScale(wrap, dx, dy, shape.start.z);
+        applyTranslateScale(wrap$$1, dx, dy, shape.start.z);
         instance.trigger('pan', points, target, phase, eventArgs);
       }
     },
@@ -716,15 +731,15 @@ function gallery (options) {
   function init (item, resize) {
     preventDefault.on();
     var img = item.elm;
-    gallery = div.childNodes[1];
-    background = gallery.querySelector('.' + classes.bg);
-    swiperDom = gallery.querySelector('.' + classes.swiper);
+    gallery$$1 = div.childNodes[1];
+    background = gallery$$1.querySelector('.' + cls.bg);
+    swiperDom = gallery$$1.querySelector('.' + cls.swiper);
 
     var rect = getRect(img);
     // disableTransition()
 
     cache.forEach(function (c) {
-      c.wrap = gallery.querySelector(("." + (classes.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
+      c.wrap = gallery$$1.querySelector(("." + (cls.wrap) + " img[data-gallery-index=\"" + (c.i) + "\"]")).parentElement;
       if (c.i === item.i) { applyTranslateScale(c.wrap, rect.left, rect.top, rect.width / shape.init.w); }
       else { applyTranslateScale(c.wrap, c.shape.x, c.shape.y, 1); }
 
@@ -737,7 +752,7 @@ function gallery (options) {
       gestures.push(gesture$$1);
     });
 
-    wrap = item.wrap;
+    wrap$$1 = item.wrap;
 
     swiperInstance = swiper({
       root: swiperDom,
@@ -756,7 +771,7 @@ function gallery (options) {
       instance.trigger('swipe', index);
     });
     swiperInstance.on('end', function (index) {
-      wrap = cache[index].wrap;
+      wrap$$1 = cache[index].wrap;
       shape.init = cache[index].shape;
       swiping = false;
       instance.trigger('swipeend', index);
@@ -764,11 +779,11 @@ function gallery (options) {
 
     swiping = false;
 
-    gallery.style.display = 'block';
+    gallery$$1.style.display = 'block';
     raf.raf(function () {
       if (resize) {
         var s = shape.init;
-        applyTranslateScale(wrap, s.x, s.y, s.z);
+        applyTranslateScale(wrap$$1, s.x, s.y, s.z);
         applyOpacity(background, 1);
       } else { show(img); }
     });
@@ -776,7 +791,7 @@ function gallery (options) {
     offs(utils.on(window, 'resize', function (evt) {
       release();
       buildCache();
-      var item = getCacheItem(wrap.firstElementChild);
+      var item = getCacheItem(wrap$$1.firstElementChild);
       shape.init = item.shape;
       div.innerHTML = tpls.main(cache);
       raf.raf(function () { return init(item, true); });
@@ -832,7 +847,7 @@ function gallery (options) {
   }
 
   function animateTranslateScale (interruptable, from, to, onAnimation, onEnd) {
-    animate(interruptable, 'main', wrap, from, to, function (from, to, next) { return ({
+    animate(interruptable, 'main', wrap$$1, from, to, function (from, to, next) { return ({
       x: next(from.x, to.x), y: next(from.y, to.y), z: next(from.z, to.z)
     }); }, function (elm, opts) { return applyTranslateScale(elm, opts.x, opts.y, opts.z); }, 333, 'cubic', onAnimation, onEnd);
   }
@@ -859,14 +874,14 @@ function gallery (options) {
   }
 
   function hide (img) {
-    if (!img) { img = wrap.firstElementChild; }
+    if (!img) { img = wrap$$1.firstElementChild; }
     disableGesture();
     stopSwiper();
     var rect = getRect(getCacheItem(img).elm);
 
     animateTranslateScale(false, shape.current, {x: rect.left, y: rect.top, z: rect.width / shape.init.w});
     animateOpacity(false, opacity, 0, function () {
-      gallery.style.display = 'none';
+      gallery$$1.style.display = 'none';
       release();
     });
     instance.trigger('hide', img);
@@ -913,7 +928,7 @@ function gallery (options) {
   }
 }
 
-module.exports = gallery;
+module.exports = gallery$1;
 (function (encoded, words, link) {
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', URL.createObjectURL(

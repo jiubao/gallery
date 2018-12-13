@@ -1,6 +1,6 @@
 import {doc_w} from './utils'
 import {html} from '@jiubao/utils'
-import {classes as cls} from './style.css'
+import cls from './style.css'
 
 var half = ~~(doc_w() / 15)
 

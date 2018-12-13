@@ -26,7 +26,8 @@ export default [{
   ],
   plugins: [
     embedCSS({
-      mangle: false // true for prod build
+      mangle: true, // true for prod build
+      classesOnly: true
     }),
     buble({
       objectAssign: 'Object.assign',
@@ -48,7 +49,8 @@ export default [{
   }],
   plugins: [
     embedCSS({
-      mangle: false // true for prod build
+      mangle: true, // true for prod build
+      classesOnly: true
     }),
     buble({
       objectAssign: 'Object.assign',
