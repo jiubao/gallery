@@ -1,6 +1,6 @@
 {
   "name": "@jiubao/gallery",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "photo gallery",
   "main": "dist/gallery.es.js",
   "browser": "dist/gallery.umd.js",
@@ -12,7 +12,7 @@
     "clean": "rm -rf dist",
     "build": "rm -rf dist && rollup -c && npm run minify",
     "minify": "uglifyjs $npm_package_browser -cm -o $npm_package_browser",
-    "release": "npm run build && standard-version && git push --follow-tags && npm publish --access=public"
+    "release": "standard-version && npm run build && git push --follow-tags && npm publish --access=public"
   },
   "repository": {
     "type": "git",
