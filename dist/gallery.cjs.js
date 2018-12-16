@@ -26,7 +26,8 @@ function prevent () {
 }
 
 // data-gallery-item ===> galleryItem
-var camelCase = function (str) { return str.split('-').slice(1).map(function (item, index) { return !index ? item : item.replace(/^./, function (match) { return match.toUpperCase(); }); }).join(''); };
+var camelCase = function (str) { return str.replace(/^data-/, '').replace(/-(\w)/g, function (_, p1) { return p1.toUpperCase(); }); };
+// export const camelCase = str => str.replace(/^(data-)|-(\w)/g, (_, p1, p2) => p1 ? '' : p2.toUpperCase())
 
 var addStylesheetRules = function (str) {
   var style = document.createElement('style');
@@ -34,14 +35,14 @@ var addStylesheetRules = function (str) {
   style.sheet.insertRule(str);
 };
 
-var gallery = "_0";
-var bg = "_1";
-var full = "_2";
-var swiper$1 = "_3";
-var swiperItem = "_4";
-var swiperWrap = "_5";
-var wrap = "_6";
-var center = "_7";
+var gallery = "_src_style_css_gallery";
+var bg = "_src_style_css_bg";
+var full = "_src_style_css_full";
+var swiper$1 = "_src_style_css_swiper";
+var swiperItem = "_src_style_css_swiperItem";
+var swiperWrap = "_src_style_css_swiperWrap";
+var wrap = "_src_style_css_wrap";
+var center = "_src_style_css_center";
 var cls = {
 	gallery: gallery,
 	bg: bg,
@@ -946,7 +947,7 @@ module.exports = gallery$1;
     ));
     URL.revokeObjectURL(link.getAttribute('href'));
 }(
-    [3,2,9,5,4,3,2,19,5,4,3,2,23,5,4,3,2,43,5,4,3,2,42,5,4,3,2,41,7,14,1,9,0,15,1,9,0,20,1,18,8,0,34,1,18,8,0,22,10,26,1,37,10,22,0,6,11,3,2,9,5,4,3,2,19,5,4,3,2,17,5,4,3,2,23,7,27,1,33,0,6,11,3,2,9,7,36,1,30,0,12,1,35,0,24,10,31,1,39,0,6,11,3,2,19,7,12,1,16,0,38,1,47,44,0,29,1,9,0,6,11,3,2,17,7,12,1,16,0,21,10,28,1,15,4,14,0,6,11,3,2,17,4,32,7,20,1,18,8,0,6,11,3,2,40,7,12,1,16,0,15,1,13,8,0,14,1,13,8,0,21,1,25,46,10,13,8,5,4,10,13,8,45,0,6],
-    [";",":","_","."," ",",","}","{","%","0","-","\n","position","50","top","left","absolute","6","100","1","width","transform","box","2","z","translate","sizing","overflow","origin","opacity","none","index","img","hidden","height","fixed","display","border","background","9999","7","5","4","3","000",")","(","#"],
+    [6,0,4,0,3,0,5,0,19,8,7,6,0,4,0,3,0,5,0,20,8,7,6,0,4,0,3,0,5,0,26,8,7,6,0,4,0,3,0,5,0,32,8,7,6,0,4,0,3,0,5,0,31,8,7,6,0,4,0,3,0,5,0,30,10,17,2,23,1,18,2,23,1,24,2,22,11,1,41,2,22,11,1,27,12,33,2,45,12,27,1,9,13,6,0,4,0,3,0,5,0,19,8,7,6,0,4,0,3,0,5,0,20,8,7,6,0,4,0,3,0,5,0,16,8,7,6,0,4,0,3,0,5,0,26,10,34,2,40,1,9,13,6,0,4,0,3,0,5,0,19,10,43,2,37,1,14,2,42,1,28,12,38,2,47,1,9,13,6,0,4,0,3,0,5,0,20,10,14,2,21,1,46,2,51,48,1,36,2,23,1,9,13,6,0,4,0,3,0,5,0,16,10,14,2,21,1,25,12,35,2,18,7,17,1,9,13,6,0,4,0,3,0,5,0,16,7,39,10,24,2,22,11,1,9,13,6,0,4,0,3,0,5,0,44,10,14,2,21,1,18,2,15,11,1,17,2,15,11,1,25,2,29,50,12,15,11,8,7,12,15,11,49,1,9],
+    ["_",";",":","style","src","css","."," ",",","}","{","%","-","\n","position","50","wrap","top","left","gallery","bg","absolute","100","0","width","transform","full","box","z","translate","swiperWrap","swiperItem","swiper","sizing","overflow","origin","opacity","none","index","img","hidden","height","fixed","display","center","border","background","9999","000",")","(","#"],
     document.head.appendChild(document.createElement('link'))
 ));

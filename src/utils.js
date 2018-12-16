@@ -14,7 +14,8 @@ export function prevent () {
 }
 
 // data-gallery-item ===> galleryItem
-export const camelCase = str => str.split('-').slice(1).map((item, index) => !index ? item : item.replace(/^./, match => match.toUpperCase())).join('')
+export const camelCase = str => str.replace(/^data-/, '').replace(/-(\w)/g, (_, p1) => p1.toUpperCase())
+// export const camelCase = str => str.replace(/^(data-)|-(\w)/g, (_, p1, p2) => p1 ? '' : p2.toUpperCase())
 
 export const addStylesheetRules = str => {
   var style = document.createElement('style');
